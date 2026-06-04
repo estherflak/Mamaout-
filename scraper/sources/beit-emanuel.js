@@ -1,6 +1,7 @@
 /**
  * Beit Emanuel Ramat Gan — mbe-rg.smarticket.co.il
  * SmartTicket pages are JS-rendered; falls back to Puppeteer when static fetch yields nothing.
+ * A single browser is launched once and reused across all seed pages.
  * All events marked is_verified: true.
  */
 import axios from 'axios';
@@ -69,7 +70,7 @@ function parseEvents(html) {
     });
   });
 
-  // Fallback: any internal link that looks like a specific activity/event page (not a category nav link)
+  // Fallback: any internal link that looks like a specific activity/event page
   if (events.length === 0) {
     $('a[href]').each((_, el) => {
       const href = $(el).attr('href') || '';
@@ -98,71 +99,61 @@ function parseEvents(html) {
 }
 
 async function scrapeWithFetch(url) {
-  const { data } = await axios.get(url, { headers: HEADERS, timeout: 15000 });
+  const { data } = await axios.get(url, { headers: HEADERS, timeout: 12000 });
   return parseEvents(data);
-}
-
-async function scrapeWithPuppeteer(url) {
-  const puppeteer = await import('puppeteer');
-  const browser = await puppeteer.default.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-    ],
-  });
-
-  try {
-    const page = await browser.newPage();
-    await page.setUserAgent(HEADERS['User-Agent']);
-    await page.setExtraHTTPHeaders({ 'Accept-Language': HEADERS['Accept-Language'] });
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-
-    // Wait for event cards to appear
-    await page.waitForSelector(
-      'article, [class*="event"], [class*="activity"], [class*="schedule"]',
-      { timeout: 8000 }
-    ).catch(() => {});
-
-    const html = await page.content();
-    return parseEvents(html);
-  } finally {
-    await browser.close();
-  }
-}
-
-async function scrapePath(path) {
-  const url = `${BASE}${path.startsWith('/') ? '' : '/'}${path}`;
-  console.log(`[beit-emanuel] Scraping: ${url}`);
-
-  try {
-    const events = await scrapeWithFetch(url);
-    console.log(`[beit-emanuel]   static → ${events.length} events`);
-    if (events.length > 0) return events;
-  } catch (err) {
-    console.warn(`[beit-emanuel]   static fetch failed: ${err.message}`);
-  }
-
-  console.log(`[beit-emanuel]   trying Puppeteer…`);
-  try {
-    const events = await scrapeWithPuppeteer(url);
-    console.log(`[beit-emanuel]   puppeteer → ${events.length} events`);
-    return events;
-  } catch (err) {
-    console.warn(`[beit-emanuel]   Puppeteer failed: ${err.message}`);
-    return [];
-  }
 }
 
 export async function scrapeBeitEmanuel() {
   const allResults = [];
+  let browser = null;
 
   for (const path of SEED_PATHS) {
-    const results = await scrapePath(path);
-    allResults.push(...results);
-    await sleep(2000);
+    const url = `${BASE}${path.startsWith('/') ? '' : '/'}${path}`;
+    console.log(`[beit-emanuel] Scraping: ${url}`);
+
+    // Try static fetch first (fast)
+    let events = [];
+    try {
+      events = await scrapeWithFetch(url);
+      console.log(`[beit-emanuel]   static → ${events.length} events`);
+    } catch (err) {
+      console.warn(`[beit-emanuel]   static fetch failed: ${err.message}`);
+    }
+
+    // Puppeteer fallback — launch browser once, reuse across pages
+    if (events.length === 0) {
+      try {
+        if (!browser) {
+          console.log(`[beit-emanuel]   launching Puppeteer…`);
+          const puppeteer = (await import('puppeteer')).default;
+          browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+          });
+        }
+
+        const page = await browser.newPage();
+        await page.setUserAgent(HEADERS['User-Agent']);
+        // domcontentloaded is much faster than networkidle2 — doesn't wait for all XHR
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+        // Brief wait for any immediate JS rendering
+        await sleep(2500);
+        const html = await page.content();
+        await page.close();
+
+        events = parseEvents(html);
+        console.log(`[beit-emanuel]   puppeteer → ${events.length} events`);
+      } catch (err) {
+        console.warn(`[beit-emanuel]   Puppeteer failed: ${err.message}`);
+      }
+    }
+
+    allResults.push(...events);
+    await sleep(1500);
+  }
+
+  if (browser) {
+    await browser.close().catch(() => {});
   }
 
   const seen = new Set();

@@ -8,7 +8,6 @@ import { scrapeDigitaf } from './sources/digitaf.js';
 import { scrapeGoogle } from './sources/google.js';
 import { scrapeEventbrite } from './sources/eventbrite.js';
 import { scrapeTimeout } from './sources/timeout.js';
-import { scrapeGoOut } from './sources/goout.js';
 import { classifyActivity } from './classifier.js';
 import { insertIfNew } from './db.js';
 
@@ -37,7 +36,6 @@ export async function runScrape() {
     { name: 'DuckDuckGo/Google', fn: scrapeGoogle, verified: false },
     { name: 'Eventbrite',        fn: scrapeEventbrite, verified: false },
     { name: 'Time Out Tel Aviv', fn: scrapeTimeout, verified: false },
-    { name: 'GoOut',             fn: scrapeGoOut, verified: false },
   ];
 
   let allRaw = [];
