@@ -27,6 +27,7 @@ const SCHEMA = `{
   "language": "he or en",
   "venue": "string (specific venue name if mentioned, null otherwise)",
   "event_date": "ISO 8601 date-time string if a specific date is stated, null otherwise",
+  "cta_label": "one of: Book now | Reserve a spot | View schedule | More info — pick the most accurate label based on what the source URL likely leads to (booking page vs. info page)",
   "is_relevant": "boolean — true ONLY if suitable for a woman on maternity leave with a baby aged 0-12 months"
 }`;
 

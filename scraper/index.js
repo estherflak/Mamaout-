@@ -9,6 +9,7 @@ import { scrapeGoogle } from './sources/google.js';
 import { scrapeEventbrite } from './sources/eventbrite.js';
 import { scrapeTimeout } from './sources/timeout.js';
 import { classifyActivity } from './classifier.js';
+import { geocodeActivity } from './sources/geocode.js';
 import { insertIfNew } from './db.js';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -92,6 +93,11 @@ export async function runScrape() {
         continue;
       }
 
+      const venueForGeo = classified.venue || raw.venue || '';
+      const coords = venueForGeo
+        ? await geocodeActivity(venueForGeo, raw.location || 'Tel Aviv')
+        : null;
+
       const activity = {
         name:            classified.name,
         name_en:         classified.name_en || null,
@@ -103,7 +109,10 @@ export async function runScrape() {
         price_range:     classified.price_range,
         baby_age_min:    classified.baby_age_min ?? null,
         event_date:      classified.event_date || null,
+        cta_label:       classified.cta_label || 'More info',
         language:        classified.language || 'he',
+        latitude:        coords?.latitude ?? null,
+        longitude:       coords?.longitude ?? null,
         source_url:      raw.source_url,
         source_name:     raw.source_name,
         is_verified:     raw._verified ?? false,

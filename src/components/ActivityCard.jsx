@@ -1,31 +1,45 @@
-import { FRIENDS } from '../data/activities';
+import { useFavorites } from '../hooks/useFavorites';
+import { useAuthContext } from '../contexts/AuthContext';
 
 const PRICE_COLORS = {
   'Free': 'bg-sage-100 text-sage-500',
-  '₪': 'bg-cream-100 text-amber-600',
-  '₪₪': 'bg-cream-200 text-amber-700',
-  '₪₪₪': 'bg-orange-100 text-orange-600',
+  '₪':    'bg-cream-100 text-amber-600',
+  '₪₪':   'bg-cream-200 text-amber-700',
+  '₪₪₪':  'bg-orange-100 text-orange-600',
 };
 
 const CATEGORY_COLORS = {
   Movement: 'bg-sky-50 text-sky-600',
   Wellness: 'bg-dusty-rosePale text-dusty-roseDark',
   Creative: 'bg-purple-50 text-purple-500',
-  Social: 'bg-amber-50 text-amber-600',
-  Baby: 'bg-sage-50 text-sage-500',
+  Social:   'bg-amber-50 text-amber-600',
+  Baby:     'bg-sage-50 text-sage-500',
 };
 
-export default function ActivityCard({ activity }) {
-  const goingFriends = activity.friendsGoing
-    .map(id => FRIENDS.find(f => f.id === id))
-    .filter(Boolean);
+function shareOnWhatsApp(e, activity) {
+  e.stopPropagation();
+  const msg = [
+    'Found this on MamaOut — looks great:',
+    activity.name,
+    activity.neighborhood,
+    `Book here: ${activity.sourceUrl}`,
+  ].join('\n');
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
 
-  const firstFriend = goingFriends[0];
+export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) {
+  const { user } = useAuthContext();
+  const { favoriteIds, toggle } = useFavorites();
+  const isFav = favoriteIds.has(activity.id);
+
+  const firstFriend = friendsGoing[0];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden
-      active:scale-[0.99] transition-transform cursor-pointer">
-      {/* Card top accent */}
+    <div
+      onClick={() => onSelect?.(activity)}
+      className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+    >
+      {/* Top accent */}
       <div className="h-1.5 w-full bg-gradient-to-r from-dusty-rose via-dusty-roseLight to-sage-200" />
 
       <div className="p-4">
@@ -58,10 +72,35 @@ export default function ActivityCard({ activity }) {
               </p>
             </div>
           </div>
-          {/* Price badge */}
-          <span className={`flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${PRICE_COLORS[activity.price] || 'bg-stone-100 text-stone-500'}`}>
-            {activity.price}
-          </span>
+
+          {/* Price + actions */}
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${PRICE_COLORS[activity.price] || 'bg-stone-100 text-stone-500'}`}>
+              {activity.price}
+            </span>
+            <div className="flex items-center gap-1">
+              {user && (
+                <button
+                  onClick={e => { e.stopPropagation(); toggle(activity.id); }}
+                  className="p-1"
+                  aria-label="Favorite"
+                >
+                  <svg className={`w-4 h-4 ${isFav ? 'fill-dusty-rose stroke-dusty-rose' : 'fill-none stroke-stone-300'}`} strokeWidth="1.8" viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                </button>
+              )}
+              <button
+                onClick={e => shareOnWhatsApp(e, activity)}
+                className="p-1"
+                aria-label="Share on WhatsApp"
+              >
+                <svg className="w-4 h-4 fill-green-400" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Description */}
@@ -69,14 +108,12 @@ export default function ActivityCard({ activity }) {
           {activity.description}
         </p>
 
-        {/* Footer row */}
+        {/* Footer */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Category tag */}
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[activity.category] || 'bg-stone-100 text-stone-500'}`}>
               {activity.category}
             </span>
-            {/* Age suitability */}
             <span className="text-xs text-stone-400 flex items-center gap-1">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -85,20 +122,14 @@ export default function ActivityCard({ activity }) {
             </span>
           </div>
 
-          {/* Friends badge */}
           {firstFriend && (
             <div className="flex items-center gap-1 bg-sage-50 border border-sage-200 px-2.5 py-1 rounded-full">
               <div className="w-4 h-4 rounded-full bg-dusty-rose flex items-center justify-center">
-                <span className="text-white text-[8px] font-bold">
-                  {firstFriend.name[0]}
-                </span>
+                <span className="text-white text-[8px] font-bold">{firstFriend.name[0]}</span>
               </div>
               <span className="text-xs text-sage-500 font-medium">
                 {firstFriend.name}
-                {goingFriends.length > 1
-                  ? ` +${goingFriends.length - 1} going`
-                  : ' is going'
-                } ✓
+                {friendsGoing.length > 1 ? ` +${friendsGoing.length - 1} going` : ' is going'} ✓
               </span>
             </div>
           )}
