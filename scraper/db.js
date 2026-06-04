@@ -16,19 +16,34 @@ const supabase = new Proxy({}, {
 });
 
 /**
- * Insert an activity only if its source_url hasn't been seen before.
- * Returns the inserted row, or null if it was a duplicate.
+ * Upsert an activity by source_url.
+ * If the row already exists and name_en is null, it will be updated with the new data.
+ * Returns { row, isNew } where isNew is true if a fresh insert happened.
  */
 export async function insertIfNew(activity) {
-  // Deduplicate by source_url
+  // Check if it already exists with a proper English name
   const { data: existing } = await supabase
     .from('activities')
-    .select('id')
+    .select('id, name_en')
     .eq('source_url', activity.source_url)
     .maybeSingle();
 
-  if (existing) return null;
+  // Already up-to-date — skip
+  if (existing?.name_en) return null;
 
+  if (existing) {
+    // Row exists but is missing name_en — update it
+    const { data, error } = await supabase
+      .from('activities')
+      .update(activity)
+      .eq('source_url', activity.source_url)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  // Fresh insert
   const { data, error } = await supabase
     .from('activities')
     .insert(activity)

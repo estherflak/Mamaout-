@@ -13,6 +13,20 @@ import { insertIfNew } from './db.js';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+function looksLikeDate(text) {
+  if (!text || text.trim().length < 4) return true;
+  const t = text.trim();
+  // Pure numbers / date separators
+  if (/^[\d\s.\/\-,]+$/.test(t)) return true;
+  // DD.MM.YYYY or DD/MM/YYYY
+  if (/^\d{1,2}[./]\d{1,2}[./]\d{2,4}/.test(t)) return true;
+  // ISO date
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) return true;
+  // Hebrew month names with numbers
+  if (/\d.*(ינואר|פברואר|מרץ|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר)/.test(t)) return true;
+  return false;
+}
+
 function dedupeRaw(items) {
   const seen = new Set();
   return items.filter(item => {
@@ -65,6 +79,12 @@ export async function runScrape() {
 
   for (const raw of allRaw) {
     try {
+      // Skip items where the extracted "name" is clearly a date, not an activity title
+      if (looksLikeDate(raw.name)) {
+        irrelevant++;
+        continue;
+      }
+
       const classified = await classifyActivity(raw);
 
       if (!classified.is_relevant) {
