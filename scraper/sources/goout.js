@@ -26,7 +26,7 @@ export async function scrapeGoOut() {
   for (const { q, city } of SEARCH_QUERIES) {
     try {
       const url = `${BASE}/search?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`;
-      const { data } = await axios.get(url, { headers: HEADERS, timeout: 10000 });
+      const { data } = await axios.get(url, { headers: HEADERS, timeout: 20000 });
       const $ = cheerio.load(data);
 
       // GoOut event/class listing cards

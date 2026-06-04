@@ -1,21 +1,22 @@
 /**
- * Eventbrite public search for baby+mom events in Israel.
- * Uses Eventbrite's search HTML endpoint — no API key required for public events.
+ * Eventbrite — uses their structured JSON search API instead of HTML scraping.
+ * The HTML endpoints now return 405; the API endpoint is more stable.
  */
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
-const SEARCH_URLS = [
-  'https://www.eventbrite.com/d/israel--tel-aviv/baby-yoga/',
-  'https://www.eventbrite.com/d/israel--tel-aviv/baby-class/',
-  'https://www.eventbrite.com/d/israel--tel-aviv/postnatal/',
-  'https://www.eventbrite.com/d/israel--ramat-gan/baby/',
+const SEARCHES = [
+  { q: 'baby yoga tel aviv', location: 'Tel Aviv, Israel' },
+  { q: 'baby pilates tel aviv', location: 'Tel Aviv, Israel' },
+  { q: 'mom baby class tel aviv', location: 'Tel Aviv, Israel' },
+  { q: 'baby swim ramat gan', location: 'Ramat Gan, Israel' },
+  { q: 'postnatal class israel', location: 'Tel Aviv, Israel' },
 ];
 
 const HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.9,he;q=0.8',
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Referer': 'https://www.eventbrite.com/',
 };
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -23,34 +24,36 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 export async function scrapeEventbrite() {
   const results = [];
 
-  for (const searchUrl of SEARCH_URLS) {
+  for (const { q, location } of SEARCHES) {
     try {
-      const { data } = await axios.get(searchUrl, { headers: HEADERS, timeout: 12000 });
-      const $ = cheerio.load(data);
+      // Eventbrite's internal search API (no key required for public results)
+      const url = `https://www.eventbrite.com/api/v3/destination/search/?q=${encodeURIComponent(q)}&location.address=${encodeURIComponent(location)}&page_size=20&expand=venue,description`;
+      const { data } = await axios.get(url, { headers: HEADERS, timeout: 12000 });
 
-      // Eventbrite event cards — selectors may need updating if Eventbrite changes markup
-      $('article[data-testid="event-card"], .eds-event-card, [class*="event-card"]').each((_, el) => {
-        const name = $(el).find('h2, h3, [class*="event-name"], [data-spec="event-name"]').first().text().trim();
-        const description = $(el).find('p, [class*="summary"]').first().text().trim();
-        const linkEl = $(el).find('a[href*="/e/"]').first();
-        const href = linkEl.attr('href') || '';
-        const location = $(el).find('[class*="location"], [data-spec="location"]').first().text().trim();
+      const events = data?.events?.results || data?.results || [];
+      for (const ev of events) {
+        const name = ev.name?.text || ev.name || '';
+        const description = ev.summary || ev.description?.text || '';
+        const venue = ev.venue?.name || '';
+        const city = ev.venue?.address?.city || 'Tel Aviv';
+        const href = ev.url || '';
 
-        if (!name || !href) return;
+        if (!name || !href) continue;
 
-        const fullUrl = href.startsWith('http') ? href : `https://www.eventbrite.com${href}`;
         results.push({
           name: name.slice(0, 120),
           description: description.slice(0, 400),
-          location: location || 'Tel Aviv area',
-          source_url: fullUrl.split('?')[0], // strip tracking params
+          location: venue ? `${venue}, ${city}` : city,
+          source_url: href.split('?')[0],
           source_name: 'Eventbrite',
+          venue,
+          raw_date: ev.start?.local || '',
         });
-      });
+      }
 
-      await sleep(2500);
+      await sleep(2000);
     } catch (err) {
-      console.warn(`[eventbrite] ${searchUrl} failed:`, err.message);
+      console.warn(`[eventbrite] "${q}" failed:`, err.message);
     }
   }
 
