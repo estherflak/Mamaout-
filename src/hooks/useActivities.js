@@ -23,17 +23,27 @@ function normalizeSupabaseActivity(a) {
   const city = raw.includes('ramat gan') || raw.includes('רמת גן')
     ? 'Ramat Gan'
     : 'Tel Aviv';
-  const neighborhood = a.location?.split(',')[0]?.trim() || a.location || city;
+
+  // Prefer venue as neighborhood if available; fall back to first part of location
+  const neighborhood = a.venue?.trim() ||
+    a.location?.split(',')[0]?.trim() ||
+    a.location || city;
 
   const catKey = a.category?.toLowerCase() || 'social';
 
+  // Prefer English translations for name/description (app UI is English)
+  const displayName = a.name_en || a.name || 'Unnamed Activity';
+  const displayDesc = a.description_en || a.description || '';
+
   return {
     id: a.id,
-    name: a.name || 'Unnamed Activity',
+    name: displayName,
+    namHe: a.name,          // preserve Hebrew for search
     category: CATEGORY_LABEL[catKey] || 'Social',
     neighborhood,
     city,
-    description: a.description || '',
+    description: displayDesc,
+    descriptionHe: a.description,
     price: a.price_range || '₪',
     priceLabel: a.price_range === 'free' ? 'Free' : 'Paid',
     ageFrom: a.baby_age_min ?? 0,
@@ -43,6 +53,7 @@ function normalizeSupabaseActivity(a) {
         ? 'From birth'
         : `From ${a.baby_age_min} weeks`
       : 'All ages',
+    eventDate: a.event_date ? new Date(a.event_date) : null,
     tags: [],
     friendsGoing: [],
     emoji: CATEGORY_EMOJI[catKey] || '🌸',
@@ -72,7 +83,6 @@ export function useActivities() {
         if (cancelled) return;
         if (err) {
           setError(err.message);
-          // Keep mock data as fallback
         } else if (data?.length > 0) {
           setActivities(data.map(normalizeSupabaseActivity));
           setDataSource('supabase');

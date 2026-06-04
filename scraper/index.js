@@ -3,6 +3,8 @@
  *   node scraper/index.js
  */
 import 'dotenv/config';
+import { scrapeBeitEmanuel } from './sources/beit-emanuel.js';
+import { scrapeDigitaf } from './sources/digitaf.js';
 import { scrapeGoogle } from './sources/google.js';
 import { scrapeEventbrite } from './sources/eventbrite.js';
 import { scrapeTimeout } from './sources/timeout.js';
@@ -12,7 +14,6 @@ import { insertIfNew } from './db.js';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/** Deduplicate raw results by source_url within a single scrape run */
 function dedupeRaw(items) {
   const seen = new Set();
   return items.filter(item => {
@@ -25,21 +26,30 @@ function dedupeRaw(items) {
 export async function runScrape() {
   console.log(`\n[scraper] Starting scrape — ${new Date().toISOString()}`);
 
-  // ── Collect raw results from all sources ──────────────────────────────────
-  const sources = [
-    { name: 'DuckDuckGo/Google', fn: scrapeGoogle },
-    { name: 'Eventbrite',        fn: scrapeEventbrite },
-    { name: 'Time Out Tel Aviv', fn: scrapeTimeout },
-    { name: 'GoOut',             fn: scrapeGoOut },
+  // Priority sources run first — authoritative, is_verified: true
+  const prioritySources = [
+    { name: 'Beit Emanuel Ramat Gan', fn: scrapeBeitEmanuel, verified: true },
+    { name: 'Tel Aviv Municipality (Digitaf)', fn: scrapeDigitaf, verified: true },
+  ];
+
+  // Supplementary sources
+  const supplementarySources = [
+    { name: 'DuckDuckGo/Google', fn: scrapeGoogle, verified: false },
+    { name: 'Eventbrite',        fn: scrapeEventbrite, verified: false },
+    { name: 'Time Out Tel Aviv', fn: scrapeTimeout, verified: false },
+    { name: 'GoOut',             fn: scrapeGoOut, verified: false },
   ];
 
   let allRaw = [];
-  for (const { name, fn } of sources) {
+
+  for (const { name, fn, verified } of [...prioritySources, ...supplementarySources]) {
     console.log(`[scraper] Scraping ${name}…`);
     try {
       const results = await fn();
-      console.log(`[scraper]   → ${results.length} raw results`);
-      allRaw.push(...results);
+      // Tag each result with its verified status
+      const tagged = results.map(r => ({ ...r, _verified: verified }));
+      console.log(`[scraper]   → ${tagged.length} raw results`);
+      allRaw.push(...tagged);
     } catch (err) {
       console.error(`[scraper]   ✗ ${name} failed:`, err.message);
     }
@@ -65,27 +75,32 @@ export async function runScrape() {
       }
 
       const activity = {
-        name:         classified.name,
-        description:  classified.description,
-        location:     raw.location,
-        category:     classified.category,
-        price_range:  classified.price_range,
-        baby_age_min: classified.baby_age_min ?? null,
-        language:     classified.language || 'he',
-        source_url:   raw.source_url,
-        source_name:  raw.source_name,
-        is_verified:  false,
+        name:            classified.name,
+        name_en:         classified.name_en || null,
+        description:     classified.description,
+        description_en:  classified.description_en || null,
+        location:        raw.location,
+        venue:           classified.venue || raw.venue || null,
+        category:        classified.category,
+        price_range:     classified.price_range,
+        baby_age_min:    classified.baby_age_min ?? null,
+        event_date:      classified.event_date || null,
+        language:        classified.language || 'he',
+        source_url:      raw.source_url,
+        source_name:     raw.source_name,
+        is_verified:     raw._verified ?? false,
       };
 
       const row = await insertIfNew(activity);
       if (row) {
         inserted++;
-        console.log(`[scraper]   + "${activity.name}" (${activity.category})`);
+        const label = raw._verified ? '✓' : '+';
+        console.log(`[scraper]   ${label} "${activity.name_en || activity.name}" (${activity.category})`);
       } else {
         skipped++;
       }
 
-      await sleep(300); // small pause to respect Supabase rate limits
+      await sleep(300);
     } catch (err) {
       errors++;
       console.warn(`[scraper]   ✗ "${raw.name}" — ${err.message}`);
@@ -99,8 +114,7 @@ export async function runScrape() {
   console.log(`  Errors:     ${errors}`);
 }
 
-// Allow direct execution: node scraper/index.js
-if (process.argv[1].endsWith('scraper/index.js')) {
+if (process.argv[1]?.endsWith('scraper/index.js')) {
   runScrape().catch(err => {
     console.error('[scraper] Fatal error:', err);
     process.exit(1);
