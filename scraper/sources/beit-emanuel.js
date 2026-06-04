@@ -71,10 +71,14 @@ function parseEvents(html) {
   });
 
   // Fallback: any internal link that looks like a specific activity/event page
+  // Exclude category nav links (_page_N) and cap at 30 to avoid classifier spam
   if (events.length === 0) {
+    let count = 0;
     $('a[href]').each((_, el) => {
+      if (count >= 30) return false; // stop iterating
       const href = $(el).attr('href') || '';
       if (!href || href === '/' || href === '#' || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+      if (/_page_\d+/.test(href)) return; // skip category nav links
       const url = toAbsolute(href);
       if (!url.startsWith(BASE)) return;
       if (seen.has(url)) return;
@@ -83,6 +87,7 @@ function parseEvents(html) {
       const name = $(el).text().trim();
       if (!name || name.length < 3) return;
 
+      count++;
       events.push({
         name: name.slice(0, 120),
         description: '',
@@ -136,8 +141,8 @@ export async function scrapeBeitEmanuel() {
         await page.setUserAgent(HEADERS['User-Agent']);
         // domcontentloaded is much faster than networkidle2 — doesn't wait for all XHR
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
-        // Brief wait for any immediate JS rendering
-        await sleep(2500);
+        // Wait for SmartTicket JS to load event cards
+        await sleep(5000);
         const html = await page.content();
         await page.close();
 
