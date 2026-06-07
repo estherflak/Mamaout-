@@ -12,7 +12,7 @@ export default function OnboardingScreen() {
   const [name, setName]           = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [birthdate, setBirthdate] = useState('');
-  const [phone, setPhone]         = useState(user?.phone ?? '');
+  const [phone, setPhone]         = useState('');
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
 
@@ -56,13 +56,11 @@ export default function OnboardingScreen() {
             <input className={inputCls} placeholder="e.g. Noa" value={name} onChange={e => setName(e.target.value)} />
           </div>
 
-          {/* Only show phone field if signed in via email/Google (not phone OTP which already has it) */}
-          {!user?.phone && (
-            <div>
-              <label className="text-xs font-medium text-stone-500 mb-1.5 block">Phone number (for finding friends)</label>
-              <input className={inputCls} type="tel" placeholder="05X-XXX-XXXX" value={phone} onChange={e => setPhone(e.target.value)} />
-            </div>
-          )}
+          <div>
+            <label className="text-xs font-medium text-stone-500 mb-1.5 block">Phone number (so friends can find you)</label>
+            <input className={inputCls} type="tel" placeholder="05X-XXX-XXXX" value={phone} onChange={e => setPhone(e.target.value)} />
+            <p className="text-xs text-stone-300 mt-1">Used to match you with friends — not shared publicly</p>
+          </div>
 
           <div>
             <label className="text-xs font-medium text-stone-500 mb-1.5 block">Your neighborhood</label>

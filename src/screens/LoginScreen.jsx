@@ -2,40 +2,11 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function LoginScreen() {
-  const [tab, setTab]             = useState('phone'); // 'phone' | 'email'
-  const [phone, setPhone]         = useState('');
-  const [otp, setOtp]             = useState('');
-  const [otpSent, setOtpSent]     = useState(false);
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [isSignUp, setIsSignUp]   = useState(false);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState('');
-
-  async function handlePhoneSend() {
-    setError(''); setLoading(true);
-    // Normalise to E.164 for Israel (strip leading 0, add +972)
-    const normalised = phone.startsWith('+')
-      ? phone
-      : '+972' + phone.replace(/^0/, '').replace(/\s+/g, '');
-
-    const { error: e } = await supabase.auth.signInWithOtp({ phone: normalised });
-    if (e) setError(e.message); else setOtpSent(true);
-    setLoading(false);
-  }
-
-  async function handleOtpVerify() {
-    setError(''); setLoading(true);
-    const normalised = phone.startsWith('+')
-      ? phone
-      : '+972' + phone.replace(/^0/, '').replace(/\s+/g, '');
-
-    const { error: e } = await supabase.auth.verifyOtp({
-      phone: normalised, token: otp, type: 'sms',
-    });
-    if (e) setError(e.message);
-    setLoading(false);
-  }
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
 
   async function handleEmail() {
     setError(''); setLoading(true);
@@ -67,91 +38,9 @@ export default function LoginScreen() {
       </div>
 
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6">
-        {/* Tab switch */}
-        <div className="flex rounded-xl bg-stone-50 p-1 mb-5">
-          {['phone', 'email'].map(t => (
-            <button
-              key={t}
-              onClick={() => { setTab(t); setError(''); setOtpSent(false); }}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'}`}
-            >
-              {t === 'phone' ? '📱 Phone' : '✉️ Email'}
-            </button>
-          ))}
-        </div>
-
-        {error && (
-          <div className="mb-4 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
-            {error}
-          </div>
-        )}
-
-        {tab === 'phone' && (
-          <div className="space-y-3">
-            {!otpSent ? (
-              <>
-                <input
-                  className={inputCls}
-                  type="tel"
-                  placeholder="Phone number (05X-XXX-XXXX)"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                />
-                <button className={btnCls} onClick={handlePhoneSend} disabled={loading || !phone}>
-                  {loading ? 'Sending…' : 'Send code'}
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-xs text-stone-400 text-center">
-                  Enter the code sent to {phone}
-                </p>
-                <input
-                  className={inputCls}
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="6-digit code"
-                  value={otp}
-                  onChange={e => setOtp(e.target.value)}
-                  maxLength={6}
-                />
-                <button className={btnCls} onClick={handleOtpVerify} disabled={loading || otp.length < 4}>
-                  {loading ? 'Verifying…' : 'Verify'}
-                </button>
-                <button
-                  className="w-full text-xs text-stone-400 underline"
-                  onClick={() => { setOtpSent(false); setOtp(''); }}
-                >
-                  Try a different number
-                </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {tab === 'email' && (
-          <div className="space-y-3">
-            <input className={inputCls} type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-            <input className={inputCls} type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-            <button className={btnCls} onClick={handleEmail} disabled={loading || !email || !password}>
-              {loading ? '…' : isSignUp ? 'Create account' : 'Sign in'}
-            </button>
-            <button className="w-full text-xs text-stone-400 underline" onClick={() => setIsSignUp(s => !s)}>
-              {isSignUp ? 'Already have an account? Sign in' : 'New here? Create account'}
-            </button>
-          </div>
-        )}
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-stone-100" />
-          <span className="text-xs text-stone-300">or</span>
-          <div className="flex-1 h-px bg-stone-100" />
-        </div>
-
         <button
           onClick={handleGoogle}
-          className="w-full py-3 rounded-xl border border-stone-200 bg-white text-stone-700 text-sm font-medium flex items-center justify-center gap-2 active:bg-stone-50"
+          className="w-full py-3 rounded-xl border border-stone-200 bg-white text-stone-700 text-sm font-medium flex items-center justify-center gap-2 active:bg-stone-50 mb-4"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -161,6 +50,48 @@ export default function LoginScreen() {
           </svg>
           Continue with Google
         </button>
+
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-stone-100" />
+          <span className="text-xs text-stone-300">or</span>
+          <div className="flex-1 h-px bg-stone-100" />
+        </div>
+
+        {error && (
+          <div className="mb-4 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <input
+            className={inputCls}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <input
+            className={inputCls}
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+          <button
+            className={btnCls}
+            onClick={handleEmail}
+            disabled={loading || !email || !password}
+          >
+            {loading ? '…' : isSignUp ? 'Create account' : 'Sign in'}
+          </button>
+          <button
+            className="w-full text-xs text-stone-400 underline"
+            onClick={() => { setIsSignUp(s => !s); setError(''); }}
+          >
+            {isSignUp ? 'Already have an account? Sign in' : 'New here? Create account'}
+          </button>
+        </div>
       </div>
 
       <p className="mt-6 text-xs text-stone-300 text-center max-w-xs">
