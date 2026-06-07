@@ -6,7 +6,7 @@ const HEADERS = { 'User-Agent': 'MamaOut/1.0 (activities app for new moms, Tel A
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export async function geocodeActivity(venue, location) {
-  const query = [venue, location, 'Israel'].filter(Boolean).join(', ');
+  const query = [...new Set([venue, location, 'Israel'].filter(Boolean))].join(', ');
 
   try {
     const { data } = await axios.get('https://nominatim.openstreetmap.org/search', {
