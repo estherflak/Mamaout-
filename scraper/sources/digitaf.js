@@ -8,7 +8,17 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-const URL = 'https://www.tel-aviv.gov.il/Visitors/Events/Pages/DigitafEvents.aspx?Iccid=253,263';
+// Tel Aviv municipality reshuffles their SharePoint URLs regularly.
+// Try each in order; first one that returns usable events wins.
+const CANDIDATE_URLS = [
+  'https://www.tel-aviv.gov.il/Residents/Culture/Pages/DigitafEvents.aspx',
+  'https://www.tel-aviv.gov.il/residents/Culture/Pages/DigitafEvents.aspx',
+  'https://www.tel-aviv.gov.il/Visitors/Events/Pages/DigitafEvents.aspx?Iccid=253,263',
+  'https://www.tel-aviv.gov.il/en/residents/Culture-Sport-Events/Events/Pages/Events.aspx',
+  'https://www.tel-aviv.gov.il/residents/Culture-Sport-Events/Events/Pages/Events.aspx',
+];
+// Fallback: URL used during runtime (set to first candidate initially)
+let URL = CANDIDATE_URLS[0];
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -157,19 +167,25 @@ async function scrapeWithPuppeteer() {
 }
 
 export async function scrapeDigitaf() {
-  // Try static fetch first
-  try {
-    const results = await scrapeWithFetch();
-    if (results.length >= 3) {
-      console.log(`[digitaf] Static fetch got ${results.length} events`);
-      return results;
+  // Try each candidate URL with static fetch first
+  for (const candidateUrl of CANDIDATE_URLS) {
+    URL = candidateUrl; // update module-level URL so scrapeWithFetch/Puppeteer use it
+    try {
+      const results = await scrapeWithFetch();
+      if (results.length >= 3) {
+        console.log(`[digitaf] Got ${results.length} events from ${candidateUrl}`);
+        return results;
+      }
+      if (results.length > 0) {
+        console.log(`[digitaf] ${candidateUrl} → ${results.length} events (trying more)`);
+      }
+    } catch (err) {
+      console.warn(`[digitaf] ${candidateUrl} failed: ${err.message}`);
     }
-    console.log(`[digitaf] Static fetch returned ${results.length} events — trying Puppeteer`);
-  } catch (err) {
-    console.warn(`[digitaf] Static fetch failed: ${err.message} — trying Puppeteer`);
   }
 
-  // Fall back to Puppeteer
+  // Last resort: Puppeteer on the first candidate
+  URL = CANDIDATE_URLS[0];
   try {
     const results = await scrapeWithPuppeteer();
     console.log(`[digitaf] Puppeteer got ${results.length} events`);

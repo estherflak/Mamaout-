@@ -102,29 +102,62 @@ function extractFromHtml(html, pageUrl) {
   return results;
 }
 
+async function fetchWithPuppeteer(pageUrl) {
+  const puppeteer = (await import('puppeteer')).default;
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+  });
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent(HEADERS['User-Agent']);
+    await page.setExtraHTTPHeaders({ 'Accept-Language': HEADERS['Accept-Language'] });
+    await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await sleep(3000); // let JS hydrate
+    return await page.content();
+  } finally {
+    await browser.close().catch(() => {});
+  }
+}
+
 export async function scrapeEventbrite() {
   const results = [];
   const seen = new Set();
+  let puppeteerFailed = false;
 
   for (const pageUrl of SEARCH_PAGES) {
+    let html = null;
+
+    // Try plain HTTP first (fast); fall back to Puppeteer if blocked
     try {
       const { data } = await axios.get(pageUrl, { headers: HEADERS, timeout: 15000 });
-
-      let pageResults = extractFromNextData(data);
-      if (pageResults.length === 0) {
-        pageResults = extractFromHtml(data, pageUrl);
-      }
-
-      console.log(`[eventbrite] ${pageUrl} → ${pageResults.length} events`);
-
-      for (const r of pageResults) {
-        if (!seen.has(r.source_url)) {
-          seen.add(r.source_url);
-          results.push(r);
-        }
-      }
+      html = data;
     } catch (err) {
-      console.warn(`[eventbrite] ${pageUrl} failed:`, err.message);
+      if ((err.response?.status === 405 || err.response?.status === 403) && !puppeteerFailed) {
+        console.log(`[eventbrite] ${pageUrl} blocked (${err.response.status}), trying Puppeteer…`);
+        try {
+          html = await fetchWithPuppeteer(pageUrl);
+        } catch (pe) {
+          console.warn(`[eventbrite] Puppeteer failed: ${pe.message}`);
+          puppeteerFailed = true;
+        }
+      } else {
+        console.warn(`[eventbrite] ${pageUrl} failed:`, err.message);
+      }
+    }
+
+    if (!html) { await sleep(2000); continue; }
+
+    let pageResults = extractFromNextData(html);
+    if (pageResults.length === 0) pageResults = extractFromHtml(html, pageUrl);
+
+    console.log(`[eventbrite] ${pageUrl} → ${pageResults.length} events`);
+
+    for (const r of pageResults) {
+      if (!seen.has(r.source_url)) {
+        seen.add(r.source_url);
+        results.push(r);
+      }
     }
 
     await sleep(2000);

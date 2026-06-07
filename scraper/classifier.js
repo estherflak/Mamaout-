@@ -31,6 +31,27 @@ const SCHEMA = `{
   "is_relevant": "boolean — true ONLY if suitable for a woman on maternity leave with a baby aged 0-12 months"
 }`;
 
+// Replace characters that break JSON when Claude echoes them into string values.
+// Hebrew gershayim ״ (U+05F4) and ASCII double-quote " both cause issues.
+function sanitizeForPrompt(s) {
+  return (s || '')
+    .replace(/״/g, "'") // Hebrew gershayim ״ → single quote
+    .replace(/"/g, "'");     // ASCII double-quote → single quote
+}
+
+function repairJson(text) {
+  // Strip markdown fences
+  let s = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  // Try straight parse first
+  try { return JSON.parse(s); } catch { /* continue to repair */ }
+  // Replace unescaped double-quotes inside string values with single quotes.
+  // This regex replaces any " that is not a JSON structural character.
+  s = s.replace(/"([^"]*)":/g, (_, k) => `"${k}":`)  // preserve keys
+       .replace(/:\s*"([\s\S]*?)"/g, (_, v) =>        // fix values
+         ': "' + v.replace(/"/g, "'") + '"');
+  return JSON.parse(s);
+}
+
 export async function classifyActivity(raw) {
   const extraContext = raw.raw_date ? `\nDate/time info: ${raw.raw_date}` : '';
 
@@ -38,10 +59,10 @@ export async function classifyActivity(raw) {
 ${SCHEMA}
 
 Listing:
-Name: ${raw.name || ''}
-Description: ${raw.description || ''}
-Location: ${raw.location || ''}
-Venue: ${raw.venue || ''}${extraContext}
+Name: ${sanitizeForPrompt(raw.name)}
+Description: ${sanitizeForPrompt(raw.description)}
+Location: ${sanitizeForPrompt(raw.location)}
+Venue: ${sanitizeForPrompt(raw.venue)}${extraContext}
 URL: ${raw.source_url || ''}`;
 
   const response = await client.messages.create({
@@ -52,6 +73,5 @@ URL: ${raw.source_url || ''}`;
   });
 
   const text = response.content[0].text.trim();
-  const clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  return JSON.parse(clean);
+  return repairJson(text);
 }
