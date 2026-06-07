@@ -26,25 +26,18 @@ function MainApp() {
   }
 
   if (!user) return <LoginScreen />;
-
   if (needsPasswordReset) return <ResetPasswordScreen />;
-
-  if (!profile?.name) return <OnboardingScreen />;
+  if (!profile?.onboarding_done) return <OnboardingScreen />;
 
   return (
     <div className="h-screen bg-cream-50 flex flex-col max-w-xl mx-auto">
-      {/* Screen content */}
       <div className="flex-1 overflow-hidden flex flex-col">
         {tab === 'discover' && <DiscoverScreen onSelect={setSelected} />}
         {tab === 'saved'    && <SavedScreen    onSelect={setSelected} />}
         {tab === 'friends'  && <FriendsScreen />}
         {tab === 'profile'  && <ProfileScreen />}
       </div>
-
-      {/* Bottom navigation */}
       <BottomNav activeTab={tab} onChange={setTab} requestCount={requests.length} />
-
-      {/* Activity detail modal */}
       {selected && (
         <ActivityDetail activity={selected} onClose={() => setSelected(null)} />
       )}

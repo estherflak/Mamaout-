@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseUrl, supabaseKey, isConfigured } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 
 export function useParticipants(activityId) {
@@ -49,10 +49,17 @@ export function useParticipants(activityId) {
   return { participants, myStatus, setStatus };
 }
 
-export async function logClick(userId, activityId) {
-  if (!supabase) return;
-  await supabase.from('activity_clicks').insert({
-    user_id: userId ?? null,
-    activity_id: activityId,
+export function logClick(userId, activityId) {
+  if (!isConfigured) return;
+  fetch(`${supabaseUrl}/rest/v1/activity_clicks`, {
+    method: 'POST',
+    keepalive: true,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify({ user_id: userId ?? null, activity_id: activityId }),
   });
 }

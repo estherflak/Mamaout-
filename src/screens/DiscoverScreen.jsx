@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
+import { useAuthContext } from '../contexts/AuthContext';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
 import FilterBar from '../components/FilterBar';
@@ -35,12 +36,32 @@ function CardSkeleton() {
 
 export default function DiscoverScreen({ onSelect }) {
   const { activities, loading, error, dataSource } = useActivities();
+  const { profile } = useAuthContext();
   const [query, setQuery]             = useState('');
   const [activeCategory, setCategory] = useState('all');
   const [activeCity, setCity]         = useState('all');
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
   const [advFilters, setAdvFilters]   = useState({ ageMax: null, dateFilter: null });
+  const [sortBy, setSortBy]           = useState('newest'); // 'newest' | 'age' | 'upcoming'
+  const [profileInit, setProfileInit] = useState(false);
+
+  // One-time initialization from profile once it loads
+  useEffect(() => {
+    if (!profile || profileInit) return;
+    setProfileInit(true);
+    if (profile.interests?.length === 1) {
+      setCategory(profile.interests[0]);
+    }
+    if (profile.baby_birthdate) {
+      const ageWeeks = Math.floor(
+        (Date.now() - new Date(profile.baby_birthdate)) / (7 * 24 * 60 * 60 * 1000)
+      );
+      if (ageWeeks >= 0 && ageWeeks <= 52) {
+        setAdvFilters(f => ({ ...f, ageMax: ageWeeks }));
+      }
+    }
+  }, [profile, profileInit]);
 
   const handleChipSelect = chip => { setQuery(chip); setCategory('all'); };
 
@@ -60,8 +81,21 @@ export default function DiscoverScreen({ onSelect }) {
       );
     }
 
-    return applyFilters(r, advFilters);
-  }, [activities, query, activeCategory, activeCity, advFilters]);
+    const base = applyFilters(r, advFilters);
+
+    if (sortBy === 'age') {
+      return [...base].sort((a, b) => (a.ageFrom ?? 0) - (b.ageFrom ?? 0));
+    }
+    if (sortBy === 'upcoming') {
+      return [...base].sort((a, b) => {
+        if (!a.eventDate && !b.eventDate) return 0;
+        if (!a.eventDate) return 1;
+        if (!b.eventDate) return -1;
+        return a.eventDate - b.eventDate;
+      });
+    }
+    return base; // 'newest' — DB order (most recently added)
+  }, [activities, query, activeCategory, activeCity, advFilters, sortBy]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
   const otherActivities  = filtered.filter(a => !a.friendsGoing?.length);
@@ -123,6 +157,27 @@ export default function DiscoverScreen({ onSelect }) {
               onToggle={() => setFilterOpen(o => !o)}
             />
           </div>
+        </div>
+
+        {/* Sort chips */}
+        <div className="flex gap-2 pb-1 overflow-x-auto scrollbar-hide">
+          {[
+            { id: 'newest',   label: '🆕 Newest' },
+            { id: 'age',      label: '👶 Baby age' },
+            { id: 'upcoming', label: '📅 Upcoming' },
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setSortBy(opt.id)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                sortBy === opt.id
+                  ? 'bg-stone-700 border-stone-700 text-white'
+                  : 'bg-white border-stone-200 text-stone-500'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
 
         {filterOpen && (
