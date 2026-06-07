@@ -46,12 +46,19 @@ export default function DiscoverScreen({ onSelect }) {
   const [sortBy, setSortBy]           = useState('newest'); // 'newest' | 'age' | 'upcoming'
   const [profileInit, setProfileInit] = useState(false);
 
+  // Maps DB interest keys → FilterBar category IDs
+  const INTEREST_TO_CAT = {
+    movement: 'Movement', wellness: 'Wellness', creative: 'Creative',
+    social: 'Social', 'baby-focused': 'Baby',
+  };
+
   // One-time initialization from profile once it loads
   useEffect(() => {
     if (!profile || profileInit) return;
     setProfileInit(true);
     if (profile.interests?.length === 1) {
-      setCategory(profile.interests[0]);
+      const cat = INTEREST_TO_CAT[profile.interests[0]];
+      if (cat) setCategory(cat);
     }
     if (profile.baby_birthdate) {
       const ageWeeks = Math.floor(
