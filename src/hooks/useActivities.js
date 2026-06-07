@@ -87,8 +87,6 @@ export function useActivities() {
         if (err) {
           setError(err.message);
         } else if (data?.length > 0) {
-          const withCoords = data.filter(a => a.latitude && a.longitude).length;
-          console.log(`[useActivities] loaded ${data.length} activities, ${withCoords} have coordinates`);
           setActivities(data.map(normalizeSupabaseActivity));
           setDataSource('supabase');
         }
