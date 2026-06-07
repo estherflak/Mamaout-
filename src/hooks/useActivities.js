@@ -18,7 +18,7 @@ const CATEGORY_LABEL = {
   'baby-focused': 'Baby',
 };
 
-function normalizeSupabaseActivity(a) {
+export function normalizeSupabaseActivity(a) {
   const raw = (a.location || '').toLowerCase();
   const city = raw.includes('ramat gan') || raw.includes('רמת גן')
     ? 'Ramat Gan'
@@ -38,7 +38,7 @@ function normalizeSupabaseActivity(a) {
   return {
     id: a.id,
     name: displayName,
-    namHe: a.name,          // preserve Hebrew for search
+    nameHe: a.name,
     category: CATEGORY_LABEL[catKey] || 'Social',
     neighborhood,
     city,
@@ -60,6 +60,9 @@ function normalizeSupabaseActivity(a) {
     sourceUrl: a.source_url,
     sourceName: a.source_name,
     isVerified: a.is_verified,
+    ctaLabel: a.cta_label || 'More info',
+    latitude: a.latitude ?? null,
+    longitude: a.longitude ?? null,
   };
 }
 
