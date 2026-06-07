@@ -1,4 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -16,8 +17,8 @@ function categoryIcon(activity) {
     className: '',
     html: `<div style="width:32px;height:32px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer">${activity.emoji}</div>`,
     iconSize:    [32, 32],
-    iconAnchor:  [16, 32],
-    popupAnchor: [0, -34],
+    iconAnchor:  [16, 16],
+    popupAnchor: [0, -18],
   });
 }
 
@@ -37,36 +38,38 @@ export default function MapView({ activities, onSelect }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {mapped.map(activity => (
-          <Marker
-            key={activity.id}
-            position={[activity.latitude, activity.longitude]}
-            icon={categoryIcon(activity)}
-          >
-            <Popup closeButton={false}>
-              <div className="p-1 min-w-[160px]">
-                <div className="flex items-start gap-2 mb-2">
-                  <span className="text-lg leading-none">{activity.emoji}</span>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-stone-800 text-xs leading-tight line-clamp-2">{activity.name}</p>
-                    <p className="text-stone-400 text-[10px] mt-0.5">{activity.neighborhood}</p>
+        <MarkerClusterGroup chunkedLoading>
+          {mapped.map(activity => (
+            <Marker
+              key={activity.id}
+              position={[activity.latitude, activity.longitude]}
+              icon={categoryIcon(activity)}
+            >
+              <Popup closeButton={false}>
+                <div className="p-1 min-w-[160px]">
+                  <div className="flex items-start gap-2 mb-2">
+                    <span className="text-lg leading-none">{activity.emoji}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-stone-800 text-xs leading-tight line-clamp-2">{activity.name}</p>
+                      <p className="text-stone-400 text-[10px] mt-0.5">{activity.neighborhood}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                      {activity.price}
+                    </span>
+                    <button
+                      onClick={() => onSelect(activity)}
+                      className="text-[10px] font-semibold text-dusty-roseDark underline"
+                    >
+                      View details →
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                    {activity.price}
-                  </span>
-                  <button
-                    onClick={() => onSelect(activity)}
-                    className="text-[10px] font-semibold text-dusty-roseDark underline"
-                  >
-                    View details →
-                  </button>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
       </MapContainer>
 
       {mapped.length === 0 && (
