@@ -128,7 +128,8 @@ export async function scrapeEventbrite() {
   for (const pageUrl of SEARCH_PAGES) {
     let html = null;
 
-    // Try plain HTTP first (fast); fall back to Puppeteer if blocked
+    // Try plain HTTP first (fast); fall back to Puppeteer once if blocked.
+    // If Puppeteer previously returned 0 events (bot-detection page), skip it.
     try {
       const { data } = await axios.get(pageUrl, { headers: HEADERS, timeout: 15000 });
       html = data;
@@ -137,6 +138,14 @@ export async function scrapeEventbrite() {
         console.log(`[eventbrite] ${pageUrl} blocked (${err.response.status}), trying Puppeteer…`);
         try {
           html = await fetchWithPuppeteer(pageUrl);
+          // If Puppeteer gets through but finds nothing, Eventbrite is serving
+          // a bot-detection / empty page — stop trying Puppeteer for this run.
+          const testResults = extractFromNextData(html);
+          if (testResults.length === 0 && extractFromHtml(html, pageUrl).length === 0) {
+            console.warn('[eventbrite] Puppeteer got empty page (bot detection?) — skipping remaining URLs');
+            puppeteerFailed = true;
+            html = null;
+          }
         } catch (pe) {
           console.warn(`[eventbrite] Puppeteer failed: ${pe.message}`);
           puppeteerFailed = true;

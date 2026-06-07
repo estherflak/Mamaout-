@@ -42,14 +42,21 @@ function sanitizeForPrompt(s) {
 function repairJson(text) {
   // Strip markdown fences
   let s = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-  // Try straight parse first
-  try { return JSON.parse(s); } catch { /* continue to repair */ }
-  // Replace unescaped double-quotes inside string values with single quotes.
-  // This regex replaces any " that is not a JSON structural character.
-  s = s.replace(/"([^"]*)":/g, (_, k) => `"${k}":`)  // preserve keys
-       .replace(/:\s*"([\s\S]*?)"/g, (_, v) =>        // fix values
-         ': "' + v.replace(/"/g, "'") + '"');
-  return JSON.parse(s);
+
+  // Attempt 1: straight parse
+  try { return JSON.parse(s); } catch { /* continue */ }
+
+  // Attempt 2: extract just the first {...} block — handles trailing text after the JSON
+  const objMatch = s.match(/\{[\s\S]*\}/);
+  if (objMatch) {
+    try { return JSON.parse(objMatch[0]); } catch { /* continue */ }
+  }
+
+  // Attempt 3: replace unescaped double-quotes inside string values
+  const fixed = (objMatch?.[0] ?? s)
+    .replace(/"([^"]*)":/g, (_, k) => `"${k}":`)
+    .replace(/:\s*"([\s\S]*?)"/g, (_, v) => ': "' + v.replace(/"/g, "'") + '"');
+  return JSON.parse(fixed);
 }
 
 export async function classifyActivity(raw) {

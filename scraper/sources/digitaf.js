@@ -11,11 +11,14 @@ import * as cheerio from 'cheerio';
 // Tel Aviv municipality reshuffles their SharePoint URLs regularly.
 // Try each in order; first one that returns usable events wins.
 const CANDIDATE_URLS = [
-  'https://www.tel-aviv.gov.il/Residents/Culture/Pages/DigitafEvents.aspx',
-  'https://www.tel-aviv.gov.il/residents/Culture/Pages/DigitafEvents.aspx',
+  // Primary — confirmed working URL (no query string needed)
+  'https://www.tel-aviv.gov.il/Visitors/Events/Pages/DigitafEvents.aspx',
+  // Programme info page also lists upcoming events
+  'https://www.tel-aviv.gov.il/Residents/Digitel/Pages/Digitaf.aspx',
+  // Legacy URLs kept as fallbacks in case the municipality redirects again
   'https://www.tel-aviv.gov.il/Visitors/Events/Pages/DigitafEvents.aspx?Iccid=253,263',
+  'https://www.tel-aviv.gov.il/Residents/Culture/Pages/DigitafEvents.aspx',
   'https://www.tel-aviv.gov.il/en/residents/Culture-Sport-Events/Events/Pages/Events.aspx',
-  'https://www.tel-aviv.gov.il/residents/Culture-Sport-Events/Events/Pages/Events.aspx',
 ];
 // Fallback: URL used during runtime (set to first candidate initially)
 let URL = CANDIDATE_URLS[0];
