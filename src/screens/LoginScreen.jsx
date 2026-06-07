@@ -2,19 +2,23 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function LoginScreen() {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
+  const [isSignUp, setIsSignUp]     = useState(false);
+  const [email, setEmail]           = useState('');
+  const [password, setPassword]     = useState('');
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState('');
+  const [checkEmail, setCheckEmail] = useState(false);
 
   async function handleEmail() {
     setError(''); setLoading(true);
-    const fn = isSignUp
-      ? supabase.auth.signUp({ email, password })
-      : supabase.auth.signInWithPassword({ email, password });
-    const { error: e } = await fn;
-    if (e) setError(e.message);
+    if (isSignUp) {
+      const { error: e } = await supabase.auth.signUp({ email, password });
+      if (e) setError(e.message);
+      else setCheckEmail(true);
+    } else {
+      const { error: e } = await supabase.auth.signInWithPassword({ email, password });
+      if (e) setError(e.message);
+    }
     setLoading(false);
   }
 
@@ -29,7 +33,23 @@ export default function LoginScreen() {
         <p className="text-sm text-stone-400 mt-1">Activities for you and your little one</p>
       </div>
 
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-3">
+      {checkEmail && (
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
+          <div className="text-4xl mb-3">📬</div>
+          <h2 className="font-semibold text-stone-800 mb-2">Check your inbox</h2>
+          <p className="text-sm text-stone-500 mb-1">We sent a confirmation link to</p>
+          <p className="text-sm font-medium text-stone-800 mb-4">{email}</p>
+          <p className="text-xs text-stone-400">Click the link in the email to activate your account, then come back here to sign in.</p>
+          <button
+            className="mt-5 text-xs text-dusty-roseDark underline"
+            onClick={() => { setCheckEmail(false); setIsSignUp(false); }}
+          >
+            Back to sign in
+          </button>
+        </div>
+      )}
+
+      {!checkEmail && <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-3">
         {error && (
           <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
             {error}
@@ -63,7 +83,7 @@ export default function LoginScreen() {
         >
           {isSignUp ? 'Already have an account? Sign in' : 'New here? Create account'}
         </button>
-      </div>
+      </div>}
 
       <p className="mt-6 text-xs text-stone-300 text-center max-w-xs">
         By continuing you agree to our Terms of Service and Privacy Policy.
