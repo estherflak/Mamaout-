@@ -93,10 +93,17 @@ export async function runScrape() {
         continue;
       }
 
-      const venueForGeo = classified.venue || raw.venue || '';
-      const coords = venueForGeo
-        ? await geocodeActivity(venueForGeo, raw.location || 'Tel Aviv')
-        : null;
+      // Use precise coords from source if provided (e.g. Eventbrite API venue lat/lng);
+      // otherwise geocode via Nominatim.
+      let coords = null;
+      if (raw.latitude && raw.longitude) {
+        coords = { latitude: raw.latitude, longitude: raw.longitude };
+      } else {
+        const venueForGeo = classified.venue || raw.venue || '';
+        coords = venueForGeo
+          ? await geocodeActivity(venueForGeo, raw.location || 'Tel Aviv')
+          : null;
+      }
 
       const activity = {
         name:            classified.name,

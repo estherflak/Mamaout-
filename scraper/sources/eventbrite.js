@@ -38,6 +38,10 @@ export async function scrapeEventbrite() {
         const city = ev.venue?.address?.city || 'Tel Aviv';
         const href = ev.url || '';
 
+        // Eventbrite API provides precise venue coordinates — use them directly
+        const latitude  = ev.venue?.latitude  ? parseFloat(ev.venue.latitude)  : null;
+        const longitude = ev.venue?.longitude ? parseFloat(ev.venue.longitude) : null;
+
         if (!name || !href) continue;
 
         results.push({
@@ -48,6 +52,8 @@ export async function scrapeEventbrite() {
           source_name: 'Eventbrite',
           venue,
           raw_date: ev.start?.local || '',
+          latitude,
+          longitude,
         });
       }
 

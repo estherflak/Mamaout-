@@ -22,8 +22,29 @@ function categoryIcon(activity) {
   });
 }
 
+// When multiple activities share the same geocoded point (city/neighbourhood centroid),
+// spread them in concentric rings so they're individually tappable after zooming in.
+function jitterDuplicates(activities) {
+  const buckets = {};
+  for (const a of activities) {
+    const key = `${a.latitude.toFixed(4)},${a.longitude.toFixed(4)}`;
+    (buckets[key] = buckets[key] || []).push(a);
+  }
+  return activities.map(a => {
+    const key   = `${a.latitude.toFixed(4)},${a.longitude.toFixed(4)}`;
+    const group = buckets[key];
+    if (group.length <= 1) return a;
+    const idx   = group.indexOf(a);
+    const ring  = Math.floor(idx / 8);
+    const slot  = idx % 8;
+    const angle = (2 * Math.PI * slot) / 8 + (ring * Math.PI / 8); // stagger rings
+    const r     = 0.0015 * (ring + 1); // ~165m per ring
+    return { ...a, latitude: a.latitude + r * Math.sin(angle), longitude: a.longitude + r * Math.cos(angle) };
+  });
+}
+
 export default function MapView({ activities, onSelect }) {
-  const mapped = activities.filter(a => a.latitude && a.longitude);
+  const mapped = jitterDuplicates(activities.filter(a => a.latitude && a.longitude));
 
   return (
     <div className="rounded-2xl overflow-hidden relative" style={{ height: '60vh' }}>
