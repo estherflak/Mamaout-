@@ -43,7 +43,6 @@ export default function DiscoverScreen({ onSelect }) {
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
   const [advFilters, setAdvFilters]   = useState({ ageMax: null, dateFilter: null });
-  const [sortBy, setSortBy]           = useState('upcoming'); // 'age' | 'upcoming'
   const [profileInit, setProfileInit] = useState(false);
 
   // Maps DB interest keys → FilterBar category IDs
@@ -94,19 +93,8 @@ export default function DiscoverScreen({ onSelect }) {
       );
     }
 
-    const base = applyFilters(r, advFilters);
-
-    if (sortBy === 'age') {
-      return [...base].sort((a, b) => (a.ageFrom ?? 0) - (b.ageFrom ?? 0));
-    }
-    // 'upcoming': dated events first (soonest first), then recurring (no date)
-    return [...base].sort((a, b) => {
-      if (!a.eventDate && !b.eventDate) return 0;
-      if (!a.eventDate) return 1;
-      if (!b.eventDate) return -1;
-      return a.eventDate - b.eventDate;
-    });
-  }, [activities, query, activeCategory, activeCity, advFilters, sortBy]);
+    return applyFilters(r, advFilters);
+  }, [activities, query, activeCategory, activeCity, advFilters]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
   const otherActivities  = filtered.filter(a => !a.friendsGoing?.length);
@@ -162,26 +150,8 @@ export default function DiscoverScreen({ onSelect }) {
           />
         </div>
 
-        {/* Sort chips + Filter button in same row */}
-        <div className="flex items-center gap-2 pb-1">
-          <div className="flex gap-2 flex-1 overflow-x-auto scrollbar-hide">
-            {[
-              { id: 'age',      label: '👶 Baby age' },
-              { id: 'upcoming', label: '📅 Upcoming' },
-            ].map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setSortBy(opt.id)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  sortBy === opt.id
-                    ? 'bg-stone-700 border-stone-700 text-white'
-                    : 'bg-white border-stone-200 text-stone-500'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+        {/* Filter button */}
+        <div className="flex justify-end pb-1">
           <FilterPanel
             filters={advFilters}
             onChange={f => { setAdvFilters(f); setFilterOpen(false); }}
