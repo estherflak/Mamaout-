@@ -44,8 +44,14 @@ export function normalizeSupabaseActivity(a) {
     city,
     description: displayDesc,
     descriptionHe: a.description,
-    price: a.price_range || '₪',
-    priceLabel: a.price_range === 'free' ? 'Free' : 'Paid',
+    price: (() => {
+      const p = (a.price_range || '').toLowerCase().trim();
+      if (p === 'free' || p === '0') return 'Free';
+      if (p === '₪')   return 'Low cost';
+      if (p === '₪₪')  return 'Paid';
+      if (p === '₪₪₪') return 'Pricey';
+      return a.price_range || 'Paid';
+    })(),
     ageFrom: a.baby_age_min ?? 0,
     ageTo: null,
     ageLabel: a.baby_age_min

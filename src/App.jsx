@@ -11,6 +11,17 @@ import LoginScreen from './screens/LoginScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
 
+function AuthPrompt({ message }) {
+  return (
+    <div className="flex flex-col h-full items-center justify-center px-8 text-center">
+      <span className="text-5xl mb-4">🌸</span>
+      <p className="text-stone-700 font-semibold mb-1">{message}</p>
+      <p className="text-sm text-stone-400 mb-6">Create a free account to unlock this</p>
+      <LoginScreen />
+    </div>
+  );
+}
+
 function MainApp() {
   const { user, profile, authLoading, needsPasswordReset } = useAuthContext();
   const { requests } = useFriends();
@@ -25,26 +36,23 @@ function MainApp() {
     );
   }
 
-  if (!user) return <LoginScreen />;
-
   if (needsPasswordReset) return <ResetPasswordScreen />;
+  if (user && !profile?.name) return <OnboardingScreen />;
 
-  if (!profile?.name) return <OnboardingScreen />;
+  function renderTab() {
+    if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} />;
+    if (tab === 'saved')    return user ? <SavedScreen onSelect={setSelected} /> : <LoginScreen />;
+    if (tab === 'friends')  return user ? <FriendsScreen /> : <LoginScreen />;
+    if (tab === 'profile')  return user ? <ProfileScreen /> : <LoginScreen />;
+    return null;
+  }
 
   return (
     <div className="h-screen bg-cream-50 flex flex-col max-w-xl mx-auto">
-      {/* Screen content */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        {tab === 'discover' && <DiscoverScreen onSelect={setSelected} />}
-        {tab === 'saved'    && <SavedScreen    onSelect={setSelected} />}
-        {tab === 'friends'  && <FriendsScreen />}
-        {tab === 'profile'  && <ProfileScreen />}
+        {renderTab()}
       </div>
-
-      {/* Bottom navigation */}
       <BottomNav activeTab={tab} onChange={setTab} requestCount={requests.length} />
-
-      {/* Activity detail modal */}
       {selected && (
         <ActivityDetail activity={selected} onClose={() => setSelected(null)} />
       )}

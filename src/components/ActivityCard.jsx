@@ -2,10 +2,14 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from '../contexts/AuthContext';
 
 const PRICE_COLORS = {
-  'Free': 'bg-sage-100 text-sage-500',
-  '₪':    'bg-cream-100 text-amber-600',
-  '₪₪':   'bg-cream-200 text-amber-700',
-  '₪₪₪':  'bg-orange-100 text-orange-600',
+  'Free':     'bg-sage-100 text-sage-500',
+  'Low cost': 'bg-cream-100 text-amber-600',
+  'Paid':     'bg-cream-200 text-amber-700',
+  'Pricey':   'bg-orange-100 text-orange-600',
+  // legacy mock data formats
+  '₪':   'bg-cream-100 text-amber-600',
+  '₪₪':  'bg-cream-200 text-amber-700',
+  '₪₪₪': 'bg-orange-100 text-orange-600',
 };
 
 const CATEGORY_COLORS = {
@@ -64,12 +68,12 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) 
               </div>
               <p className="text-xs text-stone-400 mt-0.5">
                 {activity.neighborhood} · {activity.city}
-                {activity.eventDate && (
-                  <span className="ml-1.5 text-dusty-roseDark font-medium">
-                    · {activity.eventDate.toLocaleDateString('en-IL', { day: 'numeric', month: 'short' })}
-                  </span>
-                )}
               </p>
+              {activity.eventDate && (
+                <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-dusty-rosePale text-dusty-roseDark text-[10px] font-semibold">
+                  📅 {activity.eventDate.toLocaleDateString('en-IL', { weekday: 'short', day: 'numeric', month: 'short' })}
+                </span>
+              )}
             </div>
           </div>
 

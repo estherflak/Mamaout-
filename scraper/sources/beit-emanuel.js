@@ -10,6 +10,7 @@ import * as cheerio from 'cheerio';
 const BASE = 'https://mbe-rg.smarticket.co.il';
 
 const SEED_PATHS = [
+  '/',
   '/רמתגנצ_יק_page_47',
   '/ר_געים_משחקייה_התפתחותית',
   '/שבת_משפחה_קהילה_page_34',
@@ -34,6 +35,37 @@ function parseEvents(html) {
   const $ = cheerio.load(html);
   const events = [];
   const seen = new Set();
+
+  // Strategy 1: extract Next.js __NEXT_DATA__ JSON (SmartTicket uses Next.js)
+  const nextDataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>(\{.*?\})<\/script>/s);
+  if (nextDataMatch) {
+    try {
+      const nextData = JSON.parse(nextDataMatch[1]);
+      const pageProps = nextData?.props?.pageProps;
+      const eventsList = pageProps?.events || pageProps?.activities || pageProps?.items || [];
+      for (const ev of eventsList) {
+        const name = ev.title || ev.name || ev.displayName || '';
+        if (!name) continue;
+        const url = ev.url || ev.link || ev.slug
+          ? `${BASE}/${ev.slug}` : `${BASE}#${encodeURIComponent(name)}`;
+        events.push({
+          name: name.slice(0, 120),
+          description: (ev.description || ev.summary || '').slice(0, 400),
+          location: 'מרכז קהילתי בית עמנואל, רמת גן',
+          venue: 'מרכז קהילתי בית עמנואל',
+          source_url: url,
+          source_name: 'Beit Emanuel Ramat Gan',
+          raw_date: ev.startDate || ev.date || '',
+        });
+      }
+      if (events.length > 0) {
+        console.log(`[beit-emanuel] Extracted ${events.length} events from __NEXT_DATA__`);
+        return events;
+      }
+    } catch (e) {
+      console.warn('[beit-emanuel] __NEXT_DATA__ parse failed:', e.message);
+    }
+  }
 
   // SmartTicket-specific selectors — deliberately narrow to avoid matching nav items
   const CARD_SEL = [

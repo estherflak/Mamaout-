@@ -14,6 +14,7 @@ export default function ProfileScreen() {
   const [name, setName]         = useState(profile?.name ?? '');
   const [hood, setHood]         = useState(profile?.neighborhood ?? '');
   const [bday, setBday]         = useState(profile?.baby_birthdate ?? '');
+  const [babyName, setBabyName] = useState(profile?.baby_name ?? '');
   const [saving, setSaving]     = useState(false);
   const [error, setError]       = useState('');
 
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
       name: name.trim() || profile?.name,
       neighborhood: hood || profile?.neighborhood,
       baby_birthdate: bday || profile?.baby_birthdate,
+      baby_name: babyName.trim() || null,
     });
     setSaving(false);
     if (err) { setError(err.message); return; }
@@ -56,6 +58,9 @@ export default function ProfileScreen() {
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-stone-800 text-base">{profile?.name ?? 'No name set'}</p>
             <p className="text-xs text-stone-400 mt-0.5">{profile?.neighborhood ?? 'No neighborhood set'}</p>
+            {profile?.baby_name && (
+              <p className="text-xs text-dusty-roseDark mt-0.5">mama to {profile.baby_name} 🌸</p>
+            )}
             {profile?.baby_birthdate && (
               <p className="text-xs text-dusty-roseDark font-medium mt-0.5">🍼 {babyAge(profile.baby_birthdate)}</p>
             )}
@@ -65,6 +70,7 @@ export default function ProfileScreen() {
               setName(profile?.name ?? '');
               setHood(profile?.neighborhood ?? '');
               setBday(profile?.baby_birthdate ?? '');
+              setBabyName(profile?.baby_name ?? '');
               setEditing(true);
             }}
             className="px-3 py-1.5 rounded-xl border border-stone-200 text-xs text-stone-600"
@@ -82,6 +88,16 @@ export default function ProfileScreen() {
                 onChange={e => setName(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-dusty-rose"
                 placeholder="Your name"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-stone-600 block mb-1.5">Baby's name</label>
+              <input
+                value={babyName}
+                onChange={e => setBabyName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-dusty-rose"
+                placeholder="Your baby's name"
               />
             </div>
 

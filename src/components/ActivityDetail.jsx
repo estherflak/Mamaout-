@@ -133,7 +133,7 @@ export default function ActivityDetail({ activity, onClose }) {
               onClick={handleCta}
               className="flex-1 py-3.5 rounded-2xl bg-dusty-rose text-white font-semibold text-sm active:scale-[0.98] transition-transform"
             >
-              {activity.ctaLabel} on {activity.sourceName}
+              {activity.price === 'Free' ? 'Register — it\'s free' : (activity.ctaLabel || 'More info')} →
             </button>
             <button
               onClick={() => shareOnWhatsApp(activity)}

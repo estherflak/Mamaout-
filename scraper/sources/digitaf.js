@@ -20,6 +20,34 @@ function parseEvents(html) {
   const $ = cheerio.load(html);
   const events = [];
 
+  // Try JSON-LD structured data first (most reliable)
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const data = JSON.parse($(el).html() || '{}');
+      const items = Array.isArray(data) ? data : [data];
+      for (const item of items) {
+        if (!item['@type']?.includes('Event') && item['@type'] !== 'Event') continue;
+        const name = item.name || '';
+        const description = item.description || '';
+        const loc = item.location?.name || item.location?.address?.streetAddress || '';
+        const startDate = item.startDate || '';
+        const url = item.url || item['@id'] || URL;
+        if (!name) continue;
+        events.push({
+          name: name.slice(0, 120),
+          description: description.slice(0, 400),
+          location: loc || 'תל אביב-יפו',
+          venue: loc || '',
+          source_url: url,
+          source_name: 'Tel Aviv Municipality',
+          raw_date: startDate,
+        });
+      }
+    } catch { /* ignore parse errors */ }
+  });
+
+  if (events.length > 0) return events;
+
   // Tel Aviv municipality SharePoint events — try multiple selectors
   const selectors = [
     '.event-item', '.ms-listviewtable tr', '[class*="event"]',
