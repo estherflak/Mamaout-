@@ -23,6 +23,18 @@ export function AuthProvider({ children }) {
     if (!supabase) { setAuthLoading(false); return; }
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      // Sign out if this was a session-only login (no "remember me") and the session
+      // storage was cleared (browser was closed and reopened).
+      if (
+        session?.user &&
+        localStorage.getItem('mamaout_was_session_only') === '1' &&
+        !sessionStorage.getItem('mamaout_session_only')
+      ) {
+        localStorage.removeItem('mamaout_was_session_only');
+        await supabase.auth.signOut();
+        setAuthLoading(false);
+        return;
+      }
       if (session?.user) {
         setUser(session.user);
         setProfile(await fetchProfile(session.user.id));

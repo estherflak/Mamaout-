@@ -11,17 +11,6 @@ import LoginScreen from './screens/LoginScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
 
-function AuthPrompt({ message }) {
-  return (
-    <div className="flex flex-col h-full items-center justify-center px-8 text-center">
-      <span className="text-5xl mb-4">🌸</span>
-      <p className="text-stone-700 font-semibold mb-1">{message}</p>
-      <p className="text-sm text-stone-400 mb-6">Create a free account to unlock this</p>
-      <LoginScreen />
-    </div>
-  );
-}
-
 function MainApp() {
   const { user, profile, authLoading, needsPasswordReset } = useAuthContext();
   const { requests } = useFriends();
@@ -37,7 +26,7 @@ function MainApp() {
   }
 
   if (needsPasswordReset) return <ResetPasswordScreen />;
-  if (user && !profile?.name) return <OnboardingScreen />;
+  if (user && !profile?.onboarding_done) return <OnboardingScreen />;
 
   function renderTab() {
     if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} />;

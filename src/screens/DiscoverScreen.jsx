@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
+import { useAuthContext } from '../contexts/AuthContext';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
 import FilterBar from '../components/FilterBar';
@@ -35,13 +36,32 @@ function CardSkeleton() {
 
 export default function DiscoverScreen({ onSelect }) {
   const { activities, loading, error, dataSource } = useActivities();
+  const { profile } = useAuthContext();
   const [query, setQuery]             = useState('');
   const [activeCategory, setCategory] = useState('all');
   const [activeCity, setCity]         = useState('all');
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
   const [advFilters, setAdvFilters]   = useState({ ageMax: null, dateFilter: null });
-  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'age' | 'upcoming'
+  const [sortBy, setSortBy]           = useState('newest'); // 'newest' | 'age' | 'upcoming'
+  const [profileInit, setProfileInit] = useState(false);
+
+  // One-time initialization from profile once it loads
+  useEffect(() => {
+    if (!profile || profileInit) return;
+    setProfileInit(true);
+    if (profile.interests?.length === 1) {
+      setCategory(profile.interests[0]);
+    }
+    if (profile.baby_birthdate) {
+      const ageWeeks = Math.floor(
+        (Date.now() - new Date(profile.baby_birthdate)) / (7 * 24 * 60 * 60 * 1000)
+      );
+      if (ageWeeks >= 0 && ageWeeks <= 52) {
+        setAdvFilters(f => ({ ...f, ageMax: ageWeeks }));
+      }
+    }
+  }, [profile, profileInit]);
 
   const handleChipSelect = chip => { setQuery(chip); setCategory('all'); };
 

@@ -38,9 +38,16 @@ export function useFriends() {
 
   useEffect(() => { load(); }, [load]);
 
+  function normalizePhone(raw) {
+    let p = raw.replace(/[\s\-().]/g, '');
+    if (p.startsWith('+972')) p = '0' + p.slice(4);
+    if (p.startsWith('00972')) p = '0' + p.slice(5);
+    return p;
+  }
+
   async function sendRequest(phone) {
     if (!supabase) throw new Error('Not configured');
-    const normPhone = phone.replace(/\s+/g, '');
+    const normPhone = normalizePhone(phone);
 
     const { data: target } = await supabase
       .from('profiles')

@@ -6,9 +6,10 @@ export default function LoginScreen() {
   const [view, setView]         = useState('login');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [checkMsg, setCheckMsg] = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
+  const [checkMsg, setCheckMsg]   = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
 
   function reset(nextView) {
     setError('');
@@ -18,9 +19,15 @@ export default function LoginScreen() {
   async function handleSignIn() {
     setError(''); setLoading(true);
     const { error: e } = await supabase.auth.signInWithPassword({ email, password });
-    if (e) setError(e.message === 'Invalid login credentials'
-      ? 'Incorrect email or password.'
-      : e.message);
+    if (e) {
+      setError(e.message === 'Invalid login credentials' ? 'Incorrect email or password.' : e.message);
+    } else if (rememberMe) {
+      sessionStorage.removeItem('mamaout_session_only');
+      localStorage.removeItem('mamaout_was_session_only');
+    } else {
+      sessionStorage.setItem('mamaout_session_only', '1');
+      localStorage.setItem('mamaout_was_session_only', '1');
+    }
     setLoading(false);
   }
 
@@ -82,6 +89,15 @@ export default function LoginScreen() {
           {error && <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">{error}</div>}
           <input className={inputCls} type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
           <input className={inputCls} type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              className="w-4 h-4 rounded accent-dusty-rose"
+            />
+            <span className="text-xs text-stone-500">Remember me</span>
+          </label>
           <button className={btnCls} onClick={handleSignIn} disabled={loading || !email || !password}>
             {loading ? '…' : 'Sign in'}
           </button>
