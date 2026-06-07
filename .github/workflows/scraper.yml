@@ -4,11 +4,21 @@ on:
   schedule:
     # 03:00 Israel time = 00:00 UTC (UTC+3 in summer)
     - cron: '0 0 * * *'
-  workflow_dispatch:      # allows manual trigger from the Actions tab
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Which job to run'
+        required: false
+        default: 'scrape'
+        type: choice
+        options:
+          - scrape
+          - backfill-coords
 
 jobs:
   scrape:
     name: Scrape & classify activities
+    if: github.event_name == 'schedule' || inputs.job == 'scrape'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -33,3 +43,30 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: node scraper/index.js
+
+  backfill-coords:
+    name: Backfill missing coordinates
+    if: inputs.job == 'backfill-coords'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backfill coordinates
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scraper/backfill-coords.js
