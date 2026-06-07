@@ -25,11 +25,14 @@ console.log(`Geocoding ${activities.length} activities without coordinates…\n`
 let ok = 0, failed = 0;
 
 for (const a of activities) {
-  const venue = a.venue?.trim() || a.name_en;
-  const location = a.location || 'Tel Aviv';
+  // Strategy 1: venue + location (only if venue looks like a real place, not the activity name)
+  // Strategy 2: location alone (neighborhood / address string)
+  // geocodeActivity already adds ", Israel" and enforces the bounding box
 
-  const coords = await geocodeActivity(venue, location);
-  // geocodeActivity already sleeps 1.1s after each call
+  const hasRealVenue = a.venue?.trim() && a.venue.trim() !== a.name_en;
+  const coords =
+    (hasRealVenue ? await geocodeActivity(a.venue.trim(), a.location) : null) ||
+    (a.location   ? await geocodeActivity(a.location, '')              : null);
 
   if (coords) {
     const { error: updateErr } = await supabase
