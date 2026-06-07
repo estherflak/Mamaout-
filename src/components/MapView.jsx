@@ -1,8 +1,6 @@
-import { useState } from 'react';
-import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/mapbox';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const CATEGORY_COLORS = {
   Movement:  '#7BAFDC',
@@ -12,88 +10,64 @@ const CATEGORY_COLORS = {
   Baby:      '#a4c0a4',
 };
 
-export default function MapView({ activities, onSelect }) {
-  const [popup, setPopup] = useState(null);
-  const [viewport, setViewport] = useState({
-    latitude:  32.0853,
-    longitude: 34.7818,
-    zoom: 12,
+function categoryIcon(activity) {
+  const color = CATEGORY_COLORS[activity.category] || '#d4a5a5';
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:32px;height:32px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer">${activity.emoji}</div>`,
+    iconSize:    [32, 32],
+    iconAnchor:  [16, 32],
+    popupAnchor: [0, -34],
   });
+}
 
-  if (!MAPBOX_TOKEN) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-stone-50 rounded-2xl border border-stone-100 text-center p-8">
-        <div>
-          <span className="text-3xl block mb-2">🗺️</span>
-          <p className="text-sm text-stone-500 font-medium">Map not configured</p>
-          <p className="text-xs text-stone-300 mt-1">Add VITE_MAPBOX_TOKEN to your Vercel environment variables</p>
-        </div>
-      </div>
-    );
-  }
-
+export default function MapView({ activities, onSelect }) {
   const mapped = activities.filter(a => a.latitude && a.longitude);
 
   return (
     <div className="flex-1 rounded-2xl overflow-hidden relative" style={{ minHeight: '60vh' }}>
-      <Map
-        {...viewport}
-        onMove={e => setViewport(e.viewState)}
-        mapStyle="mapbox://styles/mapbox/light-v11"
-        mapboxAccessToken={MAPBOX_TOKEN}
+      <MapContainer
+        center={[32.0853, 34.7818]}
+        zoom={12}
         style={{ width: '100%', height: '100%' }}
+        scrollWheelZoom={false}
       >
-        <NavigationControl position="top-right" />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
         {mapped.map(activity => (
           <Marker
             key={activity.id}
-            latitude={activity.latitude}
-            longitude={activity.longitude}
-            anchor="bottom"
-            onClick={e => { e.originalEvent.stopPropagation(); setPopup(activity); }}
+            position={[activity.latitude, activity.longitude]}
+            icon={categoryIcon(activity)}
           >
-            <div
-              className="w-8 h-8 rounded-full border-2 border-white shadow-md flex items-center justify-center text-sm cursor-pointer hover:scale-110 transition-transform"
-              style={{ backgroundColor: CATEGORY_COLORS[activity.category] || '#d4a5a5' }}
-            >
-              {activity.emoji}
-            </div>
-          </Marker>
-        ))}
-
-        {popup && (
-          <Popup
-            latitude={popup.latitude}
-            longitude={popup.longitude}
-            anchor="top"
-            onClose={() => setPopup(null)}
-            closeButton={false}
-            className="mamaout-popup"
-          >
-            <div className="p-2 min-w-[180px]">
-              <div className="flex items-start gap-2 mb-2">
-                <span className="text-lg">{popup.emoji}</span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-stone-800 text-xs leading-tight line-clamp-2">{popup.name}</p>
-                  <p className="text-stone-400 text-[10px] mt-0.5">{popup.neighborhood}</p>
+            <Popup closeButton={false}>
+              <div className="p-1 min-w-[160px]">
+                <div className="flex items-start gap-2 mb-2">
+                  <span className="text-lg leading-none">{activity.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-stone-800 text-xs leading-tight line-clamp-2">{activity.name}</p>
+                    <p className="text-stone-400 text-[10px] mt-0.5">{activity.neighborhood}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                    {activity.price}
+                  </span>
+                  <button
+                    onClick={() => onSelect(activity)}
+                    className="text-[10px] font-semibold text-dusty-roseDark underline"
+                  >
+                    View details →
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                  {popup.price}
-                </span>
-                <button
-                  onClick={() => { onSelect(popup); setPopup(null); }}
-                  className="text-[10px] font-semibold text-dusty-roseDark underline"
-                >
-                  View details →
-                </button>
-              </div>
-            </div>
-          </Popup>
-        )}
-      </Map>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
 
       {mapped.length === 0 && (
         <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
