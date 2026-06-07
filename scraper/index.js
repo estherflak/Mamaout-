@@ -86,6 +86,13 @@ export async function runScrape() {
         continue;
       }
 
+      // Skip template placeholders left by scrapers on broken/empty pages
+      const nameTrimmed = raw.name?.trim() ?? '';
+      if (!nameTrimmed || /^\[.*\]$/.test(nameTrimmed) || nameTrimmed.length < 4) {
+        irrelevant++;
+        continue;
+      }
+
       const classified = await classifyActivity(raw);
 
       if (!classified.is_relevant) {
