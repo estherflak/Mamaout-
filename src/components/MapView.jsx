@@ -23,6 +23,7 @@ function categoryIcon(activity) {
 
 export default function MapView({ activities, onSelect }) {
   const mapped = activities.filter(a => a.latitude && a.longitude);
+  console.log(`[MapView] received ${activities.length} activities, ${mapped.length} mapped`, mapped.slice(0,2));
 
   return (
     <div className="flex-1 rounded-2xl overflow-hidden relative" style={{ minHeight: '60vh' }}>
