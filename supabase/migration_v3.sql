@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS profiles (
   created_at    timestamptz DEFAULT now()
 );
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can read own profile"   ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can read own profile"   ON profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
@@ -32,6 +35,9 @@ CREATE TABLE IF NOT EXISTS friendships (
   UNIQUE (user_id, friend_id)
 );
 ALTER TABLE friendships ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users see own friendships"    ON friendships;
+DROP POLICY IF EXISTS "Users create friend requests" ON friendships;
+DROP POLICY IF EXISTS "Recipient can update status"  ON friendships;
 CREATE POLICY "Users see own friendships" ON friendships FOR SELECT
   USING (auth.uid() = user_id OR auth.uid() = friend_id);
 CREATE POLICY "Users create friend requests" ON friendships FOR INSERT
@@ -49,6 +55,8 @@ CREATE TABLE IF NOT EXISTS activity_participants (
   UNIQUE (user_id, activity_id)
 );
 ALTER TABLE activity_participants ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read participants"        ON activity_participants;
+DROP POLICY IF EXISTS "Users manage own participation"  ON activity_participants;
 CREATE POLICY "Public read participants" ON activity_participants FOR SELECT USING (true);
 CREATE POLICY "Users manage own participation" ON activity_participants FOR ALL
   USING (auth.uid() = user_id);
@@ -62,6 +70,7 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE (user_id, activity_id)
 );
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users manage own favorites" ON favorites;
 CREATE POLICY "Users manage own favorites" ON favorites FOR ALL
   USING (auth.uid() = user_id);
 
@@ -73,6 +82,8 @@ CREATE TABLE IF NOT EXISTS activity_clicks (
   created_at  timestamptz DEFAULT now()
 );
 ALTER TABLE activity_clicks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users insert own clicks" ON activity_clicks;
+DROP POLICY IF EXISTS "Users read own clicks"   ON activity_clicks;
 CREATE POLICY "Users insert own clicks" ON activity_clicks FOR INSERT
   WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 CREATE POLICY "Users read own clicks" ON activity_clicks FOR SELECT
