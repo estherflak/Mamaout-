@@ -4,9 +4,10 @@ import { supabase, isConfigured } from '../lib/supabase';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [authLoading, setAuthLoading] = useState(isConfigured);
+  const [user, setUser]                   = useState(null);
+  const [profile, setProfile]             = useState(null);
+  const [authLoading, setAuthLoading]     = useState(isConfigured);
+  const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
 
   async function fetchProfile(userId) {
     if (!supabase) return null;
@@ -29,13 +30,20 @@ export function AuthProvider({ children }) {
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setUser(session.user);
+        setNeedsPasswordReset(true);
+        setAuthLoading(false);
+        return;
+      }
       if (session?.user) {
         setUser(session.user);
         setProfile(await fetchProfile(session.user.id));
       } else {
         setUser(null);
         setProfile(null);
+        setNeedsPasswordReset(false);
       }
     });
 
@@ -54,7 +62,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, authLoading, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, profile, authLoading, needsPasswordReset, setNeedsPasswordReset, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -9,9 +9,10 @@ import FriendsScreen from './screens/FriendsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LoginScreen from './screens/LoginScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import ResetPasswordScreen from './screens/ResetPasswordScreen';
 
 function MainApp() {
-  const { user, profile, authLoading } = useAuthContext();
+  const { user, profile, authLoading, needsPasswordReset } = useAuthContext();
   const { requests } = useFriends();
   const [tab, setTab]           = useState('discover');
   const [selected, setSelected] = useState(null);
@@ -25,6 +26,8 @@ function MainApp() {
   }
 
   if (!user) return <LoginScreen />;
+
+  if (needsPasswordReset) return <ResetPasswordScreen />;
 
   if (!profile?.name) return <OnboardingScreen />;
 
