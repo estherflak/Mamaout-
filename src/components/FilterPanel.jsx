@@ -18,7 +18,7 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   const { profile } = useAuthContext();
   const defaultAge = babyAgeWeeks(profile?.baby_birthdate);
 
-  const [ageMax, setAgeMax]     = useState(filters.ageMax ?? (defaultAge ?? 52));
+  const [ageMax, setAgeMax]         = useState(filters.ageMax ?? (defaultAge ?? 52));
   const [dateFilter, setDateFilter] = useState(filters.dateFilter ?? null);
 
   function apply() {
@@ -35,7 +35,7 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   const hasFilters = filters.ageMax != null || filters.dateFilter != null;
 
   return (
-    <>
+    <div className="relative flex-shrink-0">
       {/* Toggle button */}
       <button
         onClick={onToggle}
@@ -52,9 +52,9 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
         {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-dusty-rose" />}
       </button>
 
-      {/* Slide-down panel */}
+      {/* Dropdown panel — absolute so it doesn't clip */}
       {isOpen && (
-        <div className="mt-2 bg-white rounded-2xl border border-stone-100 shadow-sm p-4 space-y-5">
+        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-stone-100 shadow-lg p-4 space-y-5 z-50">
           {/* Age filter */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -107,7 +107,7 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

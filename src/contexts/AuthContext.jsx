@@ -22,7 +22,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!supabase) { setAuthLoading(false); return; }
 
+    // Failsafe: show app after 4s even if Supabase is unreachable
+    const timeout = setTimeout(() => setAuthLoading(false), 4000);
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      clearTimeout(timeout);
       // Sign out if this was a session-only login (no "remember me") and the session
       // storage was cleared (browser was closed and reopened).
       if (

@@ -43,7 +43,7 @@ export default function DiscoverScreen({ onSelect }) {
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
   const [advFilters, setAdvFilters]   = useState({ ageMax: null, dateFilter: null });
-  const [sortBy, setSortBy]           = useState('newest'); // 'newest' | 'age' | 'upcoming'
+  const [sortBy, setSortBy]           = useState('upcoming'); // 'age' | 'upcoming'
   const [profileInit, setProfileInit] = useState(false);
 
   // Maps DB interest keys → FilterBar category IDs
@@ -73,7 +73,13 @@ export default function DiscoverScreen({ onSelect }) {
   const handleChipSelect = chip => { setQuery(chip); setCategory('all'); };
 
   const filtered = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     let r = activities;
+
+    // Drop past one-off events; keep recurring (no eventDate)
+    r = r.filter(a => !a.eventDate || a.eventDate >= today);
 
     if (activeCategory !== 'all') r = r.filter(a => a.category === activeCategory);
     if (activeCity !== 'all')     r = r.filter(a => a.city === activeCity);
@@ -93,15 +99,13 @@ export default function DiscoverScreen({ onSelect }) {
     if (sortBy === 'age') {
       return [...base].sort((a, b) => (a.ageFrom ?? 0) - (b.ageFrom ?? 0));
     }
-    if (sortBy === 'upcoming') {
-      return [...base].sort((a, b) => {
-        if (!a.eventDate && !b.eventDate) return 0;
-        if (!a.eventDate) return 1;
-        if (!b.eventDate) return -1;
-        return a.eventDate - b.eventDate;
-      });
-    }
-    return base; // 'newest' — DB order (most recently added)
+    // 'upcoming': dated events first (soonest first), then recurring (no date)
+    return [...base].sort((a, b) => {
+      if (!a.eventDate && !b.eventDate) return 0;
+      if (!a.eventDate) return 1;
+      if (!b.eventDate) return -1;
+      return a.eventDate - b.eventDate;
+    });
   }, [activities, query, activeCategory, activeCity, advFilters, sortBy]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
@@ -149,56 +153,46 @@ export default function DiscoverScreen({ onSelect }) {
           <SuggestionChips onSelect={handleChipSelect} />
         </div>
 
-        <div className="flex items-center gap-2 mb-1 overflow-x-auto scrollbar-hide">
+        <div className="mb-1 overflow-x-auto scrollbar-hide">
           <FilterBar
             activeCategory={activeCategory}
             onCategory={setCategory}
             activeCity={activeCity}
             onCity={setCity}
           />
-          <div className="flex-shrink-0">
-            <FilterPanel
-              filters={advFilters}
-              onChange={setAdvFilters}
-              isOpen={filterOpen}
-              onToggle={() => setFilterOpen(o => !o)}
-            />
+        </div>
+
+        {/* Sort chips + Filter button in same row */}
+        <div className="flex items-center gap-2 pb-1">
+          <div className="flex gap-2 flex-1 overflow-x-auto scrollbar-hide">
+            {[
+              { id: 'age',      label: '👶 Baby age' },
+              { id: 'upcoming', label: '📅 Upcoming' },
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setSortBy(opt.id)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  sortBy === opt.id
+                    ? 'bg-stone-700 border-stone-700 text-white'
+                    : 'bg-white border-stone-200 text-stone-500'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
-        </div>
-
-        {/* Sort chips */}
-        <div className="flex gap-2 pb-1 overflow-x-auto scrollbar-hide">
-          {[
-            { id: 'newest',   label: '🆕 Newest' },
-            { id: 'age',      label: '👶 Baby age' },
-            { id: 'upcoming', label: '📅 Upcoming' },
-          ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setSortBy(opt.id)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                sortBy === opt.id
-                  ? 'bg-stone-700 border-stone-700 text-white'
-                  : 'bg-white border-stone-200 text-stone-500'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {filterOpen && (
           <FilterPanel
             filters={advFilters}
             onChange={f => { setAdvFilters(f); setFilterOpen(false); }}
             isOpen={filterOpen}
-            onToggle={() => setFilterOpen(false)}
+            onToggle={() => setFilterOpen(o => !o)}
           />
-        )}
+        </div>
       </div>
 
       {/* Content area */}
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
+      <div className={`flex-1 ${viewMode === 'map' ? 'overflow-hidden' : 'overflow-y-auto px-4 pb-6'}`}>
         {error && (
           <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
             Could not load live data — showing sample activities.
@@ -206,7 +200,7 @@ export default function DiscoverScreen({ onSelect }) {
         )}
 
         {viewMode === 'map' ? (
-          <MapView activities={filtered} onSelect={onSelect} />
+          <MapView activities={filtered} onSelect={onSelect} className="h-full" />
         ) : loading ? (
           <div className="space-y-3 pt-2">
             {[1, 2, 3].map(i => <CardSkeleton key={i} />)}

@@ -1,7 +1,14 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+function InvalidateSize() {
+  const map = useMap();
+  useEffect(() => { map.invalidateSize(); }, [map]);
+  return null;
+}
 
 const CATEGORY_COLORS = {
   Movement:  '#7BAFDC',
@@ -47,13 +54,15 @@ export default function MapView({ activities, onSelect }) {
   const mapped = jitterDuplicates(activities.filter(a => a.latitude && a.longitude));
 
   return (
-    <div className="rounded-2xl overflow-hidden relative" style={{ height: '60vh' }}>
+    <div className="relative" style={{ height: '100%', minHeight: '60vh' }}>
       <MapContainer
         center={[32.0853, 34.7818]}
         zoom={12}
         style={{ width: '100%', height: '100%' }}
         scrollWheelZoom={false}
+        tap={false}
       >
+        <InvalidateSize />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -75,10 +84,7 @@ export default function MapView({ activities, onSelect }) {
                       <p className="text-stone-400 text-[10px] mt-0.5">{activity.neighborhood}</p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                      {activity.price}
-                    </span>
+                  <div className="flex justify-end">
                     <button
                       onClick={() => onSelect(activity)}
                       className="text-[10px] font-semibold text-dusty-roseDark underline"

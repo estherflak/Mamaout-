@@ -3,8 +3,6 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { useParticipants, logClick } from '../hooks/useParticipants';
 
-const PRICE_LABELS = { free: 'Free', '₪': '₪', '₪₪': '₪₪', '₪₪₪': '₪₪₪' };
-
 function shareOnWhatsApp(activity) {
   const dateStr = activity.eventDate
     ? activity.eventDate.toLocaleDateString('en-IL', { day: 'numeric', month: 'short' })
@@ -93,7 +91,6 @@ export default function ActivityDetail({ activity, onClose }) {
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2">
             <span className="px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">{activity.category}</span>
-            <span className="px-2.5 py-1 rounded-full bg-cream-100 text-amber-700 text-xs font-semibold">{activity.price}</span>
             <span className="px-2.5 py-1 rounded-full bg-sage-50 text-sage-500 text-xs">{activity.ageLabel}</span>
           </div>
 
@@ -133,7 +130,7 @@ export default function ActivityDetail({ activity, onClose }) {
               onClick={handleCta}
               className="flex-1 py-3.5 rounded-2xl bg-dusty-rose text-white font-semibold text-sm active:scale-[0.98] transition-transform"
             >
-              {activity.price === 'Free' ? 'Register — it\'s free' : (activity.ctaLabel || 'More info')} →
+              {activity.ctaLabel || 'More info'} →
             </button>
             <button
               onClick={() => shareOnWhatsApp(activity)}
