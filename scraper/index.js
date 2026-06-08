@@ -8,6 +8,12 @@ import { scrapeDigitaf } from './sources/digitaf.js';
 import { scrapeGoogle } from './sources/google.js';
 import { scrapeEventbrite } from './sources/eventbrite.js';
 import { scrapeTimeout } from './sources/timeout.js';
+import { scrapeMakore } from './sources/makore.js';
+import { scrapeRamatGanMuni } from './sources/ramat-gan-muni.js';
+import { scrapeRamatGanMusic } from './sources/ramatganmusic.js';
+import { scrapeMommyJogger } from './sources/mommy-jogger.js';
+import { scrapeSecretTelAviv } from './sources/secrettelaviv.js';
+import { scrapeIshow } from './sources/ishow.js';
 import { classifyActivity } from './classifier.js';
 import { geocodeActivity } from './sources/geocode.js';
 import { insertIfNew } from './db.js';
@@ -37,20 +43,79 @@ function dedupeRaw(items) {
   });
 }
 
+// ── Keyword pre-filter ─────────────────────────────────────────────────────
+// Runs BEFORE classifyActivity() to avoid wasting Claude API calls on
+// clearly irrelevant results (bar events, adult theater, kids 3+, etc.)
+
+const HARD_INCLUDE = [
+  'חופשת לידה', 'אמהות עם תינוקות', 'קטנטנים', 'לאחר לידה',
+  'התפתחות תינוקות', 'עיסוי תינוקות', 'מעגל אמהות', 'מפגש אמהות',
+  'שיקום לאחר לידה', 'רצפת האגן', 'postpartum', 'postnatal',
+  'mom and baby', 'maternity leave', 'baby massage', 'newborn class',
+  'dance baby', 'דאנס בייבי', 'ביכורי תינוקות',
+];
+
+const SOFT_INCLUDE = [
+  'תינוק', 'תינוקות', 'בייבי', 'ביבי', 'baby', 'infant',
+  'אמא ותינוק', 'הורים ותינוקות', 'פעוט',
+];
+
+const AGE_QUALIFIERS = [
+  'חודשים', 'שבועות', 'עד גיל שנה', 'עד שנה', '0-12', '0-18',
+  'מלידה', 'מגיל לידה', 'לידה עד', 'גיל לידה',
+];
+
+const HARD_EXCLUDE = [
+  'מגיל 3', 'מגיל 4', 'מגיל 5', 'מגיל שלוש', 'מגיל ארבע',
+  'בית ספר', 'בר מצווה', 'בת מצווה', 'חתונה', 'מבוגרים בלבד', '18+',
+  'סטנדאפ', 'stand-up', 'standup',
+];
+
+function passesKeywordFilter(raw) {
+  const text = [raw.name, raw.description, raw.venue]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  // Verified sources bypass keyword filtering entirely — trust the source
+  if (raw._verified) return true;
+
+  // Kill immediately on hard exclusion
+  if (HARD_EXCLUDE.some(kw => text.includes(kw.toLowerCase()))) return false;
+
+  // Pass immediately on hard inclusion
+  if (HARD_INCLUDE.some(kw => text.includes(kw.toLowerCase()))) return true;
+
+  // Soft inclusion only passes if accompanied by an age qualifier
+  const hasSoft = SOFT_INCLUDE.some(kw => text.includes(kw.toLowerCase()));
+  const hasAge  = AGE_QUALIFIERS.some(kw => text.includes(kw.toLowerCase()));
+  if (hasSoft && hasAge) return true;
+
+  // Soft inclusion alone: still send to Claude (it might have baby context
+  // in the URL or other fields the text check misses)
+  return hasSoft;
+}
+
 export async function runScrape() {
   console.log(`\n[scraper] Starting scrape — ${new Date().toISOString()}`);
 
   // Priority sources run first — authoritative, is_verified: true
   const prioritySources = [
-    { name: 'Beit Emanuel Ramat Gan', fn: scrapeBeitEmanuel, verified: true },
-    { name: 'Tel Aviv Municipality (Digitaf)', fn: scrapeDigitaf, verified: true },
+    { name: 'Beit Emanuel Ramat Gan',          fn: scrapeBeitEmanuel,   verified: true },
+    { name: 'Tel Aviv Municipality (Digitaf)', fn: scrapeDigitaf,        verified: true },
+    { name: 'Ramat Gan Municipality',          fn: scrapeRamatGanMuni,  verified: true },
+    { name: 'Ramat Gan Conservatory',          fn: scrapeRamatGanMusic, verified: true },
+    { name: 'Mommy Jogger',                    fn: scrapeMommyJogger,   verified: true },
   ];
 
   // Supplementary sources
   const supplementarySources = [
-    { name: 'DuckDuckGo/Google', fn: scrapeGoogle, verified: false },
-    { name: 'Eventbrite',        fn: scrapeEventbrite, verified: false },
-    { name: 'Time Out Tel Aviv', fn: scrapeTimeout, verified: false },
+    { name: 'DuckDuckGo/Google',   fn: scrapeGoogle,        verified: false },
+    { name: 'Eventbrite',          fn: scrapeEventbrite,    verified: false },
+    { name: 'Time Out Tel Aviv',   fn: scrapeTimeout,       verified: false },
+    { name: 'Makore',              fn: scrapeMakore,        verified: false },
+    { name: 'Secret Tel Aviv',     fn: scrapeSecretTelAviv, verified: false },
+    { name: 'iShow',               fn: scrapeIshow,         verified: false },
   ];
 
   let allRaw = [];
@@ -89,6 +154,12 @@ export async function runScrape() {
       // Skip template placeholders left by scrapers on broken/empty pages
       const nameTrimmed = raw.name?.trim() ?? '';
       if (!nameTrimmed || /^\[.*\]$/.test(nameTrimmed) || nameTrimmed.length < 4) {
+        irrelevant++;
+        continue;
+      }
+
+      // Keyword pre-filter — skip obvious non-matches before calling Claude
+      if (!passesKeywordFilter(raw)) {
         irrelevant++;
         continue;
       }

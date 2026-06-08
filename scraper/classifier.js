@@ -14,6 +14,7 @@ kids' classes for toddlers/older children, general fitness not designed for post
 restaurant/food events, and anything not specifically targeting mothers with infants.
 
 Always provide English translations even if the original is in Hebrew.
+Weekday morning events (08:00–13:00) are much more likely to be relevant than evening, Friday-night, or weekend events — use this as a tiebreaker on ambiguous listings.
 Respond ONLY with a valid JSON object — no markdown, no extra text.`;
 
 const SCHEMA = `{
