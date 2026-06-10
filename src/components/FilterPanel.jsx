@@ -130,16 +130,30 @@ export function applyFilters(activities, { ageMax, dateFilter }) {
     const fri = new Date(today); fri.setDate(today.getDate() + daysToFri);
     const sat = new Date(fri); sat.setDate(fri.getDate() + 1);
 
-    results = results.filter(a => {
-      if (!a.eventDate) return true; // recurring — always show
-      const d = new Date(a.eventDate.getFullYear(), a.eventDate.getMonth(), a.eventDate.getDate());
+    function matchesDay(d) {
       switch (dateFilter) {
         case 'today':    return d.getTime() === today.getTime();
         case 'tomorrow': return d.getTime() === tomorrow.getTime();
         case 'week':     return d >= today && d <= weekEnd;
         case 'weekend':  return d.getTime() === fri.getTime() || d.getTime() === sat.getTime();
-        default:         return true;
+        default:         return false;
       }
+    }
+
+    results = results.filter(a => {
+      // next_dates array (primary: recurring + scheduled activities)
+      if (a.nextDates?.length > 0) {
+        return a.nextDates.some(dateStr => {
+          const d = new Date(`${dateStr}T00:00:00`);
+          return matchesDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+        });
+      }
+      // Fallback: one-time eventDate
+      if (a.eventDate) {
+        return matchesDay(new Date(a.eventDate.getFullYear(), a.eventDate.getMonth(), a.eventDate.getDate()));
+      }
+      // No date information — exclude when filtering by date
+      return false;
     });
   }
 

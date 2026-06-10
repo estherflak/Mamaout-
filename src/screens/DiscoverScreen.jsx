@@ -11,11 +11,10 @@ import EmptyState from '../components/EmptyState';
 
 function CardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden animate-pulse">
-      <div className="h-1.5 bg-gradient-to-r from-dusty-roseLight via-stone-100 to-sage-100" />
-      <div className="p-4 space-y-3">
+    <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden animate-pulse flex">
+      <div className="w-1 flex-shrink-0 bg-stone-100" />
+      <div className="flex-1 p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-stone-100 flex-shrink-0" />
           <div className="flex-1 space-y-1.5">
             <div className="h-4 bg-stone-100 rounded w-2/3" />
             <div className="h-3 bg-stone-100 rounded w-1/3" />
@@ -176,7 +175,11 @@ export default function DiscoverScreen({ onSelect }) {
             {[1, 2, 3].map(i => <CardSkeleton key={i} />)}
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState query={query} />
+          <EmptyState
+            query={query}
+            dateFilter={advFilters.dateFilter}
+            onClearDate={advFilters.dateFilter ? () => setAdvFilters(f => ({ ...f, dateFilter: null })) : null}
+          />
         ) : showSections ? (
           <>
             <section className="mb-5 pt-2">
