@@ -83,18 +83,27 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) 
 
         {/* Day + time line */}
         {(() => {
-          const timeStr = activity.timeStart
+          const timeRange = activity.timeStart
             ? (activity.timeEnd ? `${activity.timeStart}–${activity.timeEnd}` : activity.timeStart)
             : null;
-          // Prefer schedule label; fall back to first upcoming date formatted as "Wed 11 Jun"
-          const dayStr = activity.scheduleLabel || (() => {
+          const dateLabel = (() => {
             const d = activity.nextDates?.[0];
             if (!d) return null;
             return new Date(`${d}T00:00:00`).toLocaleDateString('en-IL', {
               weekday: 'short', day: 'numeric', month: 'short',
             });
           })();
-          const line = [dayStr, timeStr].filter(Boolean).join(' · ');
+          const scheduleLabel = activity.scheduleLabel || dateLabel;
+          let line;
+          if (!scheduleLabel) {
+            line = timeRange || '';
+          } else if (!timeRange) {
+            line = scheduleLabel;
+          } else if (activity.timeStart && scheduleLabel.includes(activity.timeStart)) {
+            line = scheduleLabel.replace(activity.timeStart, timeRange);
+          } else {
+            line = `${scheduleLabel} · ${timeRange}`;
+          }
           return line ? (
             <p className="text-sm font-medium text-stone-700 mb-0.5">{line}</p>
           ) : null;

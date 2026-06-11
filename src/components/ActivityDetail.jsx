@@ -41,12 +41,18 @@ export default function ActivityDetail({ activity, onClose }) {
   const goingCount      = participants.filter(p => p.status === 'going').length;
 
   // Full schedule string: "Every Monday · 10:00–11:00"
-  const scheduleStr = [
-    activity.scheduleLabel,
-    activity.timeStart && (activity.timeEnd
-      ? `${activity.timeStart}–${activity.timeEnd}`
-      : activity.timeStart),
-  ].filter(Boolean).join(' · ');
+  const scheduleStr = (() => {
+    const timeRange = activity.timeStart
+      ? (activity.timeEnd ? `${activity.timeStart}–${activity.timeEnd}` : activity.timeStart)
+      : null;
+    if (!activity.scheduleLabel) return timeRange || '';
+    if (!timeRange) return activity.scheduleLabel;
+    // If the label already contains the start time, upgrade it to the full range in-place
+    if (activity.scheduleLabel.includes(activity.timeStart)) {
+      return activity.scheduleLabel.replace(activity.timeStart, timeRange);
+    }
+    return `${activity.scheduleLabel} · ${timeRange}`;
+  })();
 
   function handleBackdrop(e) {
     if (e.target === e.currentTarget) onClose();
@@ -129,14 +135,14 @@ export default function ActivityDetail({ activity, onClose }) {
             {/* Stroller */}
             {activity.strollerAccessible === true ? (
               <p className="text-sm text-green-600 font-medium">✓ Stroller accessible</p>
-            ) : activity.strollerAccessible === false ? (
+            ) : (
               <p className="text-sm text-stone-400">Ask organizer about stroller access</p>
-            ) : null}
+            )}
 
             {/* Language — only show if English is involved */}
-            {(activity.language === 'english' || activity.language === 'both') && (
+            {activity.language === 'en' && (
               <span className="inline-block px-2.5 py-1 rounded-full bg-sky-50 text-sky-600 text-xs font-medium">
-                {activity.language === 'both' ? '🌐 Hebrew & English' : '🌐 English'}
+                🌐 English
               </span>
             )}
 

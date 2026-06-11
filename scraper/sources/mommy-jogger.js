@@ -77,6 +77,7 @@ export async function scrapeMommyJogger() {
       source_url,
       source_name: 'Mommy Jogger',
       raw_date: rawDate,
+      language: 'en',
     });
   });
 
