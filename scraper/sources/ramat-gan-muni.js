@@ -1,122 +1,154 @@
 /**
- * Ramat Gan Municipality — culture & education events.
- * Static HTML; no Puppeteer needed.
+ * Ramat Gan Municipality — kids & early-childhood events via their REST API.
+ *
+ * Primary endpoint:  /api/EventLobby//event-lobbies/kids-and-infants  (pre-filtered)
+ * Secondary endpoint: /api/EventLobby/he/event-lobby  (all events — filter client-side)
+ *
+ * Deduplicates on detailsLink.url before returning.
  */
-import axios from 'axios';
-import * as cheerio from 'cheerio';
 
-const BASE = 'https://www.ramat-gan.muni.il';
-
-const ENTRY_POINTS = [
-  '/department-education',
-  '/residents/culture-and-leisure',
-];
+const API_BASE   = 'https://api-m.ramat-gan.muni.il';
+const SITE_BASE  = 'https://www.ramat-gan.muni.il';
+const PRIMARY    = `${API_BASE}/api/EventLobby//event-lobbies/kids-and-infants`;
+const SECONDARY  = `${API_BASE}/api/EventLobby/he/event-lobby`;
+const SOURCE_NAME = 'Ramat Gan Municipality';
 
 const HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept': 'application/json',
   'Accept-Language': 'he-IL,he;q=0.9',
+  'User-Agent': 'MamaOut-scraper/1.0',
 };
 
-const KEYWORD_PATTERN = /תינוק|תינוקות|ילד|ילדים|אמא|אמהות|פעוט|קטנטן|לידה|התפתחות/;
+// Keep event if it targets babies/toddlers or whole-family in a kids category
+function isRelevant(event) {
+  const audiences = (event.audienceType ?? []).map(a => a.name);
+  const catName   = event.category?.name ?? '';
+  const clusterNames = (event.cluster ?? []).map(c => c.name);
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-function toAbsolute(href) {
-  if (!href) return '';
-  if (href.startsWith('http')) return href;
-  return `${BASE}${href.startsWith('/') ? '' : '/'}${href}`;
+  if (audiences.some(a => a.includes('הגיל הרך'))) return true;
+  if (clusterNames.some(c => c.includes('גיל הרך'))) return true;
+  if (
+    audiences.includes('לכל המשפחה') &&
+    (catName.includes('ילדים') || catName.includes('גיל הרך') || catName.includes('סיפור'))
+  ) return true;
+  return false;
 }
 
-function extractFromNextData(html) {
-  const match = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
-  if (!match) return [];
-  try {
-    const nextData = JSON.parse(match[1]);
-    const pageProps = nextData?.props?.pageProps;
-    const list = pageProps?.events || pageProps?.activities || pageProps?.items || [];
-    return (Array.isArray(list) ? list : []).map(ev => ({
-      name: (ev.title || ev.name || '').slice(0, 120),
-      description: (ev.description || ev.summary || '').slice(0, 400),
-      location: 'רמת גן',
-      venue: ev.venue?.name || ev.location?.name || '',
-      source_url: ev.url || ev.link || (ev.slug ? `${BASE}/${ev.slug}` : ''),
-      source_name: 'Ramat Gan Municipality',
-      raw_date: ev.startDate || ev.date || '',
-    })).filter(r => r.name && r.source_url);
-  } catch {
-    return [];
-  }
+// Extract HH:MM from the `hour` field (only the time part is reliable — date part is junk)
+function parseTime(hourIso) {
+  if (!hourIso) return null;
+  const match = hourIso.match(/T(\d{2}:\d{2})/);
+  if (!match) return null;
+  // hour is stored as UTC; Israel summer is UTC+3
+  const [hh, mm] = match[1].split(':').map(Number);
+  const localH = (hh + 3) % 24;
+  return `${String(localH).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
-function extractFromHtml(html, pageUrl) {
-  const $ = cheerio.load(html);
-  const results = [];
-  const seen = new Set();
+function mapCategory(catName = '') {
+  if (catName.includes('סיפור')) return 'wellness';
+  if (catName.includes('תרבות') || catName.includes('תיאטרון')) return 'wellness';
+  return 'baby-focused';
+}
 
-  // Strategy 1: CSS selectors
-  const selectors = ['.event-item', '.activity-card', '[class*="event"]', 'article'];
-  let $cards = $();
-  for (const sel of selectors) {
-    const found = $(sel);
-    if (found.length > 0) { $cards = found; break; }
-  }
+function mapEvent(e) {
+  const dateStr   = e.date?.split('T')[0] ?? null;   // "2026-06-22"
+  const timeStart = parseTime(e.hour);
+  const isFree    = e.priceType === 3 || e.priceType === 0;
+  const priceNis  = isFree ? 0 : null;
+  const priceNotes = e.priceType === 3 ? 'Free entry'
+    : e.priceType === 0 ? 'Free for Ramat Gan residents'
+    : 'Registration required';
 
-  $cards.each((_, el) => {
-    const $el = $(el);
-    const name = ($el.find('h2, h3, h4, [class*="title"]').first().text() || '').trim();
-    if (!name || name.length < 4) return;
-    const description = ($el.find('p, [class*="desc"]').first().text() || '').trim();
-    const rawDate     = ($el.find('time, [class*="date"]').first().text() || '').trim();
-    const href        = $el.find('a[href]').first().attr('href') || '';
-    const url         = toAbsolute(href) || pageUrl;
-    if (seen.has(url)) return;
-    seen.add(url);
-    results.push({ name: name.slice(0, 120), description: description.slice(0, 400), location: 'רמת גן', venue: '', source_url: url, source_name: 'Ramat Gan Municipality', raw_date: rawDate });
-  });
+  const address     = e.eventLocation?.address || '';
+  const venueName   = e.eventLocation?.name || e.location || '';
+  const sourceUrl   = e.detailsLink?.url
+    ? `${SITE_BASE}${e.detailsLink.url}`
+    : null;
 
-  if (results.length > 0) return results;
+  const audiences    = (e.audienceType ?? []).map(a => a.name);
+  const hasEarlyAge  = audiences.some(a => a.includes('הגיל הרך'));
+  const ageMinWeeks  = 0;
+  const ageMaxWeeks  = hasEarlyAge ? 156 : 624;   // 3 yrs or 12 yrs in weeks
 
-  // Strategy 2: keyword-matched links (last resort, capped at 20)
-  let count = 0;
-  $('a[href]').each((_, el) => {
-    if (count >= 20) return false;
-    const $a = $(el);
-    const text = $a.text().trim();
-    const href = $a.attr('href') || '';
-    if (!text || text.length < 10) return;
-    if (!KEYWORD_PATTERN.test(text)) return;
-    const url = toAbsolute(href);
-    if (!url || seen.has(url)) return;
-    seen.add(url);
-    count++;
-    results.push({ name: text.slice(0, 120), description: '', location: 'רמת גן', venue: '', source_url: url, source_name: 'Ramat Gan Municipality', raw_date: '' });
-  });
+  const scheduleLabel = dateStr && timeStart
+    ? `${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IL', { weekday: 'short', day: 'numeric', month: 'short' })} · ${timeStart}`
+    : dateStr || null;
 
-  return results;
+  return {
+    name:             e.title,
+    description:      e.shortTitle || '',
+    location:         'Ramat Gan',
+    venue:            venueName,
+    address,
+    neighborhood:     e.neighborhood || 'Ramat Gan',
+    source_url:       sourceUrl,
+    source_name:      SOURCE_NAME,
+    category:         mapCategory(e.category?.name),
+    schedule_type:    'one-time',
+    schedule_label:   scheduleLabel,
+    next_dates:       dateStr ? [dateStr] : [],
+    time_start:       timeStart,
+    price:            priceNis,
+    price_notes:      priceNotes,
+    stroller_accessible: e.accessible ?? false,
+    baby_age_min:     ageMinWeeks,
+    baby_age_max:     ageMaxWeeks,
+    is_verified:      true,
+    language:         'he',
+  };
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url, { headers: HEADERS });
+  if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}`);
+  return res.json();
 }
 
 export async function scrapeRamatGanMuni() {
-  const allResults = [];
-  const seen = new Set();
+  const seen   = new Map();   // source_url → mapped event
+  const today  = new Date().toISOString().split('T')[0];
 
-  for (const path of ENTRY_POINTS) {
-    const pageUrl = `${BASE}${path}`;
-    try {
-      const { data: html } = await axios.get(pageUrl, { headers: HEADERS, timeout: 15000 });
-      let results = extractFromNextData(html);
-      if (results.length === 0) results = extractFromHtml(html, pageUrl);
-      for (const r of results) {
-        if (!r.source_url || seen.has(r.source_url)) continue;
-        seen.add(r.source_url);
-        allResults.push(r);
-      }
-    } catch (err) {
-      console.warn(`[ramat-gan-muni] ${pageUrl} failed: ${err.message}`);
+  // --- Primary endpoint (pre-filtered kids lobby) ---
+  try {
+    const data    = await fetchJson(PRIMARY);
+    const content = data.content ?? data;
+    const events  = [
+      ...(content.closeEvents ?? []),
+      ...(content.eventLobbyCategories ?? []).flatMap(c => c.events ?? []),
+    ];
+    for (const e of events) {
+      const url = e.detailsLink?.url;
+      if (!url || seen.has(url)) continue;
+      if ((e.date ?? '') < today) continue;
+      seen.set(url, mapEvent(e));
     }
-    await sleep(2000);
+    console.log(`[ramat-gan-muni] primary: ${seen.size} events`);
+  } catch (err) {
+    console.warn(`[ramat-gan-muni] primary endpoint failed: ${err.message}`);
   }
 
-  console.log(`[ramat-gan-muni] ${allResults.length} results`);
-  return allResults;
+  // --- Secondary endpoint (all events — filter for early childhood) ---
+  try {
+    const data = await fetchJson(SECONDARY);
+    const all  = Array.isArray(data) ? data
+      : (data.content?.events ?? data.events ?? []);
+
+    let added = 0;
+    for (const e of all) {
+      const url = e.detailsLink?.url;
+      if (!url || seen.has(url)) continue;
+      if ((e.date ?? '') < today) continue;
+      if (!isRelevant(e)) continue;
+      seen.set(url, mapEvent(e));
+      added++;
+    }
+    console.log(`[ramat-gan-muni] secondary added ${added} more early-childhood events`);
+  } catch (err) {
+    console.warn(`[ramat-gan-muni] secondary endpoint failed: ${err.message}`);
+  }
+
+  const results = [...seen.values()].filter(e => e.source_url);
+  console.log(`[ramat-gan-muni] total: ${results.length} unique upcoming events`);
+  return results;
 }

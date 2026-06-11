@@ -10,12 +10,15 @@ import ProfileScreen from './screens/ProfileScreen';
 import LoginScreen from './screens/LoginScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
+import SubmitScreen from './screens/SubmitScreen';
+import AdminScreen from './screens/AdminScreen';
 
 function MainApp() {
   const { user, profile, authLoading, needsPasswordReset } = useAuthContext();
   const { requests } = useFriends();
-  const [tab, setTab]           = useState('discover');
-  const [selected, setSelected] = useState(null);
+  const [tab, setTab]             = useState('discover');
+  const [selected, setSelected]   = useState(null);
+  const [showSubmit, setShowSubmit] = useState(false);
 
   if (authLoading) {
     return (
@@ -29,10 +32,10 @@ function MainApp() {
   if (user && !profile?.onboarding_done) return <OnboardingScreen />;
 
   function renderTab() {
-    if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} />;
+    if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} onOpenSubmit={() => setShowSubmit(true)} />;
     if (tab === 'saved')    return user ? <SavedScreen onSelect={setSelected} /> : <LoginScreen />;
     if (tab === 'friends')  return user ? <FriendsScreen /> : <LoginScreen />;
-    if (tab === 'profile')  return user ? <ProfileScreen /> : <LoginScreen />;
+    if (tab === 'profile')  return user ? <ProfileScreen onOpenSubmit={() => setShowSubmit(true)} /> : <LoginScreen />;
     return null;
   }
 
@@ -45,11 +48,21 @@ function MainApp() {
       {selected && (
         <ActivityDetail activity={selected} onClose={() => setSelected(null)} />
       )}
+      {showSubmit && (
+        <SubmitScreen onClose={() => setShowSubmit(false)} />
+      )}
     </div>
   );
 }
 
 export default function App() {
+  if (window.location.pathname === '/admin') {
+    return (
+      <AuthProvider>
+        <AdminScreen />
+      </AuthProvider>
+    );
+  }
   return (
     <AuthProvider>
       <MainApp />

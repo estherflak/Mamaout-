@@ -7,7 +7,7 @@ const NEIGHBORHOODS = [
   'Ramat Aviv', 'Ramat Gan', 'Givatayim', 'Herzliya',
 ];
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ onOpenSubmit }) {
   const { user, profile, refreshProfile, signOut } = useAuthContext();
 
   const [editing, setEditing]   = useState(false);
@@ -158,6 +158,16 @@ export default function ProfileScreen() {
         >
           Sign out
         </button>
+
+        {/* Submit activity */}
+        {onOpenSubmit && (
+          <button
+            onClick={onOpenSubmit}
+            className="w-full py-3 rounded-2xl border border-dusty-roseLight text-sm text-dusty-roseDark bg-dusty-rosePale"
+          >
+            Submit your activity
+          </button>
+        )}
       </div>
     </div>
   );

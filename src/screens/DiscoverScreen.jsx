@@ -34,7 +34,7 @@ function CardSkeleton() {
   );
 }
 
-export default function DiscoverScreen({ onSelect }) {
+export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
   const { activities, loading, error } = useActivities();
   const { profile } = useAuthContext();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
@@ -297,6 +297,17 @@ export default function DiscoverScreen({ onSelect }) {
             <div className="space-y-3">
               {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} />)}
             </div>
+          </div>
+        )}
+
+        {viewMode !== 'map' && onOpenSubmit && (
+          <div className="mt-8 mb-4 text-center">
+            <button
+              onClick={onOpenSubmit}
+              className="text-xs text-stone-400 underline underline-offset-2 hover:text-dusty-roseDark transition-colors"
+            >
+              Are you an instructor or organizer? Submit your activity →
+            </button>
           </div>
         )}
       </div>}
