@@ -8,7 +8,7 @@
   "functions": {
     "api/cron/scrape-tlv-digitaf.js": {
       "maxDuration": 60,
-      "memory": 3009
+      "memory": 2048
     },
     "api/cron/scrape-beit-emanuel-rg.js": {
       "maxDuration": 60
