@@ -111,13 +111,18 @@ export default function ActivityDetail({ activity, onClose }) {
           )}
 
           {/* Price */}
-          <div>
-            {activity.isFree ? (
-              <p className="text-2xl font-bold text-green-600">Free 🎉</p>
-            ) : activity.priceNis != null ? (
-              <p className="text-2xl font-bold text-stone-800">₪{activity.priceNis}</p>
-            ) : null}
-          </div>
+          {(activity.isFree || activity.priceNis != null) && (
+            <div>
+              {activity.isFree ? (
+                <p className="text-2xl font-bold text-green-600">Free 🎉</p>
+              ) : (
+                <p className="text-2xl font-bold text-stone-800">₪{activity.priceNis}</p>
+              )}
+              {activity.priceNotes && (
+                <p className="text-xs text-stone-400 mt-0.5">{activity.priceNotes}</p>
+              )}
+            </div>
+          )}
 
           {/* Info row: stroller · language · address */}
           <div className="space-y-2">
@@ -207,8 +212,8 @@ export default function ActivityDetail({ activity, onClose }) {
             {(interestedCount > 0 || goingCount > 0) && (
               <p className="text-xs text-stone-400 pt-0.5">
                 {[
-                  interestedCount > 0 && `${interestedCount} interested`,
-                  goingCount > 0      && `${goingCount} going`,
+                  interestedCount > 0 && `${interestedCount} ${interestedCount === 1 ? 'mom' : 'moms'} interested`,
+                  goingCount > 0      && `${goingCount} ${goingCount === 1 ? 'mom' : 'moms'} going`,
                 ].filter(Boolean).join(' · ')}
               </p>
             )}

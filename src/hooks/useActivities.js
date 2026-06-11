@@ -89,6 +89,7 @@ export function normalizeSupabaseActivity(a) {
     tags: [],
     friendsGoing: [],
     emoji: CATEGORY_EMOJI[catKey] || '🌸',
+    priceNotes: a.price_notes?.trim() || null,
     sourceUrl: a.source_url,
     sourceName: a.source_name,
     isVerified: a.is_verified,
