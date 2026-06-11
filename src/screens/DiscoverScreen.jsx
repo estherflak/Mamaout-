@@ -8,6 +8,7 @@ import DayStrip from '../components/DayStrip';
 import ActivityCard from '../components/ActivityCard';
 import MapView from '../components/MapView';
 import EmptyState from '../components/EmptyState';
+import PlacesScreen from './PlacesScreen';
 
 function CardSkeleton() {
   return (
@@ -36,8 +37,11 @@ function CardSkeleton() {
 export default function DiscoverScreen({ onSelect }) {
   const { activities, loading, error } = useActivities();
   const { profile } = useAuthContext();
+  const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
-  const [activeCity, setCity] = useState('all');
+  const [activeCity, setCity]         = useState('all');
+  const [placesArea, setPlacesArea]   = useState('all');
+  const [openNow, setOpenNow]         = useState(false);
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
   const [advFilters, setAdvFilters]   = useState({ ageMax: null });
@@ -110,74 +114,142 @@ export default function DiscoverScreen({ onSelect }) {
     <div className="flex flex-col h-full">
       {/* Sticky header area */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-cream-50">
-        {/* Title row + view toggle */}
+        {/* Title row */}
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-xl font-semibold text-stone-800 leading-snug">What are you up for?</h2>
             <p className="text-xs text-stone-400 mt-0.5">Tel Aviv &amp; Ramat Gan</p>
           </div>
 
-          {/* List / Map toggle */}
-          <div className="flex bg-stone-100 rounded-xl p-0.5">
-            {['list', 'map'].map(m => (
-              <button
-                key={m}
-                onClick={() => setViewMode(m)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
-                }`}
-              >
-                {m === 'list' ? '☰ List' : '🗺 Map'}
-              </button>
-            ))}
-          </div>
+          {/* List / Map toggle — only in activities section */}
+          {section === 'activities' && (
+            <div className="flex bg-stone-100 rounded-xl p-0.5">
+              {['list', 'map'].map(m => (
+                <button
+                  key={m}
+                  onClick={() => setViewMode(m)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                  }`}
+                >
+                  {m === 'list' ? '☰ List' : '🗺 Map'}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="space-y-2 mb-2">
-          <SearchBar value={query} onChange={setQuery} />
-          <SuggestionChips onSelect={handleChipSelect} />
-          <DayStrip
-            activities={activities}
-            selectedDay={selectedDay}
-            onDaySelect={setSelectedDay}
-            napTime={napTime}
-            onNapTimeToggle={() => setNapTime(n => !n)}
-          />
-        </div>
-
-        <div className="flex gap-2 mb-1">
+        {/* Activities / Places segment control */}
+        <div className="flex bg-stone-100 rounded-xl p-0.5 mb-3">
           {[
-            { id: 'all', label: 'All areas' },
-            { id: 'Tel Aviv', label: 'Tel Aviv' },
-            { id: 'Ramat Gan', label: 'Ramat Gan' },
-          ].map(city => (
+            { id: 'activities', label: '✨ Activities' },
+            { id: 'places',     label: '📍 Places' },
+          ].map(s => (
             <button
-              key={city.id}
-              onClick={() => setCity(city.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                activeCity === city.id
-                  ? 'bg-sage-300 text-white'
-                  : 'bg-sage-50 border border-sage-200 text-stone-500'
+              key={s.id}
+              onClick={() => setSection(s.id)}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                section === s.id ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
               }`}
             >
-              {city.label}
+              {s.label}
             </button>
           ))}
         </div>
 
-        {/* Filter button */}
-        <div className="flex justify-end pb-1">
-          <FilterPanel
-            filters={advFilters}
-            onChange={f => { setAdvFilters(f); setFilterOpen(false); }}
-            isOpen={filterOpen}
-            onToggle={() => setFilterOpen(o => !o)}
-          />
-        </div>
+        {/* Activities-specific filters */}
+        {section === 'activities' && (
+          <>
+            <div className="space-y-2 mb-2">
+              <SearchBar value={query} onChange={setQuery} />
+              <SuggestionChips onSelect={handleChipSelect} />
+              <DayStrip
+                activities={activities}
+                selectedDay={selectedDay}
+                onDaySelect={setSelectedDay}
+                napTime={napTime}
+                onNapTimeToggle={() => setNapTime(n => !n)}
+              />
+            </div>
+
+            <div className="flex gap-2 mb-1">
+              {[
+                { id: 'all', label: 'All areas' },
+                { id: 'Tel Aviv', label: 'Tel Aviv' },
+                { id: 'Ramat Gan', label: 'Ramat Gan' },
+              ].map(city => (
+                <button
+                  key={city.id}
+                  onClick={() => setCity(city.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    activeCity === city.id
+                      ? 'bg-sage-300 text-white'
+                      : 'bg-sage-50 border border-sage-200 text-stone-500'
+                  }`}
+                >
+                  {city.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-end pb-1">
+              <FilterPanel
+                filters={advFilters}
+                onChange={f => { setAdvFilters(f); setFilterOpen(false); }}
+                isOpen={filterOpen}
+                onToggle={() => setFilterOpen(o => !o)}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Places-specific filters */}
+        {section === 'places' && (
+          <div className="flex items-center gap-2 pb-1">
+            {[
+              { id: 'all',       label: 'All areas' },
+              { id: 'tel_aviv',  label: 'Tel Aviv' },
+              { id: 'ramat_gan', label: 'Ramat Gan' },
+            ].map(area => (
+              <button
+                key={area.id}
+                onClick={() => setPlacesArea(area.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  placesArea === area.id
+                    ? 'bg-sage-300 text-white'
+                    : 'bg-sage-50 border border-sage-200 text-stone-500'
+                }`}
+              >
+                {area.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setOpenNow(o => !o)}
+              className={`ml-auto px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
+                openNow
+                  ? 'bg-green-500 text-white'
+                  : 'bg-sage-50 border border-sage-200 text-stone-500'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${openNow ? 'bg-white' : 'bg-green-400'}`} />
+              Open now
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Content area */}
-      <div className={`flex-1 ${viewMode === 'map' ? 'overflow-hidden' : 'overflow-y-auto px-4 pb-6'}`}>
+      {/* Places content */}
+      {section === 'places' && (
+        <PlacesScreen
+          activeArea={placesArea}
+          onAreaChange={setPlacesArea}
+          openNow={openNow}
+          onOpenNowToggle={() => setOpenNow(o => !o)}
+        />
+      )}
+
+      {/* Activities content area */}
+      {section === 'activities' && <div className={`flex-1 ${viewMode === 'map' ? 'overflow-hidden' : 'overflow-y-auto px-4 pb-6'}`}>
         {error && (
           <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
             Could not load live data — showing sample activities.
@@ -227,7 +299,7 @@ export default function DiscoverScreen({ onSelect }) {
             </div>
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
