@@ -18,7 +18,16 @@ function MainApp() {
   const { requests } = useFriends();
   const [tab, setTab]             = useState('discover');
   const [selected, setSelected]   = useState(null);
-  const [showSubmit, setShowSubmit] = useState(false);
+  const [showSubmit, setShowSubmit] = useState(
+    () => window.location.pathname === '/submit'
+  );
+
+  function closeSubmit() {
+    setShowSubmit(false);
+    if (window.location.pathname === '/submit') {
+      window.history.replaceState({}, '', '/');
+    }
+  }
 
   if (authLoading) {
     return (
@@ -49,7 +58,7 @@ function MainApp() {
         <ActivityDetail activity={selected} onClose={() => setSelected(null)} />
       )}
       {showSubmit && (
-        <SubmitScreen onClose={() => setShowSubmit(false)} />
+        <SubmitScreen onClose={closeSubmit} />
       )}
     </div>
   );
@@ -62,14 +71,6 @@ export default function App() {
     return (
       <AuthProvider>
         <AdminScreen />
-      </AuthProvider>
-    );
-  }
-
-  if (path === '/submit') {
-    return (
-      <AuthProvider>
-        <SubmitScreen onClose={() => { window.history.pushState({}, '', '/'); window.location.reload(); }} />
       </AuthProvider>
     );
   }
