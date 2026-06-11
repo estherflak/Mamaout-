@@ -41,7 +41,10 @@ export default function DiscoverScreen({ onSelect }) {
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
   const [advFilters, setAdvFilters]   = useState({ ageMax: null });
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  });
   const [napTime, setNapTime]         = useState(false);
   const [profileInit, setProfileInit] = useState(false);
 
