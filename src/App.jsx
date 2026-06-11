@@ -56,13 +56,24 @@ function MainApp() {
 }
 
 export default function App() {
-  if (window.location.pathname === '/admin') {
+  const path = window.location.pathname;
+
+  if (path === '/admin') {
     return (
       <AuthProvider>
         <AdminScreen />
       </AuthProvider>
     );
   }
+
+  if (path === '/submit') {
+    return (
+      <AuthProvider>
+        <SubmitScreen onClose={() => { window.history.pushState({}, '', '/'); window.location.reload(); }} />
+      </AuthProvider>
+    );
+  }
+
   return (
     <AuthProvider>
       <MainApp />

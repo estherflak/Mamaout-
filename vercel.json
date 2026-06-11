@@ -5,6 +5,18 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
+  "functions": {
+    "api/cron/scrape-tlv-digitaf.js": {
+      "maxDuration": 60,
+      "memory": 3009
+    },
+    "api/cron/scrape-beit-emanuel-rg.js": {
+      "maxDuration": 60
+    },
+    "api/cron/scrape-ramat-gan.js": {
+      "maxDuration": 60
+    }
+  },
   "crons": [
     {
       "path": "/api/cron/scrape-ramat-gan",
