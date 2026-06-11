@@ -3,8 +3,8 @@ import { useActivities } from '../hooks/useActivities';
 import { useAuthContext } from '../contexts/AuthContext';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
-import FilterBar from '../components/FilterBar';
 import FilterPanel, { applyFilters } from '../components/FilterPanel';
+import DayStrip from '../components/DayStrip';
 import ActivityCard from '../components/ActivityCard';
 import MapView from '../components/MapView';
 import EmptyState from '../components/EmptyState';
@@ -34,30 +34,21 @@ function CardSkeleton() {
 }
 
 export default function DiscoverScreen({ onSelect }) {
-  const { activities, loading, error, dataSource } = useActivities();
+  const { activities, loading, error } = useActivities();
   const { profile } = useAuthContext();
   const [query, setQuery]             = useState('');
-  const [activeCategory, setCategory] = useState('all');
-  const [activeCity, setCity]         = useState('all');
+  const [activeCity, setCity] = useState('all');
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
-  const [advFilters, setAdvFilters]   = useState({ ageMax: null, dateFilter: null });
+  const [advFilters, setAdvFilters]   = useState({ ageMax: null });
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [napTime, setNapTime]         = useState(false);
   const [profileInit, setProfileInit] = useState(false);
-
-  // Maps DB interest keys → FilterBar category IDs
-  const INTEREST_TO_CAT = {
-    movement: 'Movement', wellness: 'Wellness', creative: 'Creative',
-    social: 'Social', 'baby-focused': 'Baby',
-  };
 
   // One-time initialization from profile once it loads
   useEffect(() => {
     if (!profile || profileInit) return;
     setProfileInit(true);
-    if (profile.interests?.length === 1) {
-      const cat = INTEREST_TO_CAT[profile.interests[0]];
-      if (cat) setCategory(cat);
-    }
     if (profile.baby_birthdate) {
       const ageWeeks = Math.floor(
         (Date.now() - new Date(profile.baby_birthdate)) / (7 * 24 * 60 * 60 * 1000)
@@ -68,7 +59,7 @@ export default function DiscoverScreen({ onSelect }) {
     }
   }, [profile, profileInit]);
 
-  const handleChipSelect = chip => { setQuery(chip); setCategory('all'); };
+  const handleChipSelect = chip => setQuery(chip);
 
   const filtered = useMemo(() => {
     const today = new Date();
@@ -79,8 +70,7 @@ export default function DiscoverScreen({ onSelect }) {
     // Drop past one-off events; keep recurring (no eventDate)
     r = r.filter(a => !a.eventDate || a.eventDate >= today);
 
-    if (activeCategory !== 'all') r = r.filter(a => a.category === activeCategory);
-    if (activeCity !== 'all')     r = r.filter(a => a.city === activeCity);
+    if (activeCity !== 'all') r = r.filter(a => a.city === activeCity);
 
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -92,13 +82,26 @@ export default function DiscoverScreen({ onSelect }) {
       );
     }
 
+    // Day strip filter — match on specific date in next_dates
+    if (selectedDay) {
+      r = r.filter(a =>
+        a.nextDates?.includes(selectedDay) ||
+        (a.eventDate && a.eventDate.toISOString().slice(0, 10) === selectedDay)
+      );
+    }
+
+    // Nap time — only activities ending by 12:00
+    if (napTime) {
+      r = r.filter(a => a.timeEnd != null && a.timeEnd <= '12:00');
+    }
+
     return applyFilters(r, advFilters);
-  }, [activities, query, activeCategory, activeCity, advFilters]);
+  }, [activities, query, activeCity, advFilters, selectedDay, napTime]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
   const otherActivities  = filtered.filter(a => !a.friendsGoing?.length);
-  const isFiltered       = query.trim() || activeCategory !== 'all' || activeCity !== 'all';
-  const showSections     = !isFiltered && friendActivities.length > 0;
+  const isFiltered = query.trim() || activeCity !== 'all' || selectedDay || napTime;
+  const showSections = !isFiltered && friendActivities.length > 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -108,15 +111,7 @@ export default function DiscoverScreen({ onSelect }) {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-xl font-semibold text-stone-800 leading-snug">What are you up for?</h2>
-            <p className="text-xs text-stone-400 mt-0.5">
-              Tel Aviv &amp; Ramat Gan
-              {dataSource === 'supabase' && (
-                <span className="ml-1.5 inline-flex items-center gap-1 text-sage-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sage-400 inline-block" />
-                  live
-                </span>
-              )}
-            </p>
+            <p className="text-xs text-stone-400 mt-0.5">Tel Aviv &amp; Ramat Gan</p>
           </div>
 
           {/* List / Map toggle */}
@@ -138,15 +133,33 @@ export default function DiscoverScreen({ onSelect }) {
         <div className="space-y-2 mb-2">
           <SearchBar value={query} onChange={setQuery} />
           <SuggestionChips onSelect={handleChipSelect} />
+          <DayStrip
+            activities={activities}
+            selectedDay={selectedDay}
+            onDaySelect={setSelectedDay}
+            napTime={napTime}
+            onNapTimeToggle={() => setNapTime(n => !n)}
+          />
         </div>
 
-        <div className="mb-1 overflow-x-auto scrollbar-hide">
-          <FilterBar
-            activeCategory={activeCategory}
-            onCategory={setCategory}
-            activeCity={activeCity}
-            onCity={setCity}
-          />
+        <div className="flex gap-2 mb-1">
+          {[
+            { id: 'all', label: 'All areas' },
+            { id: 'Tel Aviv', label: 'Tel Aviv' },
+            { id: 'Ramat Gan', label: 'Ramat Gan' },
+          ].map(city => (
+            <button
+              key={city.id}
+              onClick={() => setCity(city.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                activeCity === city.id
+                  ? 'bg-sage-300 text-white'
+                  : 'bg-sage-50 border border-sage-200 text-stone-500'
+              }`}
+            >
+              {city.label}
+            </button>
+          ))}
         </div>
 
         {/* Filter button */}
@@ -177,8 +190,8 @@ export default function DiscoverScreen({ onSelect }) {
         ) : filtered.length === 0 ? (
           <EmptyState
             query={query}
-            dateFilter={advFilters.dateFilter}
-            onClearDate={advFilters.dateFilter ? () => setAdvFilters(f => ({ ...f, dateFilter: null })) : null}
+            dateFilter={selectedDay}
+            onClearDate={selectedDay ? () => setSelectedDay(null) : null}
           />
         ) : showSections ? (
           <>

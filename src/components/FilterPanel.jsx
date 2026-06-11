@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 
-const DATE_OPTIONS = [
-  { id: 'today',    label: 'Today' },
-  { id: 'tomorrow', label: 'Tomorrow' },
-  { id: 'week',     label: 'This week' },
-  { id: 'weekend',  label: 'Weekend' },
-];
-
 function babyAgeWeeks(birthdate) {
   if (!birthdate) return null;
   const diff = Date.now() - new Date(birthdate).getTime();
@@ -18,21 +11,19 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   const { profile } = useAuthContext();
   const defaultAge = babyAgeWeeks(profile?.baby_birthdate);
 
-  const [ageMax, setAgeMax]         = useState(filters.ageMax ?? (defaultAge ?? 52));
-  const [dateFilter, setDateFilter] = useState(filters.dateFilter ?? null);
+  const [ageMax, setAgeMax] = useState(filters.ageMax ?? (defaultAge ?? 52));
 
   function apply() {
-    onChange({ ageMax, dateFilter });
+    onChange({ ageMax });
     onToggle();
   }
 
   function reset() {
     setAgeMax(defaultAge ?? 52);
-    setDateFilter(null);
-    onChange({ ageMax: null, dateFilter: null });
+    onChange({ ageMax: null });
   }
 
-  const hasFilters = filters.ageMax != null || filters.dateFilter != null;
+  const hasFilters = filters.ageMax != null;
 
   return (
     <div className="relative flex-shrink-0">
@@ -77,26 +68,6 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
             </div>
           </div>
 
-          {/* Date filter */}
-          <div>
-            <span className="text-xs font-semibold text-stone-600 block mb-2">Date</span>
-            <div className="flex flex-wrap gap-2">
-              {DATE_OPTIONS.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setDateFilter(dateFilter === opt.id ? null : opt.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    dateFilter === opt.id
-                      ? 'bg-dusty-rose border-dusty-rose text-white'
-                      : 'bg-white border-stone-200 text-stone-600'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div className="flex gap-2">
             <button onClick={reset} className="flex-1 py-2 rounded-xl border border-stone-200 text-xs text-stone-600">
               Reset
@@ -111,51 +82,7 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   );
 }
 
-export function applyFilters(activities, { ageMax, dateFilter }) {
-  let results = activities;
-
-  if (ageMax != null) {
-    results = results.filter(a => a.ageFrom <= ageMax);
-  }
-
-  if (dateFilter) {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-    const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
-
-    // Weekend = Friday + Saturday in Israel
-    const dayOfWeek = today.getDay();
-    const daysToFri = (5 - dayOfWeek + 7) % 7;
-    const fri = new Date(today); fri.setDate(today.getDate() + daysToFri);
-    const sat = new Date(fri); sat.setDate(fri.getDate() + 1);
-
-    function matchesDay(d) {
-      switch (dateFilter) {
-        case 'today':    return d.getTime() === today.getTime();
-        case 'tomorrow': return d.getTime() === tomorrow.getTime();
-        case 'week':     return d >= today && d <= weekEnd;
-        case 'weekend':  return d.getTime() === fri.getTime() || d.getTime() === sat.getTime();
-        default:         return false;
-      }
-    }
-
-    results = results.filter(a => {
-      // next_dates array (primary: recurring + scheduled activities)
-      if (a.nextDates?.length > 0) {
-        return a.nextDates.some(dateStr => {
-          const d = new Date(`${dateStr}T00:00:00`);
-          return matchesDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
-        });
-      }
-      // Fallback: one-time eventDate
-      if (a.eventDate) {
-        return matchesDay(new Date(a.eventDate.getFullYear(), a.eventDate.getMonth(), a.eventDate.getDate()));
-      }
-      // No date information — exclude when filtering by date
-      return false;
-    });
-  }
-
-  return results;
+export function applyFilters(activities, { ageMax }) {
+  if (ageMax == null) return activities;
+  return activities.filter(a => a.ageFrom <= ageMax);
 }

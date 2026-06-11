@@ -1,20 +1,20 @@
-const DATE_LABELS = {
-  today:    'today',
-  tomorrow: 'tomorrow',
-  week:     'this week',
-  weekend:  'this weekend',
-};
+function formatDateLabel(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(`${dateStr}T00:00:00`);
+  return d.toLocaleDateString('en-IL', { weekday: 'short', day: 'numeric', month: 'short' });
+}
 
 export default function EmptyState({ query, dateFilter, onClearDate }) {
   if (dateFilter) {
+    const label = formatDateLabel(dateFilter);
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
         <span className="text-5xl mb-4">📅</span>
         <h3 className="text-stone-700 font-medium text-lg mb-2">
-          Nothing {DATE_LABELS[dateFilter] || dateFilter}
+          Nothing on {label}
         </h3>
         <p className="text-stone-400 text-sm max-w-xs leading-relaxed mb-5">
-          Check back later — new sessions are added weekly.
+          No sessions scheduled — try another day or browse all.
         </p>
         {onClearDate && (
           <button

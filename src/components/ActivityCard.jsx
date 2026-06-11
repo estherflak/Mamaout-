@@ -3,11 +3,13 @@ import { useAuthContext } from '../contexts/AuthContext';
 
 // Left-border accent color per DB category key
 const CATEGORY_BORDER = {
-  movement:       '#d4a5a5',  // terracotta / dusty rose
-  wellness:       '#7da37d',  // sage green
-  'baby-focused': '#f9a8d4',  // soft pink
-  social:         '#fbbf24',  // warm amber
-  creative:       '#c084fc',  // purple
+  movement:         '#d4a5a5',  // terracotta
+  wellness:         '#7da37d',  // sage green
+  'baby-focused':   '#f9a8d4',  // soft pink
+  social:           '#fbbf24',  // warm amber
+  creative:         '#c084fc',  // lavender
+  activities_kids:  '#7dd3fc',  // light blue
+  workshops:        '#c4b5fd',  // lavender
 };
 
 function shareOnWhatsApp(e, activity) {
@@ -79,12 +81,24 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) 
           </div>
         </div>
 
-        {/* Schedule label */}
-        {activity.scheduleLabel && (
-          <p className="text-sm font-medium text-stone-700 mb-0.5">
-            {activity.scheduleLabel}
-          </p>
-        )}
+        {/* Day + time line */}
+        {(() => {
+          const timeStr = activity.timeStart
+            ? (activity.timeEnd ? `${activity.timeStart}–${activity.timeEnd}` : activity.timeStart)
+            : null;
+          // Prefer schedule label; fall back to first upcoming date formatted as "Wed 11 Jun"
+          const dayStr = activity.scheduleLabel || (() => {
+            const d = activity.nextDates?.[0];
+            if (!d) return null;
+            return new Date(`${d}T00:00:00`).toLocaleDateString('en-IL', {
+              weekday: 'short', day: 'numeric', month: 'short',
+            });
+          })();
+          const line = [dayStr, timeStr].filter(Boolean).join(' · ');
+          return line ? (
+            <p className="text-sm font-medium text-stone-700 mb-0.5">{line}</p>
+          ) : null;
+        })()}
 
         {/* Neighborhood · City */}
         <p className="text-xs text-stone-400 mb-2.5">
