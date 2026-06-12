@@ -42,3 +42,14 @@ Then **Deployments → Redeploy**. The app will start reading activities from Su
 2. **Claude Haiku** classifies each raw result: assigns a category, estimates price and baby age, and filters out irrelevant listings.
 3. New activities land in the **Supabase** `activities` table.
 4. The **Vercel** frontend fetches them on load. Falls back to built-in sample data if Supabase is unreachable.
+
+## Daily reminder email
+
+`api/cron/send-reminders.js` runs every morning (06:00 UTC) and emails each mom a
+digest of the activities she saved or RSVP'd that happen **that day**. It's opt-in
+(Profile → Notifications → Email reminders) and de-duped via the `reminders_sent`
+table (run `supabase/migrations/migration_v12.sql`).
+
+To enable, set these env vars in Vercel: `SUPABASE_SERVICE_ROLE_KEY`,
+`RESEND_API_KEY`, and optionally `REMINDER_FROM`, `APP_URL`, `CRON_SECRET`
+(see `.env.example`). Without `RESEND_API_KEY` the cron no-ops safely.
