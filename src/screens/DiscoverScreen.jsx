@@ -2,7 +2,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
 import { useRsvpCounts } from '../hooks/useRsvpCounts';
 import { useSavedSearches } from '../hooks/useSavedSearches';
+import { useFriends } from '../hooks/useFriends';
+import { useFriendsGoing } from '../hooks/useFriendsGoing';
 import { useAuthContext } from '../contexts/AuthContext';
+import { rankActivities } from '../lib/rank';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
 import FilterPanel, { applyFilters } from '../components/FilterPanel';
@@ -40,6 +43,8 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   const { activities, loading, error } = useActivities();
   const rsvpCounts = useRsvpCounts();
   const { add: addSavedSearch } = useSavedSearches();
+  const { friends } = useFriends();
+  const friendsMap = useFriendsGoing(friends);
   const { user, profile } = useAuthContext();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
@@ -143,8 +148,12 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       r = r.filter(a => a.timeEnd != null && a.timeEnd <= '12:00');
     }
 
-    return applyFilters(r, advFilters);
-  }, [activities, query, activeCity, advFilters, selectedDay, napTime]);
+    r = applyFilters(r, advFilters);
+
+    // Attach which friends are going, then rank best-first for this mom
+    r = r.map(a => ({ ...a, friendsGoing: friendsMap[a.id] || [] }));
+    return rankActivities(r, { profile, friendsMap });
+  }, [activities, query, activeCity, advFilters, selectedDay, napTime, friendsMap, profile]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
   const otherActivities  = filtered.filter(a => !a.friendsGoing?.length);
@@ -320,7 +329,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                 <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Friends are going</h3>
               </div>
               <div className="space-y-3">
-                {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
+                {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
               </div>
             </section>
             {otherActivities.length > 0 && (
@@ -330,7 +339,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                   <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">More to explore</h3>
                 </div>
                 <div className="space-y-3">
-                  {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
+                  {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
                 </div>
               </section>
             )}
@@ -339,7 +348,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           <div className="pt-2">
             <p className="text-xs text-stone-400 mb-3">{filtered.length} {filtered.length === 1 ? 'activity' : 'activities'} found</p>
             <div className="space-y-3">
-              {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
+              {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
             </div>
           </div>
         )}
