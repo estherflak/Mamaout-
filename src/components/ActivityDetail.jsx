@@ -88,14 +88,14 @@ export default function ActivityDetail({ activity, onClose }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h2 className="font-bold text-stone-800 text-lg leading-tight">{activity.name}</h2>
+                <h2 dir="auto" className="font-bold text-stone-800 text-lg leading-tight">{activity.name}</h2>
                 {activity.isVerified && (
                   <svg className="w-4 h-4 flex-shrink-0 text-sage-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 )}
               </div>
-              <p className="text-sm text-stone-400 mt-0.5">
+              <p dir="auto" className="text-sm text-stone-400 mt-0.5">
                 {activity.neighborhood}{activity.neighborhood !== activity.city ? ` · ${activity.city}` : ''}
               </p>
             </div>
@@ -112,7 +112,7 @@ export default function ActivityDetail({ activity, onClose }) {
               <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              {scheduleStr}
+              <span dir="auto">{scheduleStr}</span>
             </div>
           )}
 
@@ -152,7 +152,7 @@ export default function ActivityDetail({ activity, onClose }) {
                 <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
-                <span className="text-sm text-stone-600 flex-1">{activity.address}</span>
+                <span dir="auto" className="text-sm text-stone-600 flex-1">{activity.address}</span>
                 <NavigateButton address={activity.address} />
               </div>
             )}
@@ -163,7 +163,7 @@ export default function ActivityDetail({ activity, onClose }) {
             <div className="flex items-center justify-between gap-3 py-2 border-t border-stone-100">
               <div>
                 <p className="text-xs text-stone-400">Organizer</p>
-                <p className="text-sm text-stone-700 font-medium">{activity.organizerName || 'Contact'}</p>
+                <p dir="auto" className="text-sm text-stone-700 font-medium">{activity.organizerName || 'Contact'}</p>
               </div>
               {activity.organizerWhatsapp && (
                 <a
@@ -189,7 +189,7 @@ export default function ActivityDetail({ activity, onClose }) {
 
           {/* Description */}
           {activity.description && (
-            <p className="text-sm text-stone-600 leading-relaxed">{activity.description}</p>
+            <p dir="auto" className="text-sm text-stone-600 leading-relaxed">{activity.description}</p>
           )}
 
           {/* RSVP + social proof */}

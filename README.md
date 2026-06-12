@@ -32,7 +32,7 @@ Add these two environment variables in your Vercel project under **Settings → 
 | `VITE_SUPABASE_URL` | Same as your Supabase Project URL |
 | `VITE_SUPABASE_ANON_KEY` | Same as your Supabase anon key |
 
-Then **Deployments → Redeploy**. The app will show a green "live" dot once it's reading from Supabase.
+Then **Deployments → Redeploy**. The app will start reading activities from Supabase.
 
 ---
 

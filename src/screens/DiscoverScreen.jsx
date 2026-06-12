@@ -183,7 +183,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
           <>
             <div className="space-y-2 mb-2">
               <SearchBar value={query} onChange={setQuery} />
-              <SuggestionChips onSelect={handleChipSelect} />
+              <SuggestionChips value={query} onSelect={handleChipSelect} />
               <DayStrip
                 activities={activities}
                 selectedDay={selectedDay}
@@ -288,6 +288,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
             query={query}
             dateFilter={selectedDay}
             onClearDate={selectedDay ? () => setSelectedDay(null) : null}
+            onClearSearch={() => { setQuery(''); setSelectedDay(null); setNapTime(false); }}
           />
         ) : showSections ? (
           <>

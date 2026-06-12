@@ -23,12 +23,15 @@ function shareOnWhatsApp(e, activity) {
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
-export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) {
+export default function ActivityCard({ activity, onSelect, friendsGoing = [], rsvpCounts }) {
   const { user } = useAuthContext();
   const { favoriteIds, toggle } = useFavorites();
   const isFav = favoriteIds.has(activity.id);
   const firstFriend = friendsGoing[0];
   const borderColor = CATEGORY_BORDER[activity.categoryKey] || CATEGORY_BORDER.social;
+  const rsvp = rsvpCounts?.[activity.id];
+  const interestedCount = rsvp?.interested || 0;
+  const goingCount = rsvp?.going || 0;
 
   return (
     <div
@@ -43,7 +46,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) 
         <div className="flex items-start justify-between gap-3 mb-1">
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-1.5 min-w-0">
-              <h2 className="font-semibold text-stone-800 text-base leading-tight line-clamp-2">
+              <h2 dir="auto" className="font-semibold text-stone-800 text-base leading-tight line-clamp-2">
                 {activity.name}
               </h2>
               {activity.isVerified && (
@@ -105,12 +108,12 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) 
             line = `${scheduleLabel} · ${timeRange}`;
           }
           return line ? (
-            <p className="text-sm font-medium text-stone-700 mb-0.5">{line}</p>
+            <p dir="auto" className="text-sm font-medium text-stone-700 mb-0.5">{line}</p>
           ) : null;
         })()}
 
         {/* Neighborhood · City */}
-        <p className="text-xs text-stone-400 mb-2.5">
+        <p dir="auto" className="text-xs text-stone-400 mb-2.5">
           {activity.neighborhood}{activity.neighborhood !== activity.city ? ` · ${activity.city}` : ''}
         </p>
 
@@ -129,8 +132,14 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) 
 
           {/* Stroller accessible */}
           {activity.strollerAccessible && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600" title="Stroller accessible">
-              🛺 Stroller OK
+            <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 inline-flex items-center gap-1" title="Stroller accessible">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M3 4h2l1.5 9h11" />
+                <path d="M5.5 13a8 8 0 0 0 8-8h-8" />
+                <circle cx="8.5" cy="18" r="1.6" />
+                <circle cx="16" cy="18" r="1.6" />
+              </svg>
+              Stroller OK
             </span>
           )}
 
@@ -155,6 +164,16 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [] }) 
             </div>
           )}
         </div>
+
+        {/* Social proof — aggregated RSVP counts */}
+        {(interestedCount > 0 || goingCount > 0) && (
+          <p className="text-xs text-sage-500 mt-2">
+            {[
+              interestedCount > 0 && `⭐ ${interestedCount} interested`,
+              goingCount > 0 && `✓ ${goingCount} going`,
+            ].filter(Boolean).join(' · ')}
+          </p>
+        )}
       </div>
     </div>
   );
