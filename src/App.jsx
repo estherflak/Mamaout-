@@ -44,7 +44,7 @@ function MainApp() {
   function renderTab() {
     if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} onOpenSubmit={() => setShowSubmit(true)} seed={discoverSeed} onSeedConsumed={() => setDiscoverSeed(null)} />;
     if (tab === 'saved')    return user ? <SavedScreen onSelect={setSelected} /> : <LoginScreen />;
-    if (tab === 'friends')  return user ? <FriendsScreen /> : <LoginScreen />;
+    if (tab === 'friends')  return user ? <FriendsScreen onSelect={setSelected} /> : <LoginScreen />;
     if (tab === 'profile')  return user ? <ProfileScreen onOpenSubmit={() => setShowSubmit(true)} onRunSearch={s => { setDiscoverSeed(s); setTab('discover'); }} /> : <LoginScreen />;
     return null;
   }
