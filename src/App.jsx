@@ -18,6 +18,7 @@ function MainApp() {
   const { requests } = useFriends();
   const [tab, setTab]             = useState('discover');
   const [selected, setSelected]   = useState(null);
+  const [discoverSeed, setDiscoverSeed] = useState(null);
   const [showSubmit, setShowSubmit] = useState(
     () => window.location.pathname === '/submit'
   );
@@ -41,10 +42,10 @@ function MainApp() {
   if (user && !profile?.onboarding_done) return <OnboardingScreen />;
 
   function renderTab() {
-    if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} onOpenSubmit={() => setShowSubmit(true)} />;
+    if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} onOpenSubmit={() => setShowSubmit(true)} seed={discoverSeed} onSeedConsumed={() => setDiscoverSeed(null)} />;
     if (tab === 'saved')    return user ? <SavedScreen onSelect={setSelected} /> : <LoginScreen />;
     if (tab === 'friends')  return user ? <FriendsScreen /> : <LoginScreen />;
-    if (tab === 'profile')  return user ? <ProfileScreen onOpenSubmit={() => setShowSubmit(true)} /> : <LoginScreen />;
+    if (tab === 'profile')  return user ? <ProfileScreen onOpenSubmit={() => setShowSubmit(true)} onRunSearch={s => { setDiscoverSeed(s); setTab('discover'); }} /> : <LoginScreen />;
     return null;
   }
 
