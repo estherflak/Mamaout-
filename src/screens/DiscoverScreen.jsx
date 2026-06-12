@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
+import { useRsvpCounts } from '../hooks/useRsvpCounts';
 import { useAuthContext } from '../contexts/AuthContext';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
@@ -36,6 +37,7 @@ function CardSkeleton() {
 
 export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
   const { activities, loading, error } = useActivities();
+  const rsvpCounts = useRsvpCounts();
   const { profile } = useAuthContext();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
@@ -44,7 +46,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
   const [openNow, setOpenNow]         = useState(false);
   const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
-  const [advFilters, setAdvFilters]   = useState({ ageMax: null });
+  const [advFilters, setAdvFilters]   = useState({ ageMax: null, language: null });
   const [selectedDay, setSelectedDay] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -56,12 +58,31 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
   useEffect(() => {
     if (!profile || profileInit) return;
     setProfileInit(true);
+
+    const updates = {};
+
     if (profile.baby_birthdate) {
       const ageWeeks = Math.floor(
         (Date.now() - new Date(profile.baby_birthdate)) / (7 * 24 * 60 * 60 * 1000)
       );
-      if (ageWeeks >= 0 && ageWeeks <= 52) {
-        setAdvFilters(f => ({ ...f, ageMax: ageWeeks }));
+      if (ageWeeks >= 0 && ageWeeks <= 52) updates.ageMax = ageWeeks;
+    }
+
+    if (profile.language && profile.language !== 'both') {
+      updates.language = profile.language;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      setAdvFilters(f => ({ ...f, ...updates }));
+    }
+
+    // Pre-select area from neighborhood
+    if (profile.neighborhood) {
+      const n = profile.neighborhood.toLowerCase();
+      if (n.includes('ramat gan') || n.includes('רמת גן') || n.includes('givatayim') || n.includes('גבעתיים')) {
+        setCity('Ramat Gan');
+      } else {
+        setCity('Tel Aviv');
       }
     }
   }, [profile, profileInit]);
@@ -276,7 +297,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
                 <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Friends are going</h3>
               </div>
               <div className="space-y-3">
-                {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} />)}
+                {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
               </div>
             </section>
             {otherActivities.length > 0 && (
@@ -286,7 +307,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
                   <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">More to explore</h3>
                 </div>
                 <div className="space-y-3">
-                  {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} />)}
+                  {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
                 </div>
               </section>
             )}
@@ -295,7 +316,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
           <div className="pt-2">
             <p className="text-xs text-stone-400 mb-3">{filtered.length} {filtered.length === 1 ? 'activity' : 'activities'} found</p>
             <div className="space-y-3">
-              {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} />)}
+              {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
             </div>
           </div>
         )}

@@ -1,5 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
+
+const LANGUAGES = [
+  { id: 'hebrew',  label: 'Hebrew' },
+  { id: 'english', label: 'English' },
+  { id: 'both',    label: 'Both' },
+];
 
 function babyAgeWeeks(birthdate) {
   if (!birthdate) return null;
@@ -12,22 +18,40 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   const defaultAge = babyAgeWeeks(profile?.baby_birthdate);
 
   const [ageMax, setAgeMax] = useState(filters.ageMax ?? (defaultAge ?? 52));
+  const [language, setLanguage] = useState(filters.language ?? '');
+
+  // Keep local state in sync when filters change from outside (e.g. profile init)
+  useEffect(() => {
+    setAgeMax(filters.ageMax ?? (defaultAge ?? 52));
+  }, [filters.ageMax]);
+
+  useEffect(() => {
+    setLanguage(filters.language ?? '');
+  }, [filters.language]);
 
   function apply() {
-    onChange({ ageMax });
+    onChange({ ageMax, language: language || null });
     onToggle();
   }
 
   function reset() {
-    setAgeMax(defaultAge ?? 52);
-    onChange({ ageMax: null });
+    const resetAge = defaultAge ?? 52;
+    setAgeMax(resetAge);
+    setLanguage('');
+    onChange({ ageMax: null, language: null });
   }
 
-  const hasFilters = filters.ageMax != null;
+  const hasFilters = filters.ageMax != null || filters.language != null;
+
+  const pillCls = active =>
+    `px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+      active
+        ? 'bg-dusty-rose border-dusty-rose text-white'
+        : 'border-stone-200 text-stone-500 bg-white'
+    }`;
 
   return (
     <div className="relative flex-shrink-0">
-      {/* Toggle button */}
       <button
         onClick={onToggle}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
@@ -43,7 +67,6 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
         {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-dusty-rose" />}
       </button>
 
-      {/* Dropdown panel — absolute so it doesn't clip */}
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-stone-100 shadow-lg p-4 space-y-5 z-50">
           {/* Age filter */}
@@ -68,6 +91,22 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
             </div>
           </div>
 
+          {/* Language filter */}
+          <div>
+            <span className="text-xs font-semibold text-stone-600 block mb-2">Activity language</span>
+            <div className="flex gap-2 flex-wrap">
+              {LANGUAGES.map(l => (
+                <button
+                  key={l.id}
+                  onClick={() => setLanguage(language === l.id ? '' : l.id)}
+                  className={pillCls(language === l.id)}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex gap-2">
             <button onClick={reset} className="flex-1 py-2 rounded-xl border border-stone-200 text-xs text-stone-600">
               Reset
@@ -82,7 +121,12 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   );
 }
 
-export function applyFilters(activities, { ageMax }) {
-  if (ageMax == null) return activities;
-  return activities.filter(a => a.ageFrom <= ageMax);
+export function applyFilters(activities, { ageMax, language }) {
+  let r = activities;
+  if (ageMax != null) r = r.filter(a => a.ageFrom <= ageMax);
+  if (language && language !== 'both') {
+    const code = language === 'hebrew' ? 'he' : 'en';
+    r = r.filter(a => !a.language || a.language === code);
+  }
+  return r;
 }
