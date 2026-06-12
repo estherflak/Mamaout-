@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
 import { useRsvpCounts } from '../hooks/useRsvpCounts';
+import { useSavedSearches } from '../hooks/useSavedSearches';
 import { useAuthContext } from '../contexts/AuthContext';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
@@ -35,10 +36,11 @@ function CardSkeleton() {
   );
 }
 
-export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
+export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedConsumed }) {
   const { activities, loading, error } = useActivities();
   const rsvpCounts = useRsvpCounts();
-  const { profile } = useAuthContext();
+  const { add: addSavedSearch } = useSavedSearches();
+  const { user, profile } = useAuthContext();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
   const [activeCity, setCity]         = useState('all');
@@ -87,7 +89,25 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
     }
   }, [profile, profileInit]);
 
+  // Re-run a saved search handed in from the Profile tab
+  useEffect(() => {
+    if (!seed) return;
+    setSection('activities');
+    setQuery(seed.query || '');
+    setCity(seed.area || 'all');
+    setSelectedDay(null);
+    setNapTime(false);
+    onSeedConsumed?.();
+  }, [seed]);
+
   const handleChipSelect = chip => setQuery(chip);
+
+  // Human-readable summary for a saved search, e.g. "Pottery in Tel Aviv"
+  function searchLabel() {
+    const q = query.trim();
+    const areaLabel = activeCity === 'all' ? '' : ` in ${activeCity}`;
+    return (q ? q : 'All activities') + areaLabel;
+  }
 
   const filtered = useMemo(() => {
     const today = new Date();
@@ -183,7 +203,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
           <>
             <div className="space-y-2 mb-2">
               <SearchBar value={query} onChange={setQuery} />
-              <SuggestionChips onSelect={handleChipSelect} />
+              <SuggestionChips value={query} onSelect={handleChipSelect} />
               <DayStrip
                 activities={activities}
                 selectedDay={selectedDay}
@@ -288,6 +308,9 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit }) {
             query={query}
             dateFilter={selectedDay}
             onClearDate={selectedDay ? () => setSelectedDay(null) : null}
+            onClearSearch={() => { setQuery(''); setSelectedDay(null); setNapTime(false); }}
+            canSave={!!user}
+            onSaveSearch={() => addSavedSearch({ query, area: activeCity, label: searchLabel() })}
           />
         ) : showSections ? (
           <>

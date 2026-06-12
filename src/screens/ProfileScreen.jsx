@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSavedSearches } from '../hooks/useSavedSearches';
 import { supabase } from '../lib/supabase';
 
 const LANGUAGES = [
@@ -13,8 +14,9 @@ const NOTIF_PREFS = [
   { id: 'none',     label: 'None' },
 ];
 
-export default function ProfileScreen({ onOpenSubmit }) {
+export default function ProfileScreen({ onOpenSubmit, onRunSearch }) {
   const { user, profile, refreshProfile, signOut } = useAuthContext();
+  const { searches, remove: removeSearch } = useSavedSearches();
 
   const [editing, setEditing]     = useState(false);
   const [name, setName]           = useState(profile?.name ?? '');
@@ -209,6 +211,36 @@ export default function ProfileScreen({ onOpenSubmit }) {
                 {saving ? 'Saving…' : 'Save'}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Saved searches */}
+        {searches.length > 0 && (
+          <div className="bg-white rounded-2xl border border-stone-100 p-4">
+            <p className="text-xs font-semibold text-stone-600 mb-2.5">🔖 Saved searches</p>
+            <div className="space-y-2">
+              {searches.map(s => (
+                <div key={s.id} className="flex items-center gap-2">
+                  <button
+                    onClick={() => onRunSearch?.({ query: s.query || '', area: s.area || 'all' })}
+                    dir="auto"
+                    className="flex-1 text-left px-3 py-2 rounded-xl bg-sage-50 border border-sage-200 text-sm text-stone-600 truncate"
+                  >
+                    {s.label || s.query || 'All activities'}
+                  </button>
+                  <button
+                    onClick={() => removeSearch(s.id)}
+                    aria-label="Remove saved search"
+                    className="w-8 h-8 flex-shrink-0 rounded-xl border border-stone-200 text-stone-400 flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-stone-300 mt-2.5">We'll add matching activities as we find them — tap a search to run it again.</p>
           </div>
         )}
 

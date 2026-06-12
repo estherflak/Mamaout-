@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import ActivityCard from './ActivityCard';
 
 function InvalidateSize() {
   const map = useMap();
@@ -50,11 +51,13 @@ function jitterDuplicates(activities) {
   });
 }
 
-export default function MapView({ activities, onSelect }) {
+export default function MapView({ activities, onSelect, className = '' }) {
   const mapped = jitterDuplicates(activities.filter(a => a.latitude && a.longitude));
+  // Activity surfaced in the bottom sheet after tapping a pin
+  const [sheet, setSheet] = useState(null);
 
   return (
-    <div className="relative" style={{ height: '100%', minHeight: '60vh' }}>
+    <div className={`relative ${className}`} style={{ height: '100%', minHeight: '60vh' }}>
       <MapContainer
         center={[32.0853, 34.7818]}
         zoom={12}
@@ -74,27 +77,8 @@ export default function MapView({ activities, onSelect }) {
               key={activity.id}
               position={[activity.latitude, activity.longitude]}
               icon={categoryIcon(activity)}
-            >
-              <Popup closeButton={false}>
-                <div className="p-1 min-w-[160px]">
-                  <div className="flex items-start gap-2 mb-2">
-                    <span className="text-lg leading-none">{activity.emoji}</span>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-stone-800 text-xs leading-tight line-clamp-2">{activity.name}</p>
-                      <p className="text-stone-400 text-[10px] mt-0.5">{activity.neighborhood}</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => onSelect(activity)}
-                      className="text-[10px] font-semibold text-dusty-roseDark underline"
-                    >
-                      View details →
-                    </button>
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
+              eventHandlers={{ click: () => setSheet(activity) }}
+            />
           ))}
         </MarkerClusterGroup>
       </MapContainer>
@@ -103,6 +87,36 @@ export default function MapView({ activities, onSelect }) {
         <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
           <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm border border-stone-100">
             <p className="text-xs text-stone-500">No activities with map coordinates yet</p>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom sheet — full activity card for the tapped pin */}
+      {sheet && (
+        <div
+          className="absolute inset-0 z-[1000] flex items-end"
+          onClick={() => setSheet(null)}
+        >
+          <div className="absolute inset-0 bg-black/10" />
+          <div
+            className="relative w-full px-3 pb-3 animate-sheet-up"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-end mb-1.5">
+              <button
+                onClick={() => setSheet(null)}
+                aria-label="Close"
+                className="w-8 h-8 rounded-full bg-white shadow-md border border-stone-100 flex items-center justify-center text-stone-500"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <ActivityCard
+              activity={sheet}
+              onSelect={a => { setSheet(null); onSelect(a); }}
+            />
           </div>
         </div>
       )}
