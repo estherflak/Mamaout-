@@ -2,16 +2,7 @@ import { useEffect } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { useParticipants, logClick } from '../hooks/useParticipants';
-
-function shareOnWhatsApp(activity) {
-  const msg = [
-    'Found this on MamaOut — looks great:',
-    activity.name,
-    activity.neighborhood,
-    activity.sourceUrl ? `More info: ${activity.sourceUrl}` : '',
-  ].filter(Boolean).join('\n');
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-}
+import { shareActivityOnWhatsApp } from '../lib/share';
 
 function NavigateButton({ address }) {
   const query = encodeURIComponent(address);
@@ -239,7 +230,7 @@ export default function ActivityDetail({ activity, onClose }) {
               </button>
             )}
             <button
-              onClick={() => shareOnWhatsApp(activity)}
+              onClick={() => shareActivityOnWhatsApp(activity)}
               className="w-14 py-3.5 rounded-2xl border border-stone-200 bg-white flex items-center justify-center text-green-500 active:scale-[0.98] transition-transform"
               title="Share on WhatsApp"
             >

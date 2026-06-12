@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useFriends } from '../hooks/useFriends';
+import { useFriendsActivity, relativeTime } from '../hooks/useFriendsActivity';
 
 function FriendAvatar({ name, size = 'md' }) {
   const sizeClasses = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
@@ -37,8 +38,37 @@ function RequestCard({ request, onAccept, onDecline }) {
   );
 }
 
-export default function FriendsScreen() {
+function FriendFeedItem({ item, onSelect }) {
+  const verb = item.status === 'going' ? 'is going to' : 'is interested in';
+  return (
+    <button
+      onClick={() => onSelect?.(item.activity)}
+      className="w-full text-left bg-white rounded-2xl border border-stone-100 p-3 flex items-center gap-3"
+    >
+      <FriendAvatar name={item.friendName} size="sm" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-stone-700 leading-snug">
+          <span className="font-medium">{item.friendName}</span>{' '}
+          <span className="text-stone-400">{verb}</span>
+        </p>
+        <p dir="auto" className="text-sm font-medium text-stone-800 truncate">{item.activity.name}</p>
+        <p dir="auto" className="text-xs text-stone-400 truncate">
+          {item.activity.neighborhood}
+          {item.date ? ` · ${relativeTime(item.date)}` : ''}
+        </p>
+      </div>
+      <span className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
+        item.status === 'going' ? 'bg-sage-100 text-sage-600' : 'bg-dusty-rosePale text-dusty-roseDark'
+      }`}>
+        {item.status === 'going' ? '✓ Going' : '⭐ Interested'}
+      </span>
+    </button>
+  );
+}
+
+export default function FriendsScreen({ onSelect }) {
   const { friends, requests, loading, sendRequest, respond } = useFriends();
+  const { feed, hint } = useFriendsActivity(friends);
   const [tab, setTab]     = useState('friends'); // 'friends' | 'requests'
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState(null); // null | 'sending' | 'sent' | 'error'
@@ -149,23 +179,52 @@ export default function FriendsScreen() {
               ))}
             </div>
           )
-        ) : friends.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center pt-16">
-            <span className="text-5xl mb-4">👯</span>
-            <p className="text-stone-600 font-medium mb-1">No friends yet</p>
-            <p className="text-sm text-stone-400">Add friends by phone or invite via WhatsApp</p>
-          </div>
         ) : (
-          <div className="space-y-2">
-            {friends.map(f => (
-              <div key={f.id} className="bg-white rounded-2xl border border-stone-100 p-3 flex items-center gap-3">
-                <FriendAvatar name={f.name} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-stone-800 text-sm truncate">{f.name ?? 'Friend'}</p>
-                  <p className="text-xs text-stone-400 truncate">{f.neighborhood}</p>
+          <div className="space-y-5">
+            {/* What your friends saved (Phase 6.2) */}
+            {(feed.length > 0 || hint) && (
+              <section>
+                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
+                  What your friends saved
+                </h3>
+                {feed.length > 0 ? (
+                  <div className="space-y-2.5">
+                    {feed.map(item => <FriendFeedItem key={item.id} item={item} onSelect={onSelect} />)}
+                  </div>
+                ) : (
+                  <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4 text-center">
+                    <p dir="auto" className="text-sm text-sage-600">🌸 {hint}</p>
+                    <p className="text-xs text-stone-400 mt-1">Add friends to see what they're going to</p>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Friends list */}
+            {friends.length === 0 ? (
+              !hint && (
+                <div className="flex flex-col items-center justify-center text-center pt-12">
+                  <span className="text-5xl mb-4">👯</span>
+                  <p className="text-stone-600 font-medium mb-1">No friends yet</p>
+                  <p className="text-sm text-stone-400">Add friends by phone or invite via WhatsApp</p>
                 </div>
-              </div>
-            ))}
+              )
+            ) : (
+              <section>
+                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">Your friends</h3>
+                <div className="space-y-2">
+                  {friends.map(f => (
+                    <div key={f.id} className="bg-white rounded-2xl border border-stone-100 p-3 flex items-center gap-3">
+                      <FriendAvatar name={f.name} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-stone-800 text-sm truncate">{f.name ?? 'Friend'}</p>
+                        <p className="text-xs text-stone-400 truncate">{f.neighborhood}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         )}
       </div>

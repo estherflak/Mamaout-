@@ -1,5 +1,6 @@
 import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from '../contexts/AuthContext';
+import { shareActivityOnWhatsApp } from '../lib/share';
 
 // Left-border accent color per DB category key
 const CATEGORY_BORDER = {
@@ -14,13 +15,7 @@ const CATEGORY_BORDER = {
 
 function shareOnWhatsApp(e, activity) {
   e.stopPropagation();
-  const msg = [
-    'Found this on MamaOut — looks great:',
-    activity.name,
-    activity.neighborhood,
-    `Book here: ${activity.sourceUrl}`,
-  ].join('\n');
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  shareActivityOnWhatsApp(activity);
 }
 
 export default function ActivityCard({ activity, onSelect, friendsGoing = [], rsvpCounts }) {
