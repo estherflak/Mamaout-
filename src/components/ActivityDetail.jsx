@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { localizedName, localizedDesc } from '../lib/localize';
 import { useFavorites } from '../hooks/useFavorites';
 import { useParticipants, logClick } from '../hooks/useParticipants';
 import { shareActivityOnWhatsApp } from '../lib/share';
@@ -24,6 +26,7 @@ function NavigateButton({ address }) {
 
 export default function ActivityDetail({ activity, onClose }) {
   const { user } = useAuthContext();
+  const { lang } = useLanguage();
   const { favoriteIds, toggle: toggleFav } = useFavorites();
   const { participants, myStatus, setStatus } = useParticipants(activity.id);
 
@@ -79,7 +82,7 @@ export default function ActivityDetail({ activity, onClose }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h2 dir="auto" className="font-bold text-stone-800 text-lg leading-tight">{activity.name}</h2>
+                <h2 dir="auto" className="font-bold text-stone-800 text-lg leading-tight">{localizedName(activity, lang)}</h2>
                 {activity.isVerified && (
                   <svg className="w-4 h-4 flex-shrink-0 text-sage-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -179,8 +182,8 @@ export default function ActivityDetail({ activity, onClose }) {
           </div>
 
           {/* Description */}
-          {activity.description && (
-            <p dir="auto" className="text-sm text-stone-600 leading-relaxed">{activity.description}</p>
+          {localizedDesc(activity, lang) && (
+            <p dir="auto" className="text-sm text-stone-600 leading-relaxed">{localizedDesc(activity, lang)}</p>
           )}
 
           {/* RSVP + social proof */}

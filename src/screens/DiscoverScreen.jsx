@@ -5,6 +5,7 @@ import { useSavedSearches } from '../hooks/useSavedSearches';
 import { useFriends } from '../hooks/useFriends';
 import { useFriendsGoing } from '../hooks/useFriendsGoing';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { rankActivities } from '../lib/rank';
 import { matchesDateRange } from '../lib/dates';
 import SearchBar from '../components/SearchBar';
@@ -47,6 +48,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   const { friends } = useFriends();
   const friendsMap = useFriendsGoing(friends);
   const { user, profile } = useAuthContext();
+  const { lang, setLang } = useLanguage();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
   const [activeCity, setCity]         = useState('all');
@@ -183,22 +185,43 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             <p className="text-xs text-stone-400 mt-0.5">Tel Aviv &amp; Ramat Gan</p>
           </div>
 
-          {/* List / Map toggle — only in activities section */}
-          {section === 'activities' && (
+          <div className="flex items-center gap-2">
+            {/* Content language toggle */}
             <div className="flex bg-stone-100 rounded-xl p-0.5">
-              {['list', 'map'].map(m => (
+              {[
+                { id: 'en', label: 'EN' },
+                { id: 'he', label: 'עב' },
+              ].map(l => (
                 <button
-                  key={m}
-                  onClick={() => setViewMode(m)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                  key={l.id}
+                  onClick={() => setLang(l.id)}
+                  aria-label={l.id === 'en' ? 'English' : 'Hebrew'}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    lang === l.id ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
                   }`}
                 >
-                  {m === 'list' ? '☰ List' : '🗺 Map'}
+                  {l.label}
                 </button>
               ))}
             </div>
-          )}
+
+            {/* List / Map toggle — only in activities section */}
+            {section === 'activities' && (
+              <div className="flex bg-stone-100 rounded-xl p-0.5">
+                {['list', 'map'].map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setViewMode(m)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                    }`}
+                  >
+                    {m === 'list' ? '☰ List' : '🗺 Map'}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Activities / Places segment control */}

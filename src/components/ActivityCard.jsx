@@ -1,5 +1,7 @@
 import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { localizedName } from '../lib/localize';
 import { shareActivityOnWhatsApp } from '../lib/share';
 
 // Left-border accent color per DB category key
@@ -20,6 +22,7 @@ function shareOnWhatsApp(e, activity) {
 
 export default function ActivityCard({ activity, onSelect, friendsGoing = [], rsvpCounts }) {
   const { user } = useAuthContext();
+  const { lang } = useLanguage();
   const { favoriteIds, toggle } = useFavorites();
   const isFav = favoriteIds.has(activity.id);
   const firstFriend = friendsGoing[0];
@@ -42,7 +45,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-1.5 min-w-0">
               <h2 dir="auto" className="font-semibold text-stone-800 text-base leading-tight line-clamp-2">
-                {activity.name}
+                {localizedName(activity, lang)}
               </h2>
               {activity.isVerified && (
                 <span title="Verified source" className="flex-shrink-0 text-sage-400 mt-0.5">
