@@ -4,7 +4,7 @@ function toLocalDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function DayStrip({ activities, selectedDay, onDaySelect, napTime, onNapTimeToggle }) {
+export default function DayStrip({ activities, selectedDay, onDaySelect, dateRange, onRangeSelect, napTime, onNapTimeToggle }) {
   const days = useMemo(() => {
     const result = [];
     for (let i = 0; i < 7; i++) {
@@ -55,18 +55,36 @@ export default function DayStrip({ activities, selectedDay, onDaySelect, napTime
         })}
       </div>
 
-      {/* Nap time toggle */}
-      <button
-        onClick={onNapTimeToggle}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-          napTime
-            ? 'bg-amber-50 border-amber-300 text-amber-700'
-            : 'bg-white border-stone-200 text-stone-500'
-        }`}
-      >
-        <span>⏰</span>
-        Back by nap time
-      </button>
+      {/* Quick filters: date ranges + nap time */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+        {[
+          { id: 'week',    label: 'This week' },
+          { id: 'weekend', label: 'Weekend' },
+        ].map(r => (
+          <button
+            key={r.id}
+            onClick={() => onRangeSelect?.(r.id)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              dateRange === r.id
+                ? 'bg-dusty-rose border-dusty-rose text-white'
+                : 'bg-white border-stone-200 text-stone-500'
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
+        <button
+          onClick={onNapTimeToggle}
+          className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            napTime
+              ? 'bg-amber-50 border-amber-300 text-amber-700'
+              : 'bg-white border-stone-200 text-stone-500'
+          }`}
+        >
+          <span>⏰</span>
+          Back by nap time
+        </button>
+      </div>
     </div>
   );
 }

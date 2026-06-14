@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AuthProvider, useAuthContext } from './contexts/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { useFriends } from './hooks/useFriends';
 import BottomNav from './components/BottomNav';
 import ActivityDetail from './components/ActivityDetail';
@@ -78,7 +79,9 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <MainApp />
+      <LanguageProvider>
+        <MainApp />
+      </LanguageProvider>
     </AuthProvider>
   );
 }

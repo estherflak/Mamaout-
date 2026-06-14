@@ -10,8 +10,8 @@ const LANGUAGES = [
 ];
 
 const NOTIF_PREFS = [
-  { id: 'whatsapp', label: 'WhatsApp' },
-  { id: 'none',     label: 'None' },
+  { id: 'email', label: 'Email reminders' },
+  { id: 'none',  label: 'None' },
 ];
 
 export default function ProfileScreen({ onOpenSubmit, onRunSearch }) {
@@ -104,7 +104,7 @@ export default function ProfileScreen({ onOpenSubmit, onRunSearch }) {
                 )}
                 {profile.notification_pref && (
                   <span className="px-2 py-0.5 rounded-full bg-stone-50 border border-stone-200 text-xs text-stone-400">
-                    {profile.notification_pref === 'whatsapp' ? '💬 WhatsApp' : '🔕 No notifications'}
+                    {profile.notification_pref === 'none' ? '🔕 No reminders' : '📧 Email reminders'}
                   </span>
                 )}
               </div>
@@ -188,7 +188,7 @@ export default function ProfileScreen({ onOpenSubmit, onRunSearch }) {
               <div className="flex gap-2">
                 {NOTIF_PREFS.map(n => (
                   <button key={n.id} onClick={() => setNotif(notif === n.id ? '' : n.id)} className={pillCls(notif === n.id)}>
-                    {n.id === 'whatsapp' ? '💬 ' : ''}{n.label}
+                    {n.id === 'email' ? '📧 ' : ''}{n.label}
                   </button>
                 ))}
               </div>

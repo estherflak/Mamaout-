@@ -2,7 +2,12 @@ import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
 import { useRsvpCounts } from '../hooks/useRsvpCounts';
 import { useSavedSearches } from '../hooks/useSavedSearches';
+import { useFriends } from '../hooks/useFriends';
+import { useFriendsGoing } from '../hooks/useFriendsGoing';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { rankActivities } from '../lib/rank';
+import { matchesDateRange } from '../lib/dates';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
 import FilterPanel, { applyFilters } from '../components/FilterPanel';
@@ -40,7 +45,10 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   const { activities, loading, error } = useActivities();
   const rsvpCounts = useRsvpCounts();
   const { add: addSavedSearch } = useSavedSearches();
+  const { friends } = useFriends();
+  const friendsMap = useFriendsGoing(friends);
   const { user, profile } = useAuthContext();
+  const { lang, setLang } = useLanguage();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
   const [activeCity, setCity]         = useState('all');
@@ -53,7 +61,12 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   });
+  const [dateRange, setDateRange]     = useState(null); // null | 'week' | 'weekend'
   const [napTime, setNapTime]         = useState(false);
+
+  // Quick date-range and specific-day selection are mutually exclusive
+  function handleDaySelect(day) { setDateRange(null); setSelectedDay(day); }
+  function handleRangeSelect(r) { setSelectedDay(null); setDateRange(prev => prev === r ? null : r); }
   const [profileInit, setProfileInit] = useState(false);
 
   // One-time initialization from profile once it loads
@@ -96,6 +109,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     setQuery(seed.query || '');
     setCity(seed.area || 'all');
     setSelectedDay(null);
+    setDateRange(null);
     setNapTime(false);
     onSeedConsumed?.();
   }, [seed]);
@@ -138,17 +152,26 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       );
     }
 
+    // Quick date-range filter — This week / Weekend
+    if (dateRange) {
+      r = r.filter(a => matchesDateRange(a, dateRange));
+    }
+
     // Nap time — only activities ending by 12:00
     if (napTime) {
       r = r.filter(a => a.timeEnd != null && a.timeEnd <= '12:00');
     }
 
-    return applyFilters(r, advFilters);
-  }, [activities, query, activeCity, advFilters, selectedDay, napTime]);
+    r = applyFilters(r, advFilters);
+
+    // Attach which friends are going, then rank best-first for this mom
+    r = r.map(a => ({ ...a, friendsGoing: friendsMap[a.id] || [] }));
+    return rankActivities(r, { profile, friendsMap });
+  }, [activities, query, activeCity, advFilters, selectedDay, dateRange, napTime, friendsMap, profile]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
   const otherActivities  = filtered.filter(a => !a.friendsGoing?.length);
-  const isFiltered = query.trim() || activeCity !== 'all' || selectedDay || napTime;
+  const isFiltered = query.trim() || activeCity !== 'all' || selectedDay || dateRange || napTime;
   const showSections = !isFiltered && friendActivities.length > 0;
 
   return (
@@ -162,22 +185,43 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             <p className="text-xs text-stone-400 mt-0.5">Tel Aviv &amp; Ramat Gan</p>
           </div>
 
-          {/* List / Map toggle — only in activities section */}
-          {section === 'activities' && (
+          <div className="flex items-center gap-2">
+            {/* Content language toggle */}
             <div className="flex bg-stone-100 rounded-xl p-0.5">
-              {['list', 'map'].map(m => (
+              {[
+                { id: 'en', label: 'EN' },
+                { id: 'he', label: 'עב' },
+              ].map(l => (
                 <button
-                  key={m}
-                  onClick={() => setViewMode(m)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                  key={l.id}
+                  onClick={() => setLang(l.id)}
+                  aria-label={l.id === 'en' ? 'English' : 'Hebrew'}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    lang === l.id ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
                   }`}
                 >
-                  {m === 'list' ? '☰ List' : '🗺 Map'}
+                  {l.label}
                 </button>
               ))}
             </div>
-          )}
+
+            {/* List / Map toggle — only in activities section */}
+            {section === 'activities' && (
+              <div className="flex bg-stone-100 rounded-xl p-0.5">
+                {['list', 'map'].map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setViewMode(m)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                    }`}
+                  >
+                    {m === 'list' ? '☰ List' : '🗺 Map'}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Activities / Places segment control */}
@@ -207,7 +251,9 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               <DayStrip
                 activities={activities}
                 selectedDay={selectedDay}
-                onDaySelect={setSelectedDay}
+                onDaySelect={handleDaySelect}
+                dateRange={dateRange}
+                onRangeSelect={handleRangeSelect}
                 napTime={napTime}
                 onNapTimeToggle={() => setNapTime(n => !n)}
               />
@@ -308,7 +354,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             query={query}
             dateFilter={selectedDay}
             onClearDate={selectedDay ? () => setSelectedDay(null) : null}
-            onClearSearch={() => { setQuery(''); setSelectedDay(null); setNapTime(false); }}
+            onClearSearch={() => { setQuery(''); setSelectedDay(null); setDateRange(null); setNapTime(false); }}
             canSave={!!user}
             onSaveSearch={() => addSavedSearch({ query, area: activeCity, label: searchLabel() })}
           />
@@ -320,7 +366,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                 <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Friends are going</h3>
               </div>
               <div className="space-y-3">
-                {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
+                {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
               </div>
             </section>
             {otherActivities.length > 0 && (
@@ -330,7 +376,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                   <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">More to explore</h3>
                 </div>
                 <div className="space-y-3">
-                  {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
+                  {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
                 </div>
               </section>
             )}
@@ -339,7 +385,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           <div className="pt-2">
             <p className="text-xs text-stone-400 mb-3">{filtered.length} {filtered.length === 1 ? 'activity' : 'activities'} found</p>
             <div className="space-y-3">
-              {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} />)}
+              {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
             </div>
           </div>
         )}

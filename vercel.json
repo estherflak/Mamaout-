@@ -15,6 +15,9 @@
     },
     "api/cron/scrape-ramat-gan.js": {
       "maxDuration": 60
+    },
+    "api/cron/send-reminders.js": {
+      "maxDuration": 60
     }
   },
   "crons": [
@@ -29,6 +32,10 @@
     {
       "path": "/api/cron/scrape-beit-emanuel-rg",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/send-reminders",
+      "schedule": "0 6 * * *"
     }
   ]
 }
