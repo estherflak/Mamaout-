@@ -138,6 +138,13 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
             </span>
           )}
 
+          {/* English-friendly */}
+          {activity.language === 'en' && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 font-medium" title="Held in English">
+              🌐 EN
+            </span>
+          )}
+
           {/* Age */}
           <span className="text-xs text-stone-400 flex items-center gap-1">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

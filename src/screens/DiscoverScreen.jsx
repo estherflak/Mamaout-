@@ -6,6 +6,7 @@ import { useFriends } from '../hooks/useFriends';
 import { useFriendsGoing } from '../hooks/useFriendsGoing';
 import { useAuthContext } from '../contexts/AuthContext';
 import { rankActivities } from '../lib/rank';
+import { matchesDateRange } from '../lib/dates';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
 import FilterPanel, { applyFilters } from '../components/FilterPanel';
@@ -58,7 +59,12 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   });
+  const [dateRange, setDateRange]     = useState(null); // null | 'week' | 'weekend'
   const [napTime, setNapTime]         = useState(false);
+
+  // Quick date-range and specific-day selection are mutually exclusive
+  function handleDaySelect(day) { setDateRange(null); setSelectedDay(day); }
+  function handleRangeSelect(r) { setSelectedDay(null); setDateRange(prev => prev === r ? null : r); }
   const [profileInit, setProfileInit] = useState(false);
 
   // One-time initialization from profile once it loads
@@ -101,6 +107,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     setQuery(seed.query || '');
     setCity(seed.area || 'all');
     setSelectedDay(null);
+    setDateRange(null);
     setNapTime(false);
     onSeedConsumed?.();
   }, [seed]);
@@ -143,6 +150,11 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       );
     }
 
+    // Quick date-range filter — This week / Weekend
+    if (dateRange) {
+      r = r.filter(a => matchesDateRange(a, dateRange));
+    }
+
     // Nap time — only activities ending by 12:00
     if (napTime) {
       r = r.filter(a => a.timeEnd != null && a.timeEnd <= '12:00');
@@ -153,11 +165,11 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     // Attach which friends are going, then rank best-first for this mom
     r = r.map(a => ({ ...a, friendsGoing: friendsMap[a.id] || [] }));
     return rankActivities(r, { profile, friendsMap });
-  }, [activities, query, activeCity, advFilters, selectedDay, napTime, friendsMap, profile]);
+  }, [activities, query, activeCity, advFilters, selectedDay, dateRange, napTime, friendsMap, profile]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
   const otherActivities  = filtered.filter(a => !a.friendsGoing?.length);
-  const isFiltered = query.trim() || activeCity !== 'all' || selectedDay || napTime;
+  const isFiltered = query.trim() || activeCity !== 'all' || selectedDay || dateRange || napTime;
   const showSections = !isFiltered && friendActivities.length > 0;
 
   return (
@@ -216,7 +228,9 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               <DayStrip
                 activities={activities}
                 selectedDay={selectedDay}
-                onDaySelect={setSelectedDay}
+                onDaySelect={handleDaySelect}
+                dateRange={dateRange}
+                onRangeSelect={handleRangeSelect}
                 napTime={napTime}
                 onNapTimeToggle={() => setNapTime(n => !n)}
               />
@@ -317,7 +331,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             query={query}
             dateFilter={selectedDay}
             onClearDate={selectedDay ? () => setSelectedDay(null) : null}
-            onClearSearch={() => { setQuery(''); setSelectedDay(null); setNapTime(false); }}
+            onClearSearch={() => { setQuery(''); setSelectedDay(null); setDateRange(null); setNapTime(false); }}
             canSave={!!user}
             onSaveSearch={() => addSavedSearch({ query, area: activeCity, label: searchLabel() })}
           />
