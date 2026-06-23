@@ -6,17 +6,26 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser]                   = useState(null);
   const [profile, setProfile]             = useState(null);
+  const [profileError, setProfileError]   = useState(false);
   const [authLoading, setAuthLoading]     = useState(isConfigured);
   const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
 
+  // Returns { data, error }. We distinguish "no profile row yet" (data null, no
+  // error → genuinely new user, send to onboarding) from "fetch failed" (error
+  // set → network/RLS issue, do NOT force an existing user back through onboarding).
   async function fetchProfile(userId) {
-    if (!supabase) return null;
-    const { data } = await supabase
+    if (!supabase) return { data: null, error: null };
+    return await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
-    return data;
+  }
+
+  async function loadProfile(userId) {
+    const { data, error } = await fetchProfile(userId);
+    setProfile(data);
+    setProfileError(!!error);
   }
 
   useEffect(() => {
@@ -41,7 +50,7 @@ export function AuthProvider({ children }) {
       }
       if (session?.user) {
         setUser(session.user);
-        setProfile(await fetchProfile(session.user.id));
+        await loadProfile(session.user.id);
       }
       setAuthLoading(false);
     });
@@ -55,10 +64,11 @@ export function AuthProvider({ children }) {
       }
       if (session?.user) {
         setUser(session.user);
-        setProfile(await fetchProfile(session.user.id));
+        await loadProfile(session.user.id);
       } else {
         setUser(null);
         setProfile(null);
+        setProfileError(false);
         setNeedsPasswordReset(false);
       }
     });
@@ -68,17 +78,18 @@ export function AuthProvider({ children }) {
 
   async function refreshProfile() {
     if (!user) return;
-    setProfile(await fetchProfile(user.id));
+    await loadProfile(user.id);
   }
 
   async function signOut() {
     await supabase?.auth.signOut();
     setUser(null);
     setProfile(null);
+    setProfileError(false);
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, authLoading, needsPasswordReset, setNeedsPasswordReset, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, profile, profileError, authLoading, needsPasswordReset, setNeedsPasswordReset, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

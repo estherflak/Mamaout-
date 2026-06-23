@@ -15,7 +15,7 @@ import SubmitScreen from './screens/SubmitScreen';
 import AdminScreen from './screens/AdminScreen';
 
 function MainApp() {
-  const { user, profile, authLoading, needsPasswordReset } = useAuthContext();
+  const { user, profile, profileError, authLoading, needsPasswordReset } = useAuthContext();
   const { requests } = useFriends();
   const [tab, setTab]             = useState('discover');
   const [selected, setSelected]   = useState(null);
@@ -40,7 +40,10 @@ function MainApp() {
   }
 
   if (needsPasswordReset) return <ResetPasswordScreen />;
-  if (user && !profile?.onboarding_done) return <OnboardingScreen />;
+  // Only force onboarding when the profile fetch actually succeeded. If it errored
+  // (network/RLS), fall through to the app rather than trapping or re-onboarding
+  // an existing user (which could overwrite their saved profile with blanks).
+  if (user && !profileError && !profile?.onboarding_done) return <OnboardingScreen />;
 
   function renderTab() {
     if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} onOpenSubmit={() => setShowSubmit(true)} seed={discoverSeed} onSeedConsumed={() => setDiscoverSeed(null)} />;

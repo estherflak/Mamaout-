@@ -20,11 +20,18 @@ const FREE_DAYS = [
   { id: 'saturday',  label: 'Sat' },
 ];
 
+const LANGUAGES = [
+  { id: 'hebrew',  label: 'Hebrew' },
+  { id: 'english', label: 'English' },
+  { id: 'both',    label: 'Both' },
+];
+
 export default function OnboardingScreen() {
-  const { user, profile, refreshProfile } = useAuthContext();
+  const { user, profile, refreshProfile, signOut } = useAuthContext();
   const [step, setStep]           = useState(0);
   const [babyName, setBabyName]   = useState(profile?.baby_name || '');
   const [birthdate, setBirthdate] = useState(profile?.baby_birthdate || '');
+  const [language, setLanguage]   = useState(profile?.language || '');
   const [interests, setInterests] = useState(profile?.interests || []);
   const [freeDays, setFreeDays]   = useState(profile?.free_days || []);
   const [loading, setLoading]     = useState(false);
@@ -45,6 +52,7 @@ export default function OnboardingScreen() {
       name: profile?.name || user.email?.split('@')[0] || 'Mama',
       baby_name: babyName.trim() || null,
       baby_birthdate: birthdate || null,
+      language: language || null,
       interests,
       free_days: freeDays,
       onboarding_done: true,
@@ -104,11 +112,11 @@ export default function OnboardingScreen() {
             {step === 1 && (
               <div>
                 <h2 className="text-xl font-bold text-stone-800 mb-1">About your baby</h2>
-                <p className="text-sm text-stone-400 mb-6">Tell us when your little one was born</p>
+                <p className="text-sm text-stone-400 mb-6">A few basics so we can tailor what you see</p>
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-medium text-stone-500 mb-1.5 block">
-                      Baby's birthdate *
+                      Baby's birthdate (optional)
                     </label>
                     <input
                       className={inputCls}
@@ -118,7 +126,7 @@ export default function OnboardingScreen() {
                       max={new Date().toISOString().split('T')[0]}
                     />
                     <p className="text-xs text-stone-300 mt-1">
-                      Used to suggest age-appropriate activities
+                      Used to suggest age-appropriate activities. Expecting? Leave it blank for now.
                     </p>
                   </div>
                   <div>
@@ -131,6 +139,26 @@ export default function OnboardingScreen() {
                       value={babyName}
                       onChange={e => setBabyName(e.target.value)}
                     />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-stone-500 mb-1.5 block">
+                      Preferred language (optional)
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {LANGUAGES.map(({ id, label }) => (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => setLanguage(language === id ? '' : id)}
+                          className={chipCls(language === id)}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-stone-300 mt-1">
+                      We'll prioritise activities in your language
+                    </p>
                   </div>
                 </div>
               </div>
@@ -187,7 +215,7 @@ export default function OnboardingScreen() {
               {step < 3 ? (
                 <button
                   onClick={() => setStep(s => s + 1)}
-                  disabled={step === 1 ? !birthdate : interests.length === 0}
+                  disabled={step === 2 && interests.length === 0}
                   className="flex-1 py-3 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm disabled:opacity-40"
                 >
                   Next →
@@ -204,6 +232,22 @@ export default function OnboardingScreen() {
             </div>
           </>
         )}
+
+        {/* Escape hatches — never trap a logged-in user on this screen */}
+        <div className="mt-8 flex items-center justify-center gap-4">
+          {step > 0 && (
+            <button
+              onClick={handleFinish}
+              disabled={loading}
+              className="text-xs text-stone-400 underline disabled:opacity-50"
+            >
+              Skip for now
+            </button>
+          )}
+          <button onClick={signOut} className="text-xs text-stone-300 underline">
+            Sign out
+          </button>
+        </div>
       </div>
     </div>
   );

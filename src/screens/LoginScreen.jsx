@@ -40,7 +40,7 @@ export default function LoginScreen() {
       // Supabase returns an empty identities array when the email is already registered
       setError('An account with this email already exists. Try signing in instead.');
     } else {
-      setCheckMsg(`We sent a confirmation link to ${email}. Click it to activate your account, then come back here to sign in.`);
+      setCheckMsg(`We sent a confirmation link to ${email}. Click it to activate your account — it'll sign you in automatically. If it doesn't, come back here and sign in.`);
       setView('check-email');
     }
     setLoading(false);
