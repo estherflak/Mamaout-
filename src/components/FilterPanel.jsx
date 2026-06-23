@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 
 const LANGUAGES = [
@@ -19,6 +19,17 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
 
   const [ageMax, setAgeMax] = useState(filters.ageMax ?? (defaultAge ?? 52));
   const [language, setLanguage] = useState(filters.language ?? '');
+  const rootRef = useRef(null);
+
+  // Close the dropdown when tapping/clicking anywhere outside it (mobile + desktop)
+  useEffect(() => {
+    if (!isOpen) return;
+    function onPointerDown(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) onToggle();
+    }
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [isOpen, onToggle]);
 
   // Keep local state in sync when filters change from outside (e.g. profile init)
   useEffect(() => {
@@ -51,7 +62,7 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
     }`;
 
   return (
-    <div className="relative flex-shrink-0">
+    <div ref={rootRef} className="relative flex-shrink-0">
       <button
         onClick={onToggle}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
