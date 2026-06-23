@@ -233,7 +233,7 @@ export default function ActivityDetail({ activity, onClose }) {
               </button>
             )}
             <button
-              onClick={() => shareActivityOnWhatsApp(activity)}
+              onClick={() => shareActivityOnWhatsApp(activity, lang)}
               className="w-14 py-3.5 rounded-2xl border border-stone-200 bg-white flex items-center justify-center text-green-500 active:scale-[0.98] transition-transform"
               title="Share on WhatsApp"
             >

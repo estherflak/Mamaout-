@@ -15,9 +15,9 @@ const CATEGORY_BORDER = {
   workshops:        '#c4b5fd',  // lavender
 };
 
-function shareOnWhatsApp(e, activity) {
+function shareOnWhatsApp(e, activity, lang) {
   e.stopPropagation();
-  shareActivityOnWhatsApp(activity);
+  shareActivityOnWhatsApp(activity, lang);
 }
 
 export default function ActivityCard({ activity, onSelect, friendsGoing = [], rsvpCounts }) {
@@ -71,7 +71,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
               </button>
             )}
             <button
-              onClick={e => shareOnWhatsApp(e, activity)}
+              onClick={e => shareOnWhatsApp(e, activity, lang)}
               className="p-1"
               aria-label="Share on WhatsApp"
             >
