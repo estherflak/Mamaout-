@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useFriends } from '../hooks/useFriends';
 import { useFriendsActivity, relativeTime } from '../hooks/useFriendsActivity';
+import { useLanguage } from '../contexts/LanguageContext';
+import { localizedName } from '../lib/localize';
 
 function FriendAvatar({ name, size = 'md' }) {
   const sizeClasses = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
@@ -38,7 +40,7 @@ function RequestCard({ request, onAccept, onDecline }) {
   );
 }
 
-function FriendFeedItem({ item, onSelect }) {
+function FriendFeedItem({ item, onSelect, lang }) {
   const verb = item.status === 'going' ? 'is going to' : 'is interested in';
   return (
     <button
@@ -51,7 +53,7 @@ function FriendFeedItem({ item, onSelect }) {
           <span className="font-medium">{item.friendName}</span>{' '}
           <span className="text-stone-400">{verb}</span>
         </p>
-        <p dir="auto" className="text-sm font-medium text-stone-800 truncate">{item.activity.name}</p>
+        <p dir="auto" className="text-sm font-medium text-stone-800 truncate">{localizedName(item.activity, lang)}</p>
         <p dir="auto" className="text-xs text-stone-400 truncate">
           {item.activity.neighborhood}
           {item.date ? ` · ${relativeTime(item.date)}` : ''}
@@ -69,6 +71,7 @@ function FriendFeedItem({ item, onSelect }) {
 export default function FriendsScreen({ onSelect }) {
   const { friends, requests, loading, sendRequest, respond } = useFriends();
   const { feed, hint } = useFriendsActivity(friends);
+  const { lang } = useLanguage();
   const [tab, setTab]     = useState('friends'); // 'friends' | 'requests'
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState(null); // null | 'sending' | 'sent' | 'error'
@@ -189,7 +192,7 @@ export default function FriendsScreen({ onSelect }) {
                 </h3>
                 {feed.length > 0 ? (
                   <div className="space-y-2.5">
-                    {feed.map(item => <FriendFeedItem key={item.id} item={item} onSelect={onSelect} />)}
+                    {feed.map(item => <FriendFeedItem key={item.id} item={item} onSelect={onSelect} lang={lang} />)}
                   </div>
                 ) : (
                   <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4 text-center">
