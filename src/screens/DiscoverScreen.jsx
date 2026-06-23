@@ -282,7 +282,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             <div className="flex justify-end pb-1">
               <FilterPanel
                 filters={advFilters}
-                onChange={f => { setAdvFilters(f); setFilterOpen(false); }}
+                onChange={setAdvFilters}
                 isOpen={filterOpen}
                 onToggle={() => setFilterOpen(o => !o)}
               />
