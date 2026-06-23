@@ -54,8 +54,13 @@ export default function ActivityDetail({ activity, onClose }) {
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
+    const onKey = e => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
 
   async function handleCta() {
     if (user) await logClick(user.id, activity.id);
@@ -68,9 +73,18 @@ export default function ActivityDetail({ activity, onClose }) {
       onClick={handleBackdrop}
     >
       <div className="w-full max-w-xl mx-auto bg-white rounded-t-3xl max-h-[90vh] overflow-y-auto">
-        {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        {/* Drag handle + close */}
+        <div className="relative flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-stone-200" />
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute right-3 top-2 w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 active:scale-95 transition-transform"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+            </svg>
+          </button>
         </div>
 
         {/* Accent bar */}
