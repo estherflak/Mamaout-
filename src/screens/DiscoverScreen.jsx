@@ -63,6 +63,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   });
   const [dateRange, setDateRange]     = useState(null); // null | 'week' | 'weekend'
   const [napTime, setNapTime]         = useState(false);
+  const [napTimeValue, setNapTimeValue] = useState('12:00');
 
   // Quick date-range and specific-day selection are mutually exclusive
   function handleDaySelect(day) { setDateRange(null); setSelectedDay(day); }
@@ -157,9 +158,9 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       r = r.filter(a => matchesDateRange(a, dateRange));
     }
 
-    // Nap time — only activities ending by 12:00
-    if (napTime) {
-      r = r.filter(a => a.timeEnd != null && a.timeEnd <= '12:00');
+    // Nap time — only activities ending by the selected nap time
+    if (napTime && napTimeValue) {
+      r = r.filter(a => a.timeEnd != null && a.timeEnd <= napTimeValue);
     }
 
     r = applyFilters(r, advFilters);
@@ -167,7 +168,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     // Attach which friends are going, then rank best-first for this mom
     r = r.map(a => ({ ...a, friendsGoing: friendsMap[a.id] || [] }));
     return rankActivities(r, { profile, friendsMap });
-  }, [activities, query, activeCity, advFilters, selectedDay, dateRange, napTime, friendsMap, profile]);
+  }, [activities, query, activeCity, advFilters, selectedDay, dateRange, napTime, napTimeValue, friendsMap, profile]);
 
   const friendActivities = filtered.filter(a => a.friendsGoing?.length > 0);
   const otherActivities  = filtered.filter(a => !a.friendsGoing?.length);
@@ -256,6 +257,8 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                 onRangeSelect={handleRangeSelect}
                 napTime={napTime}
                 onNapTimeToggle={() => setNapTime(n => !n)}
+                napTimeValue={napTimeValue}
+                onNapTimeChange={setNapTimeValue}
               />
             </div>
 

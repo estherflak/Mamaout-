@@ -4,10 +4,20 @@ function toLocalDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function DayStrip({ activities, selectedDay, onDaySelect, dateRange, onRangeSelect, napTime, onNapTimeToggle }) {
+export default function DayStrip({
+  activities,
+  selectedDay,
+  onDaySelect,
+  dateRange,
+  onRangeSelect,
+  napTime,
+  onNapTimeToggle,
+  napTimeValue,
+  onNapTimeChange,
+}) {
   const days = useMemo(() => {
     const result = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 10; i++) {
       const d = new Date();
       d.setDate(d.getDate() + i);
       result.push(d);
@@ -15,7 +25,6 @@ export default function DayStrip({ activities, selectedDay, onDaySelect, dateRan
     return result;
   }, []);
 
-  // Build set of dates that have at least one activity
   const datesWithActivity = useMemo(() => {
     const set = new Set();
     activities.forEach(a => a.nextDates?.forEach(s => set.add(s)));
@@ -56,7 +65,7 @@ export default function DayStrip({ activities, selectedDay, onDaySelect, dateRan
       </div>
 
       {/* Quick filters: date ranges + nap time */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide items-center">
         {[
           { id: 'week',    label: 'This week' },
           { id: 'weekend', label: 'Weekend' },
@@ -73,6 +82,7 @@ export default function DayStrip({ activities, selectedDay, onDaySelect, dateRan
             {r.label}
           </button>
         ))}
+
         <button
           onClick={onNapTimeToggle}
           className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
@@ -84,6 +94,16 @@ export default function DayStrip({ activities, selectedDay, onDaySelect, dateRan
           <span>⏰</span>
           Back by nap time
         </button>
+
+        {napTime && (
+          <input
+            type="time"
+            value={napTimeValue || '12:00'}
+            onChange={e => onNapTimeChange?.(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            className="flex-shrink-0 px-2 py-1 rounded-full text-xs border border-amber-300 bg-amber-50 text-amber-700 outline-none"
+          />
+        )}
       </div>
     </div>
   );

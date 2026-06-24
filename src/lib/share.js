@@ -1,6 +1,5 @@
 import { localizedName } from './localize';
 
-// Builds the day + time fragment, e.g. "Every Monday · 10:00–11:00" or "Tue 14 · 09:30"
 function dayTimeLabel(activity, lang = 'en') {
   const timeRange = activity.timeStart
     ? (activity.timeEnd ? `${activity.timeStart}–${activity.timeEnd}` : activity.timeStart)
@@ -16,7 +15,6 @@ function dayTimeLabel(activity, lang = 'en') {
   })();
 
   if (dateLabel && timeRange) {
-    // Avoid doubling the start time if the label already contains it
     if (activity.timeStart && dateLabel.includes(activity.timeStart)) {
       return dateLabel.replace(activity.timeStart, timeRange);
     }
@@ -25,35 +23,143 @@ function dayTimeLabel(activity, lang = 'en') {
   return dateLabel || timeRange || '';
 }
 
-// Pre-filled WhatsApp share text, in the sharer's chosen content language.
-// EN: "Hey! Found this on MamaOut 🌸 [name] – [day + time] in [neighborhood].
-//      Thought you'd want to know 👶 [link]"
-// HE: "היי! מצאתי את זה ב-MamaOut 🌸 [name] – [day + time] ב[neighborhood].
-//      חשבתי שתרצי לדעת 👶 [link]"
-export function buildShareMessage(activity, lang = 'en') {
-  const name  = localizedName(activity, lang);
-  const when  = dayTimeLabel(activity, lang);
-  const where = activity.neighborhood;
-  const link  = activity.sourceUrl
-    || (typeof window !== 'undefined' ? window.location.origin : '');
+export const SHARE_TEMPLATES = [
+  {
+    id: 'invite',
+    label: '🙋‍♀️ Want to join me?',
+    build(activity, lang = 'en') {
+      const name  = localizedName(activity, lang);
+      const when  = dayTimeLabel(activity, lang);
+      const where = activity.neighborhood;
+      const link  = activity.sourceUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+      let msg = `Want to join me? 🙋‍♀️ I found *${name}* on MamaOut`;
+      if (when)  msg += ` – ${when}`;
+      if (where) msg += `, ${where}`;
+      msg += `. Let's go together! 💕`;
+      if (link)  msg += ` ${link}`;
+      return msg;
+    },
+  },
+  {
+    id: 'friendly',
+    label: '💌 Friendly tip',
+    build(activity, lang = 'en') {
+      const name  = localizedName(activity, lang);
+      const when  = dayTimeLabel(activity, lang);
+      const where = activity.neighborhood;
+      const link  = activity.sourceUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+      let msg;
+      if (lang === 'he') {
+        msg = `היי! מצאתי את זה ב-MamaOut 🌸 ${name}`;
+        if (when)  msg += ` – ${when}`;
+        if (where) msg += ` ב${where}`;
+        msg += `. חשבתי שתרצי לדעת 👶`;
+      } else {
+        msg = `Hey! Found this on MamaOut 🌸 ${name}`;
+        if (when)  msg += ` – ${when}`;
+        if (where) msg += ` in ${where}`;
+        msg += `. Thought you'd want to know 👶`;
+      }
+      if (link) msg += ` ${link}`;
+      return msg;
+    },
+  },
+  {
+    id: 'quick',
+    label: '📍 Quick info',
+    build(activity, lang = 'en') {
+      const name  = localizedName(activity, lang);
+      const when  = dayTimeLabel(activity, lang);
+      const where = activity.neighborhood;
+      const link  = activity.sourceUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+      const parts = [name, when, where].filter(Boolean);
+      let msg = `📍 MamaOut: ${parts.join(' · ')}`;
+      if (link) msg += `\n${link}`;
+      return msg;
+    },
+  },
+];
 
-  let msg;
-  if (lang === 'he') {
-    msg = `היי! מצאתי את זה ב-MamaOut 🌸 ${name}`;
-    if (when)  msg += ` – ${when}`;
-    if (where) msg += ` ב${where}`;
-    msg += `. חשבתי שתרצי לדעת 👶`;
-  } else {
-    msg = `Hey! Found this on MamaOut 🌸 ${name}`;
-    if (when)  msg += ` – ${when}`;
-    if (where) msg += ` in ${where}`;
-    msg += `. Thought you'd want to know 👶`;
-  }
-  if (link) msg += ` ${link}`;
-  return msg;
+export function buildShareMessage(activity, lang = 'en') {
+  return SHARE_TEMPLATES[0].build(activity, lang);
 }
 
-export function shareActivityOnWhatsApp(activity, lang = 'en') {
-  const msg = buildShareMessage(activity, lang);
+export function shareActivityOnWhatsApp(activity, templateId) {
+  const template = templateId
+    ? (SHARE_TEMPLATES.find(t => t.id === templateId) || SHARE_TEMPLATES[0])
+    : SHARE_TEMPLATES[0];
+  const msg = template.build(activity);
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// --- Calendar (.ics) helpers ---
+
+function toICSDateTime(dateStr, timeStr) {
+  const base = dateStr.replace(/-/g, '');
+  if (!timeStr) return `${base}T000000`;
+  return `${base}T${timeStr.replace(':', '')}00`;
+}
+
+function addOneHour(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function escapeICS(str) {
+  return String(str).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+
+export function buildICS(activity) {
+  const nextDate = activity.nextDates?.[0]
+    || (activity.eventDate instanceof Date
+        ? activity.eventDate.toISOString().slice(0, 10)
+        : activity.eventDate);
+  if (!nextDate) return null;
+
+  const endTime = activity.timeEnd || (activity.timeStart ? addOneHour(activity.timeStart) : null);
+  const dtStart = toICSDateTime(nextDate, activity.timeStart || null);
+  const dtEnd   = toICSDateTime(nextDate, endTime);
+
+  const name     = escapeICS(activity.name || 'Activity');
+  const location = escapeICS(activity.address || activity.neighborhood || '');
+  const descParts = [activity.description, activity.sourceUrl].filter(Boolean);
+  const desc = escapeICS(descParts.join('\n'));
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//MamaOut//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${name}`,
+  ];
+  if (location) lines.push(`LOCATION:${location}`);
+  if (desc)     lines.push(`DESCRIPTION:${desc}`);
+  lines.push(
+    'BEGIN:VALARM',
+    'TRIGGER:-PT15M',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:Reminder: ${name}`,
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  );
+  return lines.join('\r\n');
+}
+
+export function addToCalendar(activity) {
+  const ics = buildICS(activity);
+  if (!ics) return false;
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `${(activity.name || 'activity').replace(/\s+/g, '-')}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  return true;
 }
