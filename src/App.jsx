@@ -12,6 +12,7 @@ import LoginScreen from './screens/LoginScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
 import SubmitScreen from './screens/SubmitScreen';
+import CommunityAddScreen from './screens/CommunityAddScreen';
 import AdminScreen from './screens/AdminScreen';
 
 function MainApp() {
@@ -23,6 +24,7 @@ function MainApp() {
   const [showSubmit, setShowSubmit] = useState(
     () => window.location.pathname === '/submit'
   );
+  const [showCommunityAdd, setShowCommunityAdd] = useState(false);
 
   function closeSubmit() {
     setShowSubmit(false);
@@ -53,17 +55,37 @@ function MainApp() {
     return null;
   }
 
+  const anyModal = !!(selected || showSubmit || showCommunityAdd);
+
   return (
-    <div className="h-screen bg-cream-50 flex flex-col max-w-xl mx-auto">
+    <div className="h-screen bg-cream-50 flex flex-col max-w-xl mx-auto relative">
       <div className="flex-1 overflow-hidden flex flex-col">
         {renderTab()}
       </div>
+
+      {/* FAB — share a community activity */}
+      {tab === 'discover' && user && !anyModal && (
+        <button
+          onClick={() => setShowCommunityAdd(true)}
+          className="absolute bottom-[76px] right-4 w-12 h-12 rounded-full bg-dusty-rose shadow-lg flex items-center justify-center text-white z-40 active:scale-95 transition-transform"
+          title="Share an activity"
+          aria-label="Share an activity with the community"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+      )}
+
       <BottomNav activeTab={tab} onChange={setTab} requestCount={requests.length} />
       {selected && (
         <ActivityDetail activity={selected} onClose={() => setSelected(null)} />
       )}
       {showSubmit && (
         <SubmitScreen onClose={closeSubmit} />
+      )}
+      {showCommunityAdd && (
+        <CommunityAddScreen onClose={() => setShowCommunityAdd(false)} />
       )}
     </div>
   );

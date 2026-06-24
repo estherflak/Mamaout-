@@ -90,7 +90,8 @@ export default function AdminScreen() {
       language:           langCode(sub.language),
       organizer_name:     sub.organizer_name,
       organizer_whatsapp: sub.organizer_whatsapp,
-      source_name:        'Submitted',
+      source_url:         sub.source_url || null,
+      source_name:        sub.submission_type === 'community' ? 'Community' : 'Submitted',
       is_verified:        false,
     });
 
@@ -207,7 +208,14 @@ export default function AdminScreen() {
               <div key={sub.id} className="bg-white rounded-2xl border border-stone-100 p-4">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-stone-800 text-base leading-tight">{sub.name}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-stone-800 text-base leading-tight">{sub.name}</h3>
+                      {sub.submission_type === 'community' && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium shrink-0">
+                          💎 Mom tip
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-stone-400 mt-0.5">
                       {[sub.category, sub.neighborhood ?? sub.address, sub.schedule_type]
                         .filter(Boolean).join(' · ')}

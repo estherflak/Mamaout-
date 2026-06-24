@@ -148,6 +148,13 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
             </span>
           )}
 
+          {/* Community-submitted */}
+          {activity.sourceName === 'Community' && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium" title="Shared by a mom">
+              💎 Mom tip
+            </span>
+          )}
+
           {/* Age */}
           <span className="text-xs text-stone-400 flex items-center gap-1">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
