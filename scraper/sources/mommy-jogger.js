@@ -64,7 +64,11 @@ export async function scrapeMommyJogger() {
     const description = $el.find('p').first().text().trim().slice(0, 300);
     const rawDate     = $el.find('time, [class*="date"], [class*="time"]').first().text().trim();
     const href        = $el.find('a[href]').first().attr('href') || '';
-    const source_url  = toAbsolute(href) || `${PAGE_URL}#${i}`;
+    const source_url  = toAbsolute(href);
+
+    // Single-page site: skip sections with no real link (headings, testimonials).
+    // Synthesizing `${PAGE_URL}#i` URLs turned page fragments into fake activities.
+    if (!source_url || source_url.includes('#')) return;
 
     const venueEl = $el.find('[class*="address"], [class*="location"], address').first();
     const venue   = venueEl.text().trim().slice(0, 100);

@@ -5,12 +5,10 @@
 import 'dotenv/config';
 import { scrapeBeitEmanuel } from './sources/beit-emanuel.js';
 import { scrapeDigitaf } from './sources/digitaf.js';
-import { scrapeGoogle } from './sources/google.js';
 import { scrapeEventbrite } from './sources/eventbrite.js';
 import { scrapeTimeout } from './sources/timeout.js';
 import { scrapeMakore } from './sources/makore.js';
 import { scrapeRamatGanMuni } from './sources/ramat-gan-muni.js';
-import { scrapeRamatGanMusic } from './sources/ramatganmusic.js';
 import { scrapeMommyJogger } from './sources/mommy-jogger.js';
 import { scrapeSecretTelAviv } from './sources/secrettelaviv.js';
 import { scrapeIshow } from './sources/ishow.js';
@@ -104,13 +102,11 @@ export async function runScrape() {
     { name: 'Beit Emanuel Ramat Gan',          fn: scrapeBeitEmanuel,   verified: true },
     { name: 'Tel Aviv Municipality (Digitaf)', fn: scrapeDigitaf,        verified: true },
     { name: 'Ramat Gan Municipality',          fn: scrapeRamatGanMuni,  verified: true },
-    { name: 'Ramat Gan Conservatory',          fn: scrapeRamatGanMusic, verified: true },
     { name: 'Mommy Jogger',                    fn: scrapeMommyJogger,   verified: true },
   ];
 
   // Supplementary sources
   const supplementarySources = [
-    { name: 'DuckDuckGo/Google',   fn: scrapeGoogle,        verified: false },
     { name: 'Eventbrite',          fn: scrapeEventbrite,    verified: false },
     { name: 'Time Out Tel Aviv',   fn: scrapeTimeout,       verified: false },
     { name: 'Makore',              fn: scrapeMakore,        verified: false },
