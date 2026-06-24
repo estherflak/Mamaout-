@@ -18,11 +18,36 @@ const CATEGORY_LABEL = {
   'baby-focused': 'Baby',
 };
 
+// Canonical city resolution from a free-text location / address string.
+// Covers the Tel Aviv (Gush Dan) metro in Hebrew and English. Order matters:
+// more specific names are listed so a partial string resolves correctly.
+const CITY_PATTERNS = [
+  ['Tel Aviv',       ['tel aviv', 'tel-aviv', 'תל אביב', 'תל־אביב', 'יפו', 'jaffa']],
+  ['Ramat Gan',      ['ramat gan', 'רמת גן']],
+  ['Givatayim',      ['givatayim', 'גבעתיים']],
+  ['Petah Tikva',    ['petah tikva', 'petach tikva', 'פתח תקווה', 'פתח תקוה']],
+  ['Bnei Brak',      ['bnei brak', 'בני ברק']],
+  ['Bat Yam',        ['bat yam', 'בת ים']],
+  ['Holon',          ['holon', 'חולון']],
+  ['Ganei Tikva',    ['ganei tikva', 'גני תקווה', 'גני תקוה']],
+  ['Givat Shmuel',   ['givat shmuel', 'גבעת שמואל']],
+  ['Kiryat Ono',     ['kiryat ono', 'קרית אונו', 'קריית אונו']],
+  ['Yehud',          ['yehud', 'יהוד']],
+  ['Or Yehuda',      ['or yehuda', 'אור יהודה']],
+  ['Ramat HaSharon', ['ramat hasharon', 'רמת השרון']],
+  ['Herzliya',       ['herzliya', 'הרצליה']],
+];
+
+export function resolveCity(location) {
+  const s = (location || '').toLowerCase();
+  for (const [city, patterns] of CITY_PATTERNS) {
+    if (patterns.some(p => s.includes(p))) return city;
+  }
+  return 'Tel Aviv'; // default for unrecognised metro locations
+}
+
 export function normalizeSupabaseActivity(a) {
-  const raw = (a.location || '').toLowerCase();
-  const city = raw.includes('ramat gan') || raw.includes('רמת גן')
-    ? 'Ramat Gan'
-    : 'Tel Aviv';
+  const city = resolveCity(a.location);
 
   // Prefer the new dedicated neighborhood column, then venue, then location prefix
   const neighborhood = a.neighborhood?.trim() ||

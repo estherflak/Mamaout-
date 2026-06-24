@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, isConfigured } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
-import { normalizeSupabaseActivity } from './useActivities';
+import { normalizeSupabaseActivity, resolveCity } from './useActivities';
 
 /**
  * Phase 6.2 — friends activity feed.
@@ -62,7 +62,7 @@ export function useFriendsActivity(friends = []) {
           }
           const top = Object.values(counts).sort((a, b) => b.n - a.n)[0];
           if (top) {
-            const city = top.loc.toLowerCase().includes('ramat gan') ? 'Ramat Gan' : 'Tel Aviv';
+            const city = resolveCity(top.loc);
             setHint(`${top.n} ${top.n === 1 ? 'mom' : 'moms'} in ${city} saved ${top.name} this week`);
           } else {
             setHint(null);

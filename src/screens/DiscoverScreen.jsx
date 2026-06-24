@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useActivities } from '../hooks/useActivities';
+import { useActivities, resolveCity } from '../hooks/useActivities';
 import { useRsvpCounts } from '../hooks/useRsvpCounts';
 import { useSavedSearches } from '../hooks/useSavedSearches';
 import { useFriends } from '../hooks/useFriends';
@@ -94,12 +94,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
 
     // Pre-select area from neighborhood
     if (profile.neighborhood) {
-      const n = profile.neighborhood.toLowerCase();
-      if (n.includes('ramat gan') || n.includes('רמת גן') || n.includes('givatayim') || n.includes('גבעתיים')) {
-        setCity('Ramat Gan');
-      } else {
-        setCity('Tel Aviv');
-      }
+      setCity(resolveCity(profile.neighborhood));
     }
   }, [profile, profileInit]);
 
@@ -123,6 +118,20 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     const areaLabel = activeCity === 'all' ? '' : ` in ${activeCity}`;
     return (q ? q : 'All activities') + areaLabel;
   }
+
+  // City filter options derived from the data: primary cities first, then any
+  // others (Givatayim, Petah Tikva…) by frequency — so new metro cities appear
+  // automatically without hardcoding.
+  const cityOptions = useMemo(() => {
+    const counts = {};
+    for (const a of activities) counts[a.city] = (counts[a.city] || 0) + 1;
+    const PRIMARY = ['Tel Aviv', 'Ramat Gan'];
+    const others = Object.keys(counts)
+      .filter(c => c && !PRIMARY.includes(c))
+      .sort((a, b) => counts[b] - counts[a]);
+    const ordered = [...PRIMARY.filter(c => counts[c]), ...others];
+    return [{ id: 'all', label: 'All areas' }, ...ordered.map(c => ({ id: c, label: c }))];
+  }, [activities]);
 
   const filtered = useMemo(() => {
     const today = new Date();
@@ -262,16 +271,12 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               />
             </div>
 
-            <div className="flex gap-2 mb-1">
-              {[
-                { id: 'all', label: 'All areas' },
-                { id: 'Tel Aviv', label: 'Tel Aviv' },
-                { id: 'Ramat Gan', label: 'Ramat Gan' },
-              ].map(city => (
+            <div className="flex gap-2 mb-1 overflow-x-auto flex-nowrap -mx-1 px-1">
+              {cityOptions.map(city => (
                 <button
                   key={city.id}
                   onClick={() => setCity(city.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     activeCity === city.id
                       ? 'bg-sage-300 text-white'
                       : 'bg-sage-50 border border-sage-200 text-stone-500'
