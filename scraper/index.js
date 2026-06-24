@@ -5,13 +5,8 @@
 import 'dotenv/config';
 import { scrapeBeitEmanuel } from './sources/beit-emanuel.js';
 import { scrapeDigitaf } from './sources/digitaf.js';
-import { scrapeEventbrite } from './sources/eventbrite.js';
-import { scrapeTimeout } from './sources/timeout.js';
-import { scrapeMakore } from './sources/makore.js';
 import { scrapeRamatGanMuni } from './sources/ramat-gan-muni.js';
 import { scrapeMommyJogger } from './sources/mommy-jogger.js';
-import { scrapeSecretTelAviv } from './sources/secrettelaviv.js';
-import { scrapeIshow } from './sources/ishow.js';
 import { classifyActivity } from './classifier.js';
 import { geocodeActivity } from './sources/geocode.js';
 import { insertIfNew } from './db.js';
@@ -105,14 +100,12 @@ export async function runScrape() {
     { name: 'Mommy Jogger',                    fn: scrapeMommyJogger,   verified: true },
   ];
 
-  // Supplementary sources
-  const supplementarySources = [
-    { name: 'Eventbrite',          fn: scrapeEventbrite,    verified: false },
-    { name: 'Time Out Tel Aviv',   fn: scrapeTimeout,       verified: false },
-    { name: 'Makore',              fn: scrapeMakore,        verified: false },
-    { name: 'Secret Tel Aviv',     fn: scrapeSecretTelAviv, verified: false },
-    { name: 'iShow',               fn: scrapeIshow,         verified: false },
-  ];
+  // Supplementary aggregator sources were dropped after a quality audit:
+  // Eventbrite/Time Out/Secret TLV/iShow carried no baby-0–12mo content, and
+  // Makore (good content) is Cloudflare-blocked from CI IPs — its scraper is
+  // kept in sources/makore.js, parked until routed through a residential proxy.
+  // The focus is now direct, high-relevance sources instead.
+  const supplementarySources = [];
 
   let allRaw = [];
 

@@ -1,6 +1,11 @@
 /**
  * Makore — Israeli activities & classes marketplace (makore.co.il).
  *
+ * ⚠️ PARKED: this scraper works from residential IPs but Makore is behind
+ * Cloudflare, which 403s datacenter IPs (incl. GitHub Actions runners), so it
+ * is not wired into the pipeline. Re-enable by routing requests through a
+ * residential proxy / Web Unlocker, then re-add it to scraper/index.js.
+ *
  * Makore is an app-router Next.js site, so the old __NEXT_DATA__ blob is gone.
  * Instead every listing page embeds a clean JSON-LD `ItemList` of Event objects
  * with name, description, full address, city, geo-coordinates, date and the
