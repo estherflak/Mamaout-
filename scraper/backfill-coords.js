@@ -7,9 +7,11 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { geocodeActivity } from './sources/geocode.js';
 
+// Service-role key bypasses RLS — required because there is no public UPDATE
+// policy on `activities`, so anon-key updates are silently dropped.
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
 );
 
 // Known venues / sources with fixed coordinates (avoids Nominatim fallback to city centre)
@@ -57,7 +59,7 @@ function lookupNeighbourhood(venue, location) {
 
 const { data: activities, error } = await supabase
   .from('activities')
-  .select('id, venue, location, name_en, source_name')
+  .select('id, venue, location, name_en, source_name, address')
   .is('latitude', null)
   .order('created_at', { ascending: false });
 
@@ -71,15 +73,20 @@ for (const a of activities) {
   // 1. Known source with fixed coordinates
   const knownBySource = a.source_name ? KNOWN_COORDS[a.source_name] : null;
 
-  // 2. Venue query via Nominatim (only if venue isn't just the activity name)
+  // 2. Street address via Nominatim — only when it has a house number, so
+  //    generic values like "ברחבי העיר" (city-wide) fall through to the centroid.
+  const hasStreetAddress = a.address && /\d/.test(a.address);
+
+  // 3. Venue query via Nominatim (only if venue isn't just the activity name)
   const hasRealVenue = a.venue?.trim() && a.venue.trim() !== a.name_en;
 
-  // 3. Location query via Nominatim
-  // 4. Neighbourhood keyword lookup (fast, no rate limit)
+  // 4. Location query via Nominatim
+  // 5. Neighbourhood keyword lookup (fast, no rate limit)
   const coords =
     knownBySource ||
-    (hasRealVenue ? await geocodeActivity(a.venue.trim(), a.location) : null) ||
-    (a.location   ? await geocodeActivity(a.location, '')              : null) ||
+    (hasStreetAddress ? await geocodeActivity(a.address.trim(), a.location) : null) ||
+    (hasRealVenue     ? await geocodeActivity(a.venue.trim(),   a.location) : null) ||
+    (a.location       ? await geocodeActivity(a.location, '')               : null) ||
     lookupNeighbourhood(a.venue || '', a.location || '');
 
   if (coords) {

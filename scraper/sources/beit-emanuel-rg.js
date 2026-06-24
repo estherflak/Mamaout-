@@ -80,28 +80,54 @@ async function buildAddressCache(babyEvents) {
 
 // ─── Field mapping ───────────────────────────────────────────────────────────
 
-function mapToMamaOut(event, addressCache) {
-  const price  = event.website_pricelist?.[0]?.price ?? null;
+// A recurring class shows up in the calendar API as one event per session
+// (same name + start_time, different start_date/id). Collapse those into a
+// single record so one weekly class = one DB row, not 50. The merged record
+// keeps every upcoming date in `next_dates` and links to the soonest session.
+function groupSessions(events) {
+  const groups = new Map(); // `${name}|${start_time}` → session events
+  for (const e of events) {
+    const key = `${e.name}|${e.start_time || ''}`;
+    (groups.get(key) ?? groups.set(key, []).get(key)).push(e);
+  }
+
+  return [...groups.values()].map(sessions => {
+    const sorted = sessions
+      .slice()
+      .sort((a, b) => (a.start_date || '').localeCompare(b.start_date || ''));
+    const rep   = sorted[0]; // earliest upcoming session = canonical / bookable link
+    const dates = [...new Set(sorted.map(e => e.start_date).filter(Boolean))].sort();
+    return { rep, dates };
+  });
+}
+
+function mapToMamaOut({ rep, dates }, addressCache) {
+  const price  = rep.website_pricelist?.[0]?.price ?? null;
   const isFree = price === 0;
-  const addr   = addressCache[event.name];
+  const addr   = addressCache[rep.name];
+  const time   = rep.start_time ? rep.start_time.slice(0, 5) : null;
 
   return {
-    name:          event.name,
+    name:          rep.name,
     location:      'Ramat Gan',
     venue:         addr?.venue   || null,
     address:       addr?.address || null,
     neighborhood:  'Ramat Gan',
-    next_dates:    [event.start_date],
-    time_start:    event.start_time  || null,
-    time_end:      event.end_time    || null,
+    next_dates:    dates,
+    time_start:    rep.start_time  || null,
+    time_end:      rep.end_time    || null,
+    schedule_type: dates.length > 1 ? 'recurring' : 'one-time',
+    schedule_label: dates.length > 1
+      ? `${dates.length} upcoming sessions${time ? ` · ${time}` : ''}`
+      : null,
     price:         price,
     price_notes:   isFree ? 'Free (registration required)' : null,
     stroller_accessible: null,
     baby_age_min:  0,
     baby_age_max:  156,
-    category:      mapCategory(event.name),
+    category:      mapCategory(rep.name),
     source_name:   SOURCE_NAME,
-    source_url:    `${BASE_URL}/event/${event.id}`,
+    source_url:    `${BASE_URL}/event/${rep.id}`,
     organizer_name: 'בית עמנואל רמת גן',
     is_verified:   true,
     language:      'he',
@@ -144,7 +170,9 @@ export async function scrapeBeitEmanuelRG() {
   const hit = Object.values(addressCache).filter(Boolean).length;
   console.log(`[beit-emanuel-rg] address cache: ${hit}/${uniqueShows} resolved`);
 
-  const results = babyEvents.map(e => mapToMamaOut(e, addressCache));
+  const grouped = groupSessions(babyEvents);
+  console.log(`[beit-emanuel-rg] grouped ${babyEvents.length} sessions → ${grouped.length} classes`);
+  const results = grouped.map(g => mapToMamaOut(g, addressCache));
   console.log(`[beit-emanuel-rg] mapped ${results.length} events`);
   return results;
 }
