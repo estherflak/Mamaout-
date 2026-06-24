@@ -1,18 +1,24 @@
 /**
- * Makore — Israeli activities & classes marketplace.
- * Tries __NEXT_DATA__ JSON first, falls back to CSS selectors.
- * Paginates up to 3 pages per entry point; max 60 results total.
+ * Makore — Israeli activities & classes marketplace (makore.co.il).
+ *
+ * Makore is an app-router Next.js site, so the old __NEXT_DATA__ blob is gone.
+ * Instead every listing page embeds a clean JSON-LD `ItemList` of Event objects
+ * with name, description, full address, city, geo-coordinates, date and the
+ * event URL — far more reliable than scraping CSS.
+ *
+ * We query the "Gush Dan" district (גוש דן = the Tel Aviv metro: TLV, Ramat Gan,
+ * Givatayim, Bnei Brak, Bat Yam, Petah Tikva…) under the kids-and-family
+ * category, then keep only adjacent-metro cities with baby-relevant content.
+ * Final 0–12mo relevance is decided downstream by the classifier.
  */
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 const BASE = 'https://www.makore.co.il';
-
-const ENTRY_POINTS = [
-  '/browse/district/תל-אביב/category/ילדים-ומשפחה',
-  '/browse/district/מרכז/category/ילדים-ומשפחה',
-  '/browse/district/תל-אביב',
-];
+// District "גוש-דן" + category "ילדים-ומשפחה", URL-encoded.
+const DISTRICT_PATH =
+  '/browse/district/%D7%92%D7%95%D7%A9-%D7%93%D7%9F/category/%D7%99%D7%9C%D7%93%D7%99%D7%9D-%D7%95%D7%9E%D7%A9%D7%A4%D7%97%D7%94';
+const MAX_PAGES = 5;
+const MAX_RESULTS = 60;
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -22,125 +28,112 @@ const HEADERS = {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-function toAbsolute(href) {
-  if (!href) return '';
-  if (href.startsWith('http')) return href;
-  return `${BASE}${href.startsWith('/') ? '' : '/'}${href}`;
+// Adjacent Tel Aviv-metro cities we surface (Makore's region tag is unreliable,
+// so we match on the actual city / addressLocality). Excludes far-flung places
+// that also appear in the district feed (Netanya, Modiin, Rehovot, Jerusalem…).
+const ADJACENT_CITIES = [
+  'תל אביב', 'תל אביב-יפו', 'יפו',
+  'רמת גן', 'גבעתיים', 'בני ברק',
+  'בת ים', 'חולון',
+  'פתח תקווה', 'גבעת שמואל', 'גני תקווה',
+  'קרית אונו', 'יהוד', 'אור יהודה', 'רמת השרון', 'הרצליה',
+];
+
+// Broad baby pre-filter to avoid sending obvious non-baby items (toddler theater,
+// pool parties, trivia) to the classifier. The classifier still makes the final
+// 0–12mo call, so this stays deliberately inclusive.
+const BABY_KEYWORDS = [
+  'תינוק', 'תינוקות', 'בייבי', 'baby',
+  'לידה', 'זחיל', 'זחילה', 'עמידה', 'הליכה',
+  'גיל הרך', 'הורה ותינוק', 'אמא ותינוק', 'הורים ותינוק',
+  'עיסוי תינוק', 'התפתחות', 'התפתחותי', 'מנשא', 'נשיאה',
+  'הנקה', 'קטנטן', 'קטנטנים', 'עד שנה', 'חודשים', 'מגיל לידה',
+];
+
+function cityAllowed(city) {
+  if (!city) return false;
+  return ADJACENT_CITIES.some(c => city.includes(c));
 }
 
-function extractFromNextData(html) {
-  const match = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
-  if (!match) return [];
+function isBabyRelevant(text) {
+  const t = (text || '').toLowerCase();
+  return BABY_KEYWORDS.some(k => t.includes(k.toLowerCase()));
+}
 
-  try {
-    const nextData = JSON.parse(match[1]);
-    const pageProps = nextData?.props?.pageProps;
-    const list =
-      pageProps?.events ||
-      pageProps?.activities ||
-      pageProps?.items ||
-      pageProps?.results ||
-      [];
-
-    return (Array.isArray(list) ? list : []).map(ev => ({
-      name: (ev.title || ev.name || '').slice(0, 120),
-      description: (ev.description || ev.summary || '').slice(0, 400),
-      location: 'תל אביב',
-      venue: ev.venue?.name || ev.location?.name || '',
-      source_url: ev.url || ev.link || (ev.slug ? `${BASE}/${ev.slug}` : ''),
-      source_name: 'Makore',
-      raw_date: ev.startDate || ev.date || ev.dateString || '',
-    })).filter(r => r.name && r.source_url);
-  } catch {
-    return [];
+// Pull the JSON-LD ItemList of events out of a listing page's HTML.
+function extractEvents(html) {
+  const out = [];
+  const re = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    let data;
+    try { data = JSON.parse(m[1]); } catch { continue; }
+    for (const node of (Array.isArray(data) ? data : [data])) {
+      if (node['@type'] !== 'ItemList') continue;
+      for (const el of node.itemListElement || []) {
+        const ev = el.item;
+        if (ev?.['@type'] === 'Event' && ev.name) out.push(ev);
+      }
+    }
   }
+  return out;
 }
 
-function extractFromHtml(html) {
-  const $ = cheerio.load(html);
-  const results = [];
-  const selectors = [
-    'article.event-card', 'article.activity-card',
-    '[class*="EventCard"]', '[class*="event-item"]', '[class*="activityItem"]',
-  ];
+function mapEvent(ev) {
+  const loc   = ev.location || {};
+  const addr  = loc.address || {};
+  const city  = addr.addressLocality || '';
+  const geo   = loc.geo || {};
+  const lat   = typeof geo.latitude  === 'number' ? geo.latitude  : null;
+  const lng   = typeof geo.longitude === 'number' ? geo.longitude : null;
 
-  let $cards = $();
-  for (const sel of selectors) {
-    const found = $(sel);
-    if (found.length > 0) { $cards = found; break; }
-  }
-
-  $cards.each((_, el) => {
-    const $el = $(el);
-    const name = (
-      $el.find('h2, h3, [class*="title"]').first().text() || ''
-    ).trim();
-    if (!name || name.length < 3) return;
-
-    const description = ($el.find('p, [class*="desc"]').first().text() || '').trim();
-    const rawDate     = ($el.find('time, [class*="date"], [class*="when"]').first().text() || '').trim();
-    const href        = $el.find('a[href]').first().attr('href') || '';
-    const source_url  = toAbsolute(href);
-    if (!source_url) return;
-
-    results.push({
-      name: name.slice(0, 120),
-      description: description.slice(0, 400),
-      location: 'תל אביב',
-      venue: '',
-      source_url,
-      source_name: 'Makore',
-      raw_date: rawDate,
-    });
-  });
-
-  return results;
-}
-
-function getNextPageUrl(html, currentUrl) {
-  const $ = cheerio.load(html);
-  const next = $(
-    'a[aria-label="הבא"], a[rel="next"], [class*="pagination"] a:last-child'
-  ).first().attr('href');
-  if (!next) return null;
-  return toAbsolute(next) || null;
+  return {
+    name:        (ev.name || '').slice(0, 120),
+    description: (ev.description || '').slice(0, 400),
+    location:    city || 'גוש דן',
+    venue:       (loc.name || '').slice(0, 120),  // full street address string
+    source_url:  ev.url || '',
+    source_name: 'Makore',
+    raw_date:    ev.startDate || '',
+    latitude:    lat,
+    longitude:   lng,
+  };
 }
 
 export async function scrapeMakore() {
-  const allResults = [];
+  const results = [];
   const seen = new Set();
 
-  for (const path of ENTRY_POINTS) {
-    if (allResults.length >= 60) break;
-
-    let pageUrl = `${BASE}${path}`;
-    let pagesScraped = 0;
-
-    while (pageUrl && pagesScraped < 3 && allResults.length < 60) {
-      try {
-        const { data: html } = await axios.get(pageUrl, { headers: HEADERS, timeout: 15000 });
-
-        let results = extractFromNextData(html);
-        if (results.length === 0) results = extractFromHtml(html);
-
-        for (const r of results) {
-          if (!r.source_url || seen.has(r.source_url)) continue;
-          seen.add(r.source_url);
-          allResults.push(r);
-        }
-
-        const nextUrl = getNextPageUrl(html, pageUrl);
-        pageUrl = nextUrl !== pageUrl ? nextUrl : null;
-        pagesScraped++;
-      } catch (err) {
-        console.warn(`[makore] ${pageUrl} failed: ${err.message}`);
-        break;
-      }
-
-      await sleep(1500);
+  for (let page = 1; page <= MAX_PAGES && results.length < MAX_RESULTS; page++) {
+    const url = `${BASE}${DISTRICT_PATH}?pages=${page}`;
+    let html;
+    try {
+      ({ data: html } = await axios.get(url, { headers: HEADERS, timeout: 15000 }));
+    } catch (err) {
+      console.warn(`[makore] page ${page} failed: ${err.message}`);
+      break;
     }
+
+    const events = extractEvents(html);
+    if (events.length === 0) break; // ran past the last page
+
+    let kept = 0;
+    for (const ev of events) {
+      const mapped = mapEvent(ev);
+      if (!mapped.source_url || seen.has(mapped.source_url)) continue;
+      const city = ev.location?.address?.addressLocality;
+      if (!cityAllowed(city)) continue;
+      if (!isBabyRelevant(`${mapped.name} ${mapped.description}`)) continue;
+      seen.add(mapped.source_url);
+      results.push(mapped);
+      kept++;
+      if (results.length >= MAX_RESULTS) break;
+    }
+    console.log(`[makore] page ${page}: ${events.length} events → ${kept} adjacent-city baby items`);
+
+    await sleep(1500);
   }
 
-  console.log(`[makore] ${allResults.length} results`);
-  return allResults;
+  console.log(`[makore] ${results.length} results`);
+  return results;
 }
