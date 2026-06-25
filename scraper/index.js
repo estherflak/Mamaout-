@@ -172,10 +172,11 @@ export async function runScrape() {
 
       const classified = await classifyActivity(raw);
 
-      // Verified sources are curated baby/mom venues — we already trust them
-      // enough to bypass the keyword filter, so don't let Claude's relevance
-      // call drop one. Only unverified items are gated on is_relevant.
-      if (!raw._verified && !classified.is_relevant) {
+      // Relevance gate applies to ALL sources. Even verified sources emit
+      // non-listings (nav chrome, accessibility controls) and off-target
+      // events (stand-up, older-kid theater) — this is the only thing that
+      // keeps them out of the DB.
+      if (!classified.is_relevant) {
         irrelevant++;
         continue;
       }
