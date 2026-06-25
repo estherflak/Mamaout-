@@ -18,23 +18,50 @@ const supabase = new Proxy({}, {
   },
 });
 
+// Schedule fields that change between scrapes and must stay fresh on every run.
+// Everything else (incl. the enriched name_en/description_en/lat/long added
+// later by the backfills) is left untouched when a row already exists.
+const VOLATILE_FIELDS = [
+  'next_dates', 'time_start', 'time_end',
+  'schedule_type', 'schedule_label', 'price', 'price_notes',
+];
+
 /**
  * Upsert an activity by source_url.
- * If the row already exists with name_en populated, it is skipped (returns null).
- * Otherwise inserts or updates via a single atomic ON CONFLICT operation.
+ *
+ * - Brand-new source_url → insert the full payload, return the new row.
+ * - Existing source_url → refresh only the volatile schedule fields so
+ *   recurring classes keep rolling forward, while preserving the already
+ *   translated/geocoded columns. Returns null (not a new activity).
+ *
+ * The previous version skipped any already-translated row entirely, which
+ * froze recurring events' next_dates until cleanup-past trimmed them away.
  */
 export async function insertIfNew(activity) {
   const { data: existing } = await supabase
     .from('activities')
-    .select('name_en')
+    .select('id')
     .eq('source_url', activity.source_url)
     .maybeSingle();
 
-  if (existing?.name_en) return null;
+  if (existing) {
+    const patch = {};
+    for (const f of VOLATILE_FIELDS) {
+      if (activity[f] !== undefined) patch[f] = activity[f];
+    }
+    if (Object.keys(patch).length) {
+      const { error } = await supabase
+        .from('activities')
+        .update(patch)
+        .eq('id', existing.id);
+      if (error) throw error;
+    }
+    return null;
+  }
 
   const { data, error } = await supabase
     .from('activities')
-    .upsert(activity, { onConflict: 'source_url', ignoreDuplicates: false })
+    .insert(activity)
     .select()
     .single();
 
