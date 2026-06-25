@@ -27,6 +27,26 @@ const VOLATILE_FIELDS = [
 ];
 
 /**
+ * Fetch the set of source_urls already stored. Used by the scraper to skip the
+ * paid Claude classify/translate call for items it already has — a brand-new
+ * source_url is the only thing that needs an AI round-trip. One query per run.
+ */
+export async function getExistingSourceUrls() {
+  const urls = new Set();
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from('activities')
+      .select('source_url')
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    for (const row of data) if (row.source_url) urls.add(row.source_url);
+    if (data.length < pageSize) break;
+  }
+  return urls;
+}
+
+/**
  * Upsert an activity by source_url.
  *
  * - Brand-new source_url → insert the full payload, return the new row.

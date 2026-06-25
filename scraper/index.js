@@ -9,7 +9,7 @@ import { scrapeRamatGanMuni } from './sources/ramat-gan-muni.js';
 import { scrapeMommyJogger } from './sources/mommy-jogger.js';
 import { classifyActivity } from './classifier.js';
 import { geocodeActivity } from './sources/geocode.js';
-import { insertIfNew } from './db.js';
+import { insertIfNew, getExistingSourceUrls } from './db.js';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -127,13 +127,30 @@ export async function runScrape() {
   console.log(`[scraper] ${allRaw.length} unique raw results after in-run dedup`);
 
   // ── Classify with Claude and insert into Supabase ─────────────────────────
+  // Pull the source_urls we already have so we never pay Claude to re-classify
+  // a row that's already in the DB. Recurring classes (verified weekly sessions)
+  // dominate the scrape, so this is the difference between classifying ~200
+  // items every run and classifying only the genuinely new handful.
+  const existingUrls = await getExistingSourceUrls();
+  console.log(`[scraper] ${existingUrls.size} source_urls already in DB — these skip Claude`);
+
   let inserted = 0;
   let skipped = 0;
+  let refreshed = 0;
   let irrelevant = 0;
   let errors = 0;
 
   for (const raw of allRaw) {
     try {
+      // Already stored → no AI call needed. Just refresh the volatile schedule
+      // fields (insertIfNew patches next_dates/times/price for existing rows)
+      // so recurring classes keep rolling forward, then move on.
+      if (raw.source_url && existingUrls.has(raw.source_url)) {
+        await insertIfNew(raw);
+        refreshed++;
+        continue;
+      }
+
       // Skip items where the extracted "name" is clearly a date, not an activity title
       if (looksLikeDate(raw.name)) {
         irrelevant++;
@@ -155,7 +172,10 @@ export async function runScrape() {
 
       const classified = await classifyActivity(raw);
 
-      if (!classified.is_relevant) {
+      // Verified sources are curated baby/mom venues — we already trust them
+      // enough to bypass the keyword filter, so don't let Claude's relevance
+      // call drop one. Only unverified items are gated on is_relevant.
+      if (!raw._verified && !classified.is_relevant) {
         irrelevant++;
         continue;
       }
@@ -210,6 +230,7 @@ export async function runScrape() {
 
   console.log(`\n[scraper] Done.`);
   console.log(`  Inserted:   ${inserted}`);
+  console.log(`  Refreshed:  ${refreshed} (already in DB — no Claude call)`);
   console.log(`  Duplicates: ${skipped}`);
   console.log(`  Irrelevant: ${irrelevant}`);
   console.log(`  Errors:     ${errors}`);
