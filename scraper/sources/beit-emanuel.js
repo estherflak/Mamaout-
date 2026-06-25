@@ -31,6 +31,20 @@ function toAbsolute(href) {
   return `${BASE}${href.startsWith('/') ? '' : '/'}${href}`;
 }
 
+// SmartTicket activity pages carry the class name in the URL slug
+// (e.g. /דאנס_בייבי-_ריקוד_מנשאים_עם_ליטל_ממן_6427/) — far cleaner than the
+// anchor text, which is a date prefix. Decode, de-underscore, and drop the
+// opaque id token SmartTicket appends to some slugs.
+function nameFromSlug(url) {
+  let s = url.replace(BASE, '').replace(/^\/+|\/+$/g, '');
+  try { s = decodeURIComponent(s); } catch { /* keep raw */ }
+  return s
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+[0-9a-f]{4,}$/i, '') // trailing SmartTicket id hash
+    .trim();
+}
+
 function parseEvents(html) {
   const $ = cheerio.load(html);
   const events = [];
@@ -102,34 +116,42 @@ function parseEvents(html) {
     });
   });
 
-  // Fallback: any internal link that looks like a specific activity/event page
-  // Exclude category nav links (_page_N) and cap at 30 to avoid classifier spam
+  // Fallback: a real SmartTicket listing link carries a ?id=<number> query
+  // param (the session/product id). That single signal separates genuine
+  // activities from page chrome — nav menus, accessibility toggles, language
+  // switchers, _page_N category links, and social/footer links never have it.
+  // The DOM-order anchor sweep this replaced front-loaded the header chrome and
+  // hit its cap before reaching the events further down the page.
+  //
+  // The same class appears as many ?id links (one per session/date), so we key
+  // on the slug (url without the query) to emit one row per class — preventing
+  // the per-session row explosion that beit-emanuel-rg.js already guards against.
   if (events.length === 0) {
-    let count = 0;
+    const byClass = new Map(); // slug → event
     $('a[href]').each((_, el) => {
-      if (count >= 30) return false; // stop iterating
+      if (byClass.size >= 200) return false; // sanity bound; stop iterating
       const href = $(el).attr('href') || '';
-      if (!href || href === '/' || href === '#' || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-      if (/_page_\d+/.test(href)) return; // skip category nav links
+      if (!/[?&]id=\d+/.test(href)) return; // not a real listing → skip chrome
       const url = toAbsolute(href);
       if (!url.startsWith(BASE)) return;
-      if (seen.has(url)) return;
-      seen.add(url);
 
-      const name = $(el).text().trim();
-      if (!name || name.length < 3) return;
+      const slug = url.split('?')[0]; // collapse recurring sessions by class
+      if (byClass.has(slug)) return;
 
-      count++;
-      events.push({
+      const name = nameFromSlug(slug); // name lives in the slug, not the date text
+      if (name.length < 3) return;
+
+      byClass.set(slug, {
         name: name.slice(0, 120),
         description: '',
         location: 'מרכז קהילתי בית עמנואל, רמת גן',
         venue: 'מרכז קהילתי בית עמנואל',
-        source_url: url,
+        source_url: slug, // stable per-class url (no session id) → dedup-friendly
         source_name: 'Beit Emanuel Ramat Gan',
         raw_date: '',
       });
     });
+    events.push(...byClass.values());
   }
 
   return events;
