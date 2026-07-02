@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { canonicalVenueEn } from './venues.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -12,6 +13,9 @@ baby music/rhythm, postpartum wellness, parent+baby creative workshops, developm
 Mark is_relevant: false for: standup comedy, theater, professional training, adult-only events,
 kids' classes for toddlers/older children, general fitness not designed for postpartum/baby-present,
 restaurant/food events, and anything not specifically targeting mothers with infants.
+Also mark is_relevant: false for generic all-ages / "whole family" community events that are not
+specifically for babies — e.g. online/Zoom storytelling, neighbourhood street festivals, balloon
+days, "relaxation afternoons", and general library story hours aimed at children up to ~12.
 
 Always provide English translations even if the original is in Hebrew.
 Weekday morning events (08:00–13:00) are much more likely to be relevant than evening, Friday-night, or weekend events — use this as a tiebreaker on ambiguous listings.
@@ -63,6 +67,13 @@ function repairJson(text) {
 export async function classifyActivity(raw) {
   const extraContext = raw.raw_date ? `\nDate/time info: ${raw.raw_date}` : '';
 
+  // For venues we recognise, pin the English spelling so Haiku stops inventing
+  // a new transliteration on every run (the root of the duplicate-name problem).
+  const venueEn = canonicalVenueEn(raw.venue, raw.name);
+  const venueHint = venueEn
+    ? `\nKnown venue — use EXACTLY this English spelling in name_en/venue, do not transliterate it differently: "${venueEn}"`
+    : '';
+
   const userMsg = `Classify this listing and return JSON matching exactly this schema:
 ${SCHEMA}
 
@@ -70,7 +81,7 @@ Listing:
 Name: ${sanitizeForPrompt(raw.name)}
 Description: ${sanitizeForPrompt(raw.description)}
 Location: ${sanitizeForPrompt(raw.location)}
-Venue: ${sanitizeForPrompt(raw.venue)}${extraContext}
+Venue: ${sanitizeForPrompt(raw.venue)}${extraContext}${venueHint}
 URL: ${raw.source_url || ''}`;
 
   const response = await client.messages.create({
@@ -81,5 +92,10 @@ URL: ${raw.source_url || ''}`;
   });
 
   const text = response.content[0].text.trim();
-  return repairJson(text);
+  const result = repairJson(text);
+
+  // Never let the model overwrite the source's real venue string with an
+  // invented one — keep the source venue when it gave us one.
+  if (raw.venue) result.venue = raw.venue;
+  return result;
 }

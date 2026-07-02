@@ -19,18 +19,18 @@ const HEADERS = {
   'User-Agent': 'MamaOut-scraper/1.0',
 };
 
-// Keep event if it targets babies/toddlers or whole-family in a kids category
-function isRelevant(event) {
-  const audiences = (event.audienceType ?? []).map(a => a.name);
-  const catName   = event.category?.name ?? '';
+// Keep an event ONLY if it explicitly targets early childhood (הגיל הרך).
+//
+// The previous version also let in "whole family" (לכל המשפחה) events in any
+// kids/story category. For a 0–12mo app that swept in older-kid and all-ages
+// content — Zoom storytelling, a "relaxation afternoon", neighbourhood balloon
+// days, kids' theatre — which then got the 12-year (624-week) age default and
+// rendered as "newborn–145mo". Early-childhood is the only audience we trust.
+function isEarlyChildhood(event) {
+  const audiences    = (event.audienceType ?? []).map(a => a.name);
   const clusterNames = (event.cluster ?? []).map(c => c.name);
-
   if (audiences.some(a => a.includes('הגיל הרך'))) return true;
   if (clusterNames.some(c => c.includes('גיל הרך'))) return true;
-  if (
-    audiences.includes('לכל המשפחה') &&
-    (catName.includes('ילדים') || catName.includes('גיל הרך') || catName.includes('סיפור'))
-  ) return true;
   return false;
 }
 
@@ -66,10 +66,10 @@ function mapEvent(e) {
     ? `${SITE_BASE}${e.detailsLink.url}`
     : null;
 
-  const audiences    = (e.audienceType ?? []).map(a => a.name);
-  const hasEarlyAge  = audiences.some(a => a.includes('הגיל הרך'));
+  // We only emit early-childhood events now, so cap the stored max at 3 years
+  // (156 weeks). No more 12-year (624-week) default leaking in older-kid events.
   const ageMinWeeks  = 0;
-  const ageMaxWeeks  = hasEarlyAge ? 156 : 624;   // 3 yrs or 12 yrs in weeks
+  const ageMaxWeeks  = 156;   // 3 yrs in weeks
 
   const scheduleLabel = dateStr && timeStart
     ? `${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IL', { weekday: 'short', day: 'numeric', month: 'short' })} · ${timeStart}`
@@ -121,6 +121,9 @@ export async function scrapeRamatGanMuni() {
       const url = e.detailsLink?.url;
       if (!url || seen.has(url)) continue;
       if ((e.date ?? '') < today) continue;
+      // Even the "kids-and-infants" lobby carries all-ages / whole-family items;
+      // keep only the ones explicitly tagged early childhood.
+      if (!isEarlyChildhood(e)) continue;
       seen.set(url, mapEvent(e));
     }
     console.log(`[ramat-gan-muni] primary: ${seen.size} events`);
@@ -139,7 +142,7 @@ export async function scrapeRamatGanMuni() {
       const url = e.detailsLink?.url;
       if (!url || seen.has(url)) continue;
       if ((e.date ?? '') < today) continue;
-      if (!isRelevant(e)) continue;
+      if (!isEarlyChildhood(e)) continue;
       seen.set(url, mapEvent(e));
       added++;
     }
