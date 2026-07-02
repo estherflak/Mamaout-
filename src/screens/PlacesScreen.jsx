@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { usePlaces, isOpenNow, getTodayHours } from '../hooks/usePlaces';
+import { ageRangeLabelFromMonths } from '../lib/formatAge';
 
 const TYPE_BORDER = {
   playground: '#f9a8d4',
@@ -51,9 +52,9 @@ function PlaceCard({ place }) {
               <span className="text-xs font-semibold text-stone-600">₪{place.price}</span>
             ) : null}
 
-            {(place.age_min_months > 0 || place.age_max_months != null) && (
+            {ageRangeLabelFromMonths(place.age_min_months, place.age_max_months) && (
               <span className="text-xs text-stone-400">
-                {place.age_min_months}–{place.age_max_months ?? '∞'}m
+                {ageRangeLabelFromMonths(place.age_min_months, place.age_max_months)}
               </span>
             )}
 

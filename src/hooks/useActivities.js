@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, isConfigured } from '../lib/supabase';
 import { ACTIVITIES as MOCK_ACTIVITIES } from '../data/activities';
+import { ageRangeLabelFromWeeks } from '../lib/formatAge';
 
 const CATEGORY_EMOJI = {
   movement:       '🤸',
@@ -61,16 +62,10 @@ export function normalizeSupabaseActivity(a) {
   const displayName = a.name_en || a.name || 'Unnamed Activity';
   const displayDesc = a.description_en || a.description || '';
 
-  // Age label — show range when both min and max are known
+  // Age label — weeks → newborn / Nw / Nmo / Ny (shared with Places)
   const ageMin = a.baby_age_min ?? null;
   const ageMax = a.baby_age_max ?? null;
-  const ageLabel = (() => {
-    if (ageMin == null && ageMax == null) return 'All ages';
-    const fmt = w => w <= 4 ? 'newborn' : w < 20 ? `${w}w` : `${Math.round(w / 4.3)}mo`;
-    if (ageMin != null && ageMax != null) return `${fmt(ageMin)}–${fmt(ageMax)}`;
-    if (ageMin != null) return ageMin <= 4 ? 'From birth' : `From ${fmt(ageMin)}`;
-    return `Up to ${fmt(ageMax)}`;
-  })();
+  const ageLabel = ageRangeLabelFromWeeks(ageMin, ageMax);
 
   // Price — prefer the new integer NIS column, fall back to tier string
   const priceNis = a.price ?? null;
