@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { usePlaces, isOpenNow, getTodayHours } from '../hooks/usePlaces';
 import { ageRangeLabelFromMonths } from '../lib/formatAge';
+import { areaLabel } from '../lib/localize';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const TYPE_BORDER = {
@@ -13,7 +14,7 @@ function PlaceCard({ place }) {
   const openNow = isOpenNow(place.opening_hours);
   const todayHours = getTodayHours(place.opening_hours);
   const isClosed = place.opening_hours && !todayHours;
-  const areaLabel = place.area === 'tel_aviv' ? t('discover.telAviv') : t('discover.ramatGan');
+  const placeArea = areaLabel(place.area, lang);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
@@ -38,7 +39,7 @@ function PlaceCard({ place }) {
 
           {/* Location */}
           <p className="text-xs text-stone-400 mb-2">
-            {place.neighborhood}{place.neighborhood ? ` · ${areaLabel}` : areaLabel}
+            {place.neighborhood}{place.neighborhood ? ` · ${placeArea}` : placeArea}
           </p>
 
           {/* Today's hours */}

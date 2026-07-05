@@ -136,7 +136,12 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
 
 export function applyFilters(activities, { ageMax, language }) {
   let r = activities;
-  if (ageMax != null) r = r.filter(a => a.ageFrom <= ageMax);
+  // ageMax is the baby's age in weeks: keep activities whose range covers it —
+  // not just ones that start below it (a 9-month-old shouldn't see
+  // "birth–4 months" workshops).
+  if (ageMax != null) {
+    r = r.filter(a => a.ageFrom <= ageMax && (a.ageTo == null || a.ageTo >= ageMax));
+  }
   if (language && language !== 'both') {
     const code = language === 'hebrew' ? 'he' : 'en';
     // Activities marked 'both' are held in both languages — they match either.

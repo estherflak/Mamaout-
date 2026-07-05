@@ -28,7 +28,7 @@ const LANGUAGES = [
 ];
 
 export default function OnboardingScreen() {
-  const { user, profile, refreshProfile, signOut } = useAuthContext();
+  const { user, profile, refreshProfile, patchProfile, signOut } = useAuthContext();
   const { t } = useLanguage();
   const [step, setStep]           = useState(0);
   const [babyName, setBabyName]   = useState(profile?.baby_name || '');
@@ -49,7 +49,7 @@ export default function OnboardingScreen() {
 
   async function handleFinish() {
     setError(''); setLoading(true);
-    const { error: e } = await supabase.from('profiles').upsert({
+    const patch = {
       id: user.id,
       name: profile?.name || user.email?.split('@')[0] || 'Mama',
       baby_name: babyName.trim() || null,
@@ -58,10 +58,13 @@ export default function OnboardingScreen() {
       interests,
       free_days: freeDays,
       onboarding_done: true,
-    });
+    };
+    const { error: e } = await supabase.from('profiles').upsert(patch);
     if (e) { setError(e.message); setLoading(false); return; }
-    await refreshProfile();
-    setLoading(false);
+    // Apply locally first so the app navigates immediately — never leave the
+    // user stuck on this screen waiting for a profile re-fetch.
+    patchProfile(patch);
+    refreshProfile();
   }
 
   const chipCls = active =>

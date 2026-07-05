@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setUser(session.user);
         setNeedsPasswordReset(true);
@@ -64,7 +64,11 @@ export function AuthProvider({ children }) {
       }
       if (session?.user) {
         setUser(session.user);
-        await loadProfile(session.user.id);
+        // IMPORTANT: never await supabase queries inside this callback —
+        // supabase-js holds its auth lock while it runs, and a query that
+        // needs the session token deadlocks the whole client (symptom:
+        // saves hang forever until the page is refreshed). Defer instead.
+        setTimeout(() => loadProfile(session.user.id), 0);
       } else {
         setUser(null);
         setProfile(null);
@@ -81,6 +85,13 @@ export function AuthProvider({ children }) {
     await loadProfile(user.id);
   }
 
+  // Merge a patch into the local profile immediately, without waiting for a
+  // re-fetch. Lets flows like onboarding navigate as soon as their write
+  // succeeds instead of hanging on a round-trip.
+  function patchProfile(patch) {
+    setProfile(p => ({ ...(p || {}), ...patch }));
+  }
+
   async function signOut() {
     await supabase?.auth.signOut();
     setUser(null);
@@ -89,7 +100,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, profileError, authLoading, needsPasswordReset, setNeedsPasswordReset, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, profile, profileError, authLoading, needsPasswordReset, setNeedsPasswordReset, refreshProfile, patchProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

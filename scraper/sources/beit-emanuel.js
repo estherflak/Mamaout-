@@ -215,9 +215,14 @@ export async function scrapeBeitEmanuel() {
     await browser.close().catch(() => {});
   }
 
+  // Ra'agim gymboree self pages (open play / services) are a Place, not
+  // activities — same rule as sources/beit-emanuel-rg.js.
+  const GYMBOREE_SELF = [/משחקיי?ה התפתחותית/, /יעוץ פרטני/, /^גילאי לידה עד שנה$/];
+
   const seen = new Set();
   return allResults.filter(r => {
     if (!r.source_url || seen.has(r.source_url)) return false;
+    if (GYMBOREE_SELF.some(re => re.test((r.name || '').trim()))) return false;
     seen.add(r.source_url);
     return true;
   });

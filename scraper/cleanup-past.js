@@ -26,7 +26,7 @@ const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD, compares fi
 
 const { data: rows, error } = await supabase
   .from('activities')
-  .select('id, name, next_dates');
+  .select('id, name, next_dates, source_url');
 
 if (error) { console.error('Failed to fetch activities:', error.message); process.exit(1); }
 
@@ -36,6 +36,21 @@ const stale = rows.filter(a => {
   if (!Array.isArray(dates) || dates.length === 0) return false; // ongoing / date-less → keep
   return dates.every(d => d < today);
 });
+
+// Date-less rows can still go stale: SmartTicket show pages 404 once the run
+// ends, leaving cards that link nowhere. Probe them and treat 404/410 as stale.
+const dateless = rows.filter(a =>
+  (!Array.isArray(a.next_dates) || a.next_dates.length === 0) &&
+  a.source_url && /smarticket\.co\.il/.test(a.source_url)
+);
+console.log(`Probing ${dateless.length} date-less SmartTicket links for 404s…`);
+for (const a of dateless) {
+  try {
+    const res = await fetch(a.source_url, { redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (res.status === 404 || res.status === 410) stale.push(a);
+  } catch { /* network hiccup — leave the row alone, try again tomorrow */ }
+  await new Promise(r => setTimeout(r, 150));
+}
 
 console.log(`${rows.length} activities · ${stale.length} past-only${dryRun ? ' (dry run)' : ''}`);
 

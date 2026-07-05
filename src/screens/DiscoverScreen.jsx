@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useActivities, resolveCity } from '../hooks/useActivities';
+import { usePlaces } from '../hooks/usePlaces';
 import { useRsvpCounts } from '../hooks/useRsvpCounts';
 import { useSavedSearches } from '../hooks/useSavedSearches';
 import { useFriends } from '../hooks/useFriends';
@@ -7,7 +8,7 @@ import { useFriendsGoing } from '../hooks/useFriendsGoing';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { rankActivities } from '../lib/rank';
-import { cityLabel } from '../lib/localize';
+import { cityLabel, areaLabel } from '../lib/localize';
 import { matchesDateRange } from '../lib/dates';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
@@ -46,6 +47,7 @@ function CardSkeleton() {
 
 export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedConsumed }) {
   const { activities, loading, error } = useActivities();
+  const { places } = usePlaces();
   const rsvpCounts = useRsvpCounts();
   const { add: addSavedSearch } = useSavedSearches();
   const { friends } = useFriends();
@@ -306,13 +308,16 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           </>
         )}
 
-        {/* Places-specific filters */}
+        {/* Places-specific filters — areas derived from the data so new cities
+            (Givatayim…) appear without hardcoding */}
         {section === 'places' && (
-          <div className="flex items-center gap-2 pb-1">
+          <div className="flex items-center gap-2 pb-1 overflow-x-auto flex-nowrap">
             {[
-              { id: 'all',       label: t('discover.allAreas') },
-              { id: 'tel_aviv',  label: t('discover.telAviv') },
-              { id: 'ramat_gan', label: t('discover.ramatGan') },
+              { id: 'all', label: t('discover.allAreas') },
+              ...[...new Set(places.map(p => p.area).filter(Boolean))].sort().map(id => ({
+                id,
+                label: areaLabel(id, lang),
+              })),
             ].map(area => (
               <button
                 key={area.id}

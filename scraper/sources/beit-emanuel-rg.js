@@ -26,8 +26,18 @@ const BABY_KEYWORDS = [
   'קטנטן', 'קטנטנים',
 ];
 
+// The Ra'agim gymboree's own open-play sessions, promo pages, and services are
+// a PLACE (see the places table), not activities — only the distinct classes
+// and workshops hosted there belong in the activities feed.
+const GYMBOREE_SELF = [
+  /משחקיי?ה התפתחותית/,  // "developmental playroom" open-play sessions
+  /יעוץ פרטני/,           // private consultation service page
+  /^גילאי לידה עד שנה$/,  // bare age-category page
+];
+
 function isBabyRelevant(name) {
   if (!name) return false;
+  if (GYMBOREE_SELF.some(re => re.test(name))) return false;
   // Toddler-only classes (start at 1y+) and birthday promos are out of scope
   // for a 0–12-month app even though they keyword-match.
   if (isOutOfScopeForBabies(name)) return false;

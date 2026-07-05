@@ -99,7 +99,7 @@ export const strings = {
     },
     filterPanel: {
       filters: 'Filters',
-      babyAgeUpTo: 'Baby age (up to)',
+      babyAgeUpTo: "Baby's age",
       newborn: 'Newborn',
       twelveMonths: '12 months',
       activityLanguage: 'Activity language',
@@ -500,7 +500,7 @@ export const strings = {
     },
     filterPanel: {
       filters: 'סינון',
-      babyAgeUpTo: 'גיל התינוק/ת (עד)',
+      babyAgeUpTo: 'גיל התינוק/ת',
       newborn: 'יילוד',
       twelveMonths: '12 חודשים',
       activityLanguage: 'שפת הפעילות',

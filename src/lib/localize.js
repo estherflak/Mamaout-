@@ -54,6 +54,19 @@ export function cityLabel(name, lang) {
   return lang === 'he' ? (CITY_HE[name] || name) : name;
 }
 
+// places.area ids → canonical city names (then translated via cityLabel).
+const AREA_CITY = {
+  tel_aviv: 'Tel Aviv',
+  ramat_gan: 'Ramat Gan',
+  givatayim: 'Givatayim',
+  bnei_brak: 'Bnei Brak',
+  holon: 'Holon',
+};
+
+export function areaLabel(areaId, lang) {
+  return AREA_CITY[areaId] ? cityLabel(AREA_CITY[areaId], lang) : areaId;
+}
+
 // The scrapers store machine-generated English schedule labels
 // ("8 upcoming sessions · 11:30", "One session · 10:00", "Wed, 8 Jul · 19:30").
 // Localize the session-count patterns; return null for the English date

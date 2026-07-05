@@ -85,7 +85,12 @@ export function normalizeSupabaseActivity(a) {
 
   // Past dates are useless on a card and made stale rows look "next: last week"
   const todayStr = new Date().toISOString().slice(0, 10);
-  const nextDates = (a.next_dates || []).filter(d => d >= todayStr);
+  const allDates = a.next_dates || [];
+  const nextDates = allDates.filter(d => d >= todayStr);
+  // A session-based row whose every date has passed is over — its booking link
+  // is likely already dead. Flag it so the feed can drop it (nightly cleanup
+  // deletes it properly server-side).
+  const isExpired = allDates.length > 0 && nextDates.length === 0 && !a.event_date;
 
   return {
     id: a.id,
@@ -123,6 +128,7 @@ export function normalizeSupabaseActivity(a) {
     latitude: a.latitude ?? null,
     longitude: a.longitude ?? null,
     language: a.language || 'he',
+    isExpired,
   };
 }
 
@@ -147,10 +153,12 @@ export function useActivities() {
         if (err) {
           setError(err.message);
         } else if (data?.length > 0) {
-          // Safety net: never surface toddler-only content (starts above 12
-          // months) in a 0–12m app, whatever the scraper let through.
+          // Safety nets: never surface toddler-only content (starts above 12
+          // months) or rows whose every session already passed, whatever the
+          // scraper let through.
           setActivities(
-            data.map(normalizeSupabaseActivity).filter(a => (a.ageFrom ?? 0) <= 52)
+            data.map(normalizeSupabaseActivity)
+              .filter(a => (a.ageFrom ?? 0) <= 52 && !a.isExpired)
           );
           setDataSource('supabase');
         }
