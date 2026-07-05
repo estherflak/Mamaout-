@@ -47,7 +47,6 @@ export const strings = {
     },
     discover: {
       title: 'What are you up for?',
-      tagline: 'Tel Aviv & Ramat Gan',
       langAriaEnglish: 'English',
       langAriaHebrew: 'Hebrew',
       listView: '☰ List',
@@ -182,7 +181,7 @@ export const strings = {
       accept: 'Accept',
       someone: 'Someone',
       friend: 'Friend',
-      inviteMessage: "Hey! I'm using MamaOut to find activities for moms in Tel Aviv. Join me! 🤱",
+      inviteMessage: "Hey! I'm using MamaOut to find activities for moms with babies. Join me! 🤱",
       hintOne: '{n} mom in {city} saved {name} this week',
       hintMany: '{n} moms in {city} saved {name} this week',
       justNow: 'just now',
@@ -448,7 +447,6 @@ export const strings = {
     },
     discover: {
       title: 'מה מתחשק לך היום?',
-      tagline: 'תל אביב ורמת גן',
       langAriaEnglish: 'אנגלית',
       langAriaHebrew: 'עברית',
       listView: '☰ רשימה',
@@ -583,7 +581,7 @@ export const strings = {
       accept: 'אישור',
       someone: 'מישהי',
       friend: 'חברה',
-      inviteMessage: 'היי! אני משתמשת ב-MamaOut כדי למצוא פעילויות לאמהות בתל אביב. בואי גם את! 🤱',
+      inviteMessage: 'היי! אני משתמשת ב-MamaOut כדי למצוא פעילויות לאמהות עם תינוקות. בואי גם את! 🤱',
       hintOne: 'אמא אחת ב{city} שמרה את {name} השבוע',
       hintMany: '{n} אמהות ב{city} שמרו את {name} השבוע',
       justNow: 'ממש עכשיו',

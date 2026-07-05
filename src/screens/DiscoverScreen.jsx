@@ -202,7 +202,6 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-xl font-semibold text-stone-800 leading-snug">{t('discover.title')}</h2>
-            <p className="text-xs text-stone-400 mt-0.5">{t('discover.tagline')}</p>
           </div>
 
           <div className="flex items-center gap-2">
