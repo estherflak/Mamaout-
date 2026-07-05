@@ -54,6 +54,15 @@ export function cityLabel(name, lang) {
   return lang === 'he' ? (CITY_HE[name] || name) : name;
 }
 
+// Canonical Gush Dan metro cities the app knows how to resolve/translate —
+// primary cities first, then alphabetical. Used for pickers that must offer
+// cities before any activity exists there yet.
+export const METRO_CITIES = [
+  'Tel Aviv',
+  'Ramat Gan',
+  ...Object.keys(CITY_HE).filter(c => c !== 'Tel Aviv' && c !== 'Ramat Gan').sort(),
+];
+
 // places.area ids → canonical city names (then translated via cityLabel).
 const AREA_CITY = {
   tel_aviv: 'Tel Aviv',

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { cityLabel, METRO_CITIES } from '../lib/localize';
 
 const CATEGORIES = ['Movement', 'Wellness', 'Baby-focused', 'Social', 'Creative'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -24,7 +25,7 @@ const EMPTY = {
 
 export default function CommunityAddScreen({ onClose }) {
   const { user, profile } = useAuthContext();
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const [form, setForm]           = useState(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone]           = useState(false);
@@ -148,11 +149,16 @@ export default function CommunityAddScreen({ onClose }) {
         {/* Location */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
           <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('communityAddScreen.where')}</p>
-          <div className="flex gap-2">
-            {[{ v: 'Tel Aviv', key: 'discover.telAviv' }, { v: 'Ramat Gan', key: 'discover.ramatGan' }].map(c => (
-              <button key={c.v} onClick={() => set('city', c.v)} className={`flex-1 ${chip(form.city === c.v)}`}>{t(c.key)}</button>
+          {/* Any Gush Dan metro city — not just the two the app launched with */}
+          <select
+            value={form.city}
+            onChange={e => set('city', e.target.value)}
+            className={`${inputCls} appearance-none`}
+          >
+            {METRO_CITIES.map(c => (
+              <option key={c} value={c}>{cityLabel(c, lang)}</option>
             ))}
-          </div>
+          </select>
           <input
             value={form.neighborhood}
             onChange={e => set('neighborhood', e.target.value)}
