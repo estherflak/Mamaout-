@@ -3,6 +3,8 @@
  * Fetches a rolling 60-day window and keyword-filters for baby relevance.
  */
 
+import { ageRangeFromName, isOutOfScopeForBabies } from './hebrew-ages.js';
+
 const BASE_URL   = 'https://mbe-rg.smarticket.co.il';
 const SOURCE_NAME = 'Beit Emanuel Ramat Gan';
 
@@ -25,7 +27,11 @@ const BABY_KEYWORDS = [
 ];
 
 function isBabyRelevant(name) {
-  return BABY_KEYWORDS.some(k => name?.includes(k));
+  if (!name) return false;
+  // Toddler-only classes (start at 1y+) and birthday promos are out of scope
+  // for a 0–12-month app even though they keyword-match.
+  if (isOutOfScopeForBabies(name)) return false;
+  return BABY_KEYWORDS.some(k => name.includes(k));
 }
 
 function mapCategory(name = '') {
@@ -123,8 +129,8 @@ function mapToMamaOut({ rep, dates }, addressCache) {
     price:         price,
     price_notes:   isFree ? 'Free (registration required)' : null,
     stroller_accessible: null,
-    baby_age_min:  0,
-    baby_age_max:  156,
+    baby_age_min:  ageRangeFromName(rep.name).min,
+    baby_age_max:  ageRangeFromName(rep.name).max,
     category:      mapCategory(rep.name),
     source_name:   SOURCE_NAME,
     source_url:    `${BASE_URL}/event/${rep.id}`,

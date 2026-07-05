@@ -11,6 +11,7 @@
 
 import { chromium as playwrightChromium } from 'playwright-core';
 import chromium from '@sparticuz/chromium';
+import { ageRangeFromName, isOutOfScopeForBabies } from './hebrew-ages.js';
 
 const DIGITAF_URL = 'https://www.tel-aviv.gov.il/Residents/Digitel/Pages/DigiTaf.aspx?CategoryId=40&AudID=7';
 const SOURCE_NAME = 'Tel Aviv Municipality';
@@ -73,6 +74,10 @@ function mapCategory(interests = '') {
 function mapToMamaOut(item) {
   const val = f => item[f]?.Value || '';
 
+  // Digitaf covers ages 0–3; drop the toddler-only shows (walking/1.5–3/2–3)
+  // that don't belong in a 0–12-month app.
+  if (isOutOfScopeForBabies(val('Title'))) return null;
+
   const { next_dates, time_start } = parseSessionDates(val('TlvSearchContentForLobbyTimePosition'));
   const fallbackDate = parseStartDate(val('TlvStartDate'));
 
@@ -104,8 +109,8 @@ function mapToMamaOut(item) {
     price:            isFree ? 0 : null,
     price_notes:      val('TlvBenefitDescription') || (isFree ? 'Free (pre-registration required)' : null),
     stroller_accessible: null,
-    baby_age_min:     0,
-    baby_age_max:     156,   // 3 years in weeks
+    baby_age_min:     ageRangeFromName(val('Title')).min,
+    baby_age_max:     ageRangeFromName(val('Title')).max,
     is_verified:      true,
     language:         'he',
   };
