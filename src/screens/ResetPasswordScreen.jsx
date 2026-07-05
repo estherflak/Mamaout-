@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function ResetPasswordScreen() {
   const { setNeedsPasswordReset } = useAuthContext();
+  const { t } = useLanguage();
   const [password, setPassword]   = useState('');
   const [confirm, setConfirm]     = useState('');
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
 
   async function handleReset() {
-    if (password !== confirm) { setError('Passwords don\'t match.'); return; }
-    if (password.length < 6)  { setError('Password must be at least 6 characters.'); return; }
+    if (password !== confirm) { setError(t('resetPasswordScreen.passwordsNoMatch')); return; }
+    if (password.length < 6)  { setError(t('resetPasswordScreen.passwordTooShort')); return; }
 
     setError(''); setLoading(true);
     const { error: e } = await supabase.auth.updateUser({ password });
@@ -33,7 +35,7 @@ export default function ResetPasswordScreen() {
       </div>
 
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-3">
-        <p className="text-sm font-semibold text-stone-700">Choose a new password</p>
+        <p className="text-sm font-semibold text-stone-700">{t('resetPasswordScreen.chooseNewPassword')}</p>
 
         {error && (
           <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
@@ -44,14 +46,14 @@ export default function ResetPasswordScreen() {
         <input
           className={inputCls}
           type="password"
-          placeholder="New password (min. 6 characters)"
+          placeholder={t('resetPasswordScreen.newPasswordPlaceholder')}
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
         <input
           className={inputCls}
           type="password"
-          placeholder="Confirm new password"
+          placeholder={t('resetPasswordScreen.confirmPasswordPlaceholder')}
           value={confirm}
           onChange={e => setConfirm(e.target.value)}
         />
@@ -60,7 +62,7 @@ export default function ResetPasswordScreen() {
           disabled={loading || !password || !confirm}
           className="w-full py-3 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm disabled:opacity-60"
         >
-          {loading ? '…' : 'Set new password'}
+          {loading ? '…' : t('resetPasswordScreen.setNewPassword')}
         </button>
       </div>
     </div>

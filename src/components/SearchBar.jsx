@@ -1,7 +1,10 @@
+import { useLanguage } from '../contexts/LanguageContext';
+
 export default function SearchBar({ value, onChange }) {
+  const { t } = useLanguage();
   return (
     <div className="relative">
-      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+      <div className="absolute inset-y-0 start-4 flex items-center pointer-events-none">
         <svg className="w-5 h-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -9,10 +12,10 @@ export default function SearchBar({ value, onChange }) {
       </div>
       <input
         type="search"
-        placeholder="Search activities…"
+        placeholder={t('searchBar.placeholder')}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full pl-12 pr-10 py-4 rounded-2xl bg-white border border-dusty-roseLight
+        className="w-full ps-12 pe-10 py-4 rounded-2xl bg-white border border-dusty-roseLight
           text-stone-700 placeholder-stone-400 text-base
           focus:outline-none focus:ring-2 focus:ring-dusty-rose focus:border-transparent
           shadow-sm transition-shadow"
@@ -22,8 +25,8 @@ export default function SearchBar({ value, onChange }) {
       {value && (
         <button
           onClick={() => onChange('')}
-          className="absolute inset-y-0 right-4 flex items-center text-stone-300 hover:text-stone-500 transition-colors"
-          aria-label="Clear search"
+          className="absolute inset-y-0 end-4 flex items-center text-stone-300 hover:text-stone-500 transition-colors"
+          aria-label={t('searchBar.clearAria')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

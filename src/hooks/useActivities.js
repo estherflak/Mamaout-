@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, isConfigured } from '../lib/supabase';
 import { ACTIVITIES as MOCK_ACTIVITIES } from '../data/activities';
-import { ageRangeLabelFromWeeks } from '../lib/formatAge';
 
 const CATEGORY_EMOJI = {
   movement:       '🤸',
@@ -11,6 +10,9 @@ const CATEGORY_EMOJI = {
   'baby-focused': '🌈',
 };
 
+// Internal grouping key only (matches MapView's CATEGORY_COLORS and the
+// mock-data `category` field) — never rendered directly; use categoryLabel()
+// from lib/localize.js for user-facing text.
 const CATEGORY_LABEL = {
   movement:       'Movement',
   wellness:       'Wellness',
@@ -62,23 +64,28 @@ export function normalizeSupabaseActivity(a) {
   const displayName = a.name_en || a.name || 'Unnamed Activity';
   const displayDesc = a.description_en || a.description || '';
 
-  // Age label — weeks → newborn / Nw / Nmo / Ny (shared with Places)
+  // Age range — weeks (shared with Places). Display text is language-dependent,
+  // so it's formatted at render time via formatAge.js, not baked in here.
   const ageMin = a.baby_age_min ?? null;
   const ageMax = a.baby_age_max ?? null;
-  const ageLabel = ageRangeLabelFromWeeks(ageMin, ageMax);
 
-  // Price — prefer the new integer NIS column, fall back to tier string
+  // Price — prefer the new integer NIS column, fall back to a raw tier code
+  // ('low'/'paid'/'pricey') translated at render time.
   const priceNis = a.price ?? null;
-  const isFree = a.is_free ?? (priceNis === 0) ?? (a.price_range?.toLowerCase() === 'free');
-  const priceDisplay = (() => {
-    if (isFree) return 'Free';
-    if (priceNis != null) return `₪${priceNis}`;
+  const isFree = a.is_free
+    ?? (priceNis != null ? priceNis === 0 : a.price_range?.toLowerCase() === 'free');
+  const priceTier = (() => {
+    if (isFree || priceNis != null) return null;
     const p = (a.price_range || '').toLowerCase().trim();
-    if (p === '₪')   return 'Low cost';
-    if (p === '₪₪')  return 'Paid';
-    if (p === '₪₪₪') return 'Pricey';
+    if (p === '₪')   return 'low';
+    if (p === '₪₪')  return 'paid';
+    if (p === '₪₪₪') return 'pricey';
     return a.price_range || null;
   })();
+
+  // Past dates are useless on a card and made stale rows look "next: last week"
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const nextDates = (a.next_dates || []).filter(d => d >= todayStr);
 
   return {
     id: a.id,
@@ -92,15 +99,14 @@ export function normalizeSupabaseActivity(a) {
     descriptionHe: a.description,
     scheduleLabel: a.schedule_label || null,
     scheduleType: a.schedule_type || null,
-    nextDates: a.next_dates || [],
+    nextDates,
     timeStart: a.time_start ? a.time_start.slice(0, 5) : null,   // "10:00"
     timeEnd:   a.time_end   ? a.time_end.slice(0, 5)   : null,
-    price: priceDisplay,
+    priceTier,
     priceNis,
     isFree,
     ageFrom: ageMin ?? 0,
     ageTo: ageMax,
-    ageLabel,
     strollerAccessible: a.stroller_accessible ?? null,
     address: a.address?.trim() || null,
     organizerName: a.organizer_name?.trim() || null,
@@ -113,7 +119,7 @@ export function normalizeSupabaseActivity(a) {
     sourceUrl: a.source_url,
     sourceName: a.source_name,
     isVerified: a.is_verified,
-    ctaLabel: a.cta_label || 'More info',
+    ctaLabel: a.cta_label || null,
     latitude: a.latitude ?? null,
     longitude: a.longitude ?? null,
     language: a.language || 'he',
@@ -141,7 +147,11 @@ export function useActivities() {
         if (err) {
           setError(err.message);
         } else if (data?.length > 0) {
-          setActivities(data.map(normalizeSupabaseActivity));
+          // Safety net: never surface toddler-only content (starts above 12
+          // months) in a 0–12m app, whatever the scraper let through.
+          setActivities(
+            data.map(normalizeSupabaseActivity).filter(a => (a.ageFrom ?? 0) <= 52)
+          );
           setDataSource('supabase');
         }
         setLoading(false);

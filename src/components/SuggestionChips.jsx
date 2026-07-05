@@ -1,6 +1,8 @@
 import { SUGGESTION_CHIPS } from '../data/activities';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function SuggestionChips({ onSelect, value = '' }) {
+  const { t } = useLanguage();
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
       {SUGGESTION_CHIPS.map(chip => {
@@ -16,7 +18,7 @@ export default function SuggestionChips({ onSelect, value = '' }) {
                 : 'bg-white border-dusty-roseLight text-stone-600 active:bg-dusty-rosePale active:border-dusty-rose hover:bg-dusty-rosePale hover:border-dusty-rose'
             }`}
           >
-            {chip}
+            {t(`suggestionChips.${chip}`)}
           </button>
         );
       })}

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const LANGUAGES = [
-  { id: 'hebrew',  label: 'Hebrew' },
-  { id: 'english', label: 'English' },
-  { id: 'both',    label: 'Both' },
+  { id: 'hebrew',  key: 'common.hebrew' },
+  { id: 'english', key: 'common.english' },
+  { id: 'both',    key: 'common.both' },
 ];
 
 function babyAgeWeeks(birthdate) {
@@ -15,6 +16,7 @@ function babyAgeWeeks(birthdate) {
 
 export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   const { profile } = useAuthContext();
+  const { t } = useLanguage();
   const defaultAge = babyAgeWeeks(profile?.baby_birthdate);
 
   const [ageMax, setAgeMax] = useState(filters.ageMax ?? (defaultAge ?? 52));
@@ -74,18 +76,18 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
         <svg className="w-3.5 h-3.5" fill="none" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
           <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
         </svg>
-        Filters
+        {t('filterPanel.filters')}
         {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-dusty-rose" />}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-stone-100 shadow-lg p-4 space-y-5 z-50">
+        <div className="absolute end-0 top-full mt-2 w-72 bg-white rounded-2xl border border-stone-100 shadow-lg p-4 space-y-5 z-50">
           {/* Age filter */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-stone-600">Baby age (up to)</span>
+              <span className="text-xs font-semibold text-stone-600">{t('filterPanel.babyAgeUpTo')}</span>
               <span className="text-xs text-dusty-roseDark font-medium">
-                {ageMax < 8 ? `${ageMax} weeks` : `${Math.round(ageMax / 4.3)} months`}
+                {ageMax < 8 ? t('common.weeksValue', { n: ageMax }) : t('common.monthsValue', { n: Math.round(ageMax / 4.3) })}
               </span>
             </div>
             <input
@@ -97,14 +99,14 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
               className="w-full accent-dusty-rose"
             />
             <div className="flex justify-between text-xs text-stone-300 mt-0.5">
-              <span>Newborn</span>
-              <span>12 months</span>
+              <span>{t('filterPanel.newborn')}</span>
+              <span>{t('filterPanel.twelveMonths')}</span>
             </div>
           </div>
 
           {/* Language filter */}
           <div>
-            <span className="text-xs font-semibold text-stone-600 block mb-2">Activity language</span>
+            <span className="text-xs font-semibold text-stone-600 block mb-2">{t('filterPanel.activityLanguage')}</span>
             <div className="flex gap-2 flex-wrap">
               {LANGUAGES.map(l => (
                 <button
@@ -112,7 +114,7 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
                   onClick={() => setLanguage(language === l.id ? '' : l.id)}
                   className={pillCls(language === l.id)}
                 >
-                  {l.label}
+                  {t(l.key)}
                 </button>
               ))}
             </div>
@@ -120,10 +122,10 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
 
           <div className="flex gap-2">
             <button onClick={reset} className="flex-1 py-2 rounded-xl border border-stone-200 text-xs text-stone-600">
-              Reset
+              {t('filterPanel.reset')}
             </button>
             <button onClick={apply} className="flex-1 py-2 rounded-xl bg-dusty-rose text-white text-xs font-semibold">
-              Apply
+              {t('filterPanel.apply')}
             </button>
           </div>
         </div>
@@ -137,7 +139,8 @@ export function applyFilters(activities, { ageMax, language }) {
   if (ageMax != null) r = r.filter(a => a.ageFrom <= ageMax);
   if (language && language !== 'both') {
     const code = language === 'hebrew' ? 'he' : 'en';
-    r = r.filter(a => !a.language || a.language === code);
+    // Activities marked 'both' are held in both languages — they match either.
+    r = r.filter(a => !a.language || a.language === 'both' || a.language === code);
   }
   return r;
 }

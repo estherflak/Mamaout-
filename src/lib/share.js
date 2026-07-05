@@ -1,4 +1,4 @@
-import { localizedName } from './localize';
+import { localizedName, localizedScheduleLabel } from './localize';
 
 function dayTimeLabel(activity, lang = 'en') {
   const timeRange = activity.timeStart
@@ -6,7 +6,7 @@ function dayTimeLabel(activity, lang = 'en') {
     : null;
 
   const locale = lang === 'he' ? 'he-IL' : 'en-IL';
-  const dateLabel = activity.scheduleLabel || (() => {
+  const dateLabel = localizedScheduleLabel(activity, lang) || (() => {
     const d = activity.nextDates?.[0];
     if (!d) return null;
     return new Date(`${d}T00:00:00`).toLocaleDateString(locale, {
@@ -26,23 +26,31 @@ function dayTimeLabel(activity, lang = 'en') {
 export const SHARE_TEMPLATES = [
   {
     id: 'invite',
-    label: '🙋‍♀️ Want to join me?',
+    labelKey: 'shareTemplates.inviteLabel',
     build(activity, lang = 'en') {
       const name  = localizedName(activity, lang);
       const when  = dayTimeLabel(activity, lang);
       const where = activity.neighborhood;
       const link  = activity.sourceUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-      let msg = `Want to join me? 🙋‍♀️ I found *${name}* on MamaOut`;
-      if (when)  msg += ` – ${when}`;
-      if (where) msg += `, ${where}`;
-      msg += `. Let's go together! 💕`;
+      let msg;
+      if (lang === 'he') {
+        msg = `בא לך להצטרף אליי? 🙋‍♀️ מצאתי את *${name}* ב-MamaOut`;
+        if (when)  msg += ` – ${when}`;
+        if (where) msg += `, ${where}`;
+        msg += `. בואי נלך ביחד! 💕`;
+      } else {
+        msg = `Want to join me? 🙋‍♀️ I found *${name}* on MamaOut`;
+        if (when)  msg += ` – ${when}`;
+        if (where) msg += `, ${where}`;
+        msg += `. Let's go together! 💕`;
+      }
       if (link)  msg += ` ${link}`;
       return msg;
     },
   },
   {
     id: 'friendly',
-    label: '💌 Friendly tip',
+    labelKey: 'shareTemplates.friendlyLabel',
     build(activity, lang = 'en') {
       const name  = localizedName(activity, lang);
       const when  = dayTimeLabel(activity, lang);
@@ -66,7 +74,7 @@ export const SHARE_TEMPLATES = [
   },
   {
     id: 'quick',
-    label: '📍 Quick info',
+    labelKey: 'shareTemplates.quickLabel',
     build(activity, lang = 'en') {
       const name  = localizedName(activity, lang);
       const when  = dayTimeLabel(activity, lang);
@@ -84,11 +92,11 @@ export function buildShareMessage(activity, lang = 'en') {
   return SHARE_TEMPLATES[0].build(activity, lang);
 }
 
-export function shareActivityOnWhatsApp(activity, templateId) {
+export function shareActivityOnWhatsApp(activity, templateId, lang = 'en') {
   const template = templateId
     ? (SHARE_TEMPLATES.find(t => t.id === templateId) || SHARE_TEMPLATES[0])
     : SHARE_TEMPLATES[0];
-  const msg = template.build(activity);
+  const msg = template.build(activity, lang);
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 

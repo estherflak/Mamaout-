@@ -1,33 +1,35 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const INTERESTS = [
-  { id: 'movement',     label: '🧘 Movement',    desc: 'Yoga, dance, fitness' },
-  { id: 'wellness',     label: '🌿 Wellness',     desc: 'Massage, mindfulness' },
-  { id: 'creative',     label: '🎨 Creative',     desc: 'Art, crafts, music' },
-  { id: 'social',       label: '👯 Social',       desc: 'Meetups, mama groups' },
-  { id: 'baby-focused', label: '👶 Baby-focused', desc: 'Sensory, swim, play' },
+  { id: 'movement',     key: 'onboardingScreen.interests.movement' },
+  { id: 'wellness',     key: 'onboardingScreen.interests.wellness' },
+  { id: 'creative',     key: 'onboardingScreen.interests.creative' },
+  { id: 'social',       key: 'onboardingScreen.interests.social' },
+  { id: 'baby-focused', key: 'onboardingScreen.interests.baby' },
 ];
 
 const FREE_DAYS = [
-  { id: 'sunday',    label: 'Sun' },
-  { id: 'monday',    label: 'Mon' },
-  { id: 'tuesday',   label: 'Tue' },
-  { id: 'wednesday', label: 'Wed' },
-  { id: 'thursday',  label: 'Thu' },
-  { id: 'friday',    label: 'Fri' },
-  { id: 'saturday',  label: 'Sat' },
+  { id: 'sunday' },
+  { id: 'monday' },
+  { id: 'tuesday' },
+  { id: 'wednesday' },
+  { id: 'thursday' },
+  { id: 'friday' },
+  { id: 'saturday' },
 ];
 
 const LANGUAGES = [
-  { id: 'hebrew',  label: 'Hebrew' },
-  { id: 'english', label: 'English' },
-  { id: 'both',    label: 'Both' },
+  { id: 'hebrew',  key: 'common.hebrew' },
+  { id: 'english', key: 'common.english' },
+  { id: 'both',    key: 'common.both' },
 ];
 
 export default function OnboardingScreen() {
   const { user, profile, refreshProfile, signOut } = useAuthContext();
+  const { t } = useLanguage();
   const [step, setStep]           = useState(0);
   const [babyName, setBabyName]   = useState(profile?.baby_name || '');
   const [birthdate, setBirthdate] = useState(profile?.baby_birthdate || '');
@@ -77,18 +79,18 @@ export default function OnboardingScreen() {
         {step === 0 && (
           <div className="text-center">
             <div className="text-5xl mb-4">🌸</div>
-            <h1 className="text-2xl font-bold text-stone-800 mb-2">Welcome to MamaOut!</h1>
+            <h1 className="text-2xl font-bold text-stone-800 mb-2">{t('onboardingScreen.welcome')}</h1>
             <p className="text-stone-500 text-sm mb-2">
-              Find activities you'll actually want to do with your baby.
+              {t('onboardingScreen.findActivities')}
             </p>
             <p className="text-stone-400 text-xs mb-10">
-              Let's personalise your experience in 3 quick steps.
+              {t('onboardingScreen.letsPersonalize')}
             </p>
             <button
               onClick={() => setStep(1)}
               className="w-full py-3.5 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm"
             >
-              Let's go! →
+              {t('onboardingScreen.letsGo')}
             </button>
           </div>
         )}
@@ -111,12 +113,12 @@ export default function OnboardingScreen() {
             {/* Step 1 — Baby info */}
             {step === 1 && (
               <div>
-                <h2 className="text-xl font-bold text-stone-800 mb-1">About your baby</h2>
-                <p className="text-sm text-stone-400 mb-6">A few basics so we can tailor what you see</p>
+                <h2 className="text-xl font-bold text-stone-800 mb-1">{t('onboardingScreen.aboutYourBaby')}</h2>
+                <p className="text-sm text-stone-400 mb-6">{t('onboardingScreen.fewBasics')}</p>
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-medium text-stone-500 mb-1.5 block">
-                      Baby's birthdate (optional)
+                      {t('onboardingScreen.birthdate')}
                     </label>
                     <input
                       className={inputCls}
@@ -126,38 +128,38 @@ export default function OnboardingScreen() {
                       max={new Date().toISOString().split('T')[0]}
                     />
                     <p className="text-xs text-stone-300 mt-1">
-                      Used to suggest age-appropriate activities. Expecting? Leave it blank for now.
+                      {t('onboardingScreen.birthdateHint')}
                     </p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-stone-500 mb-1.5 block">
-                      Baby's name (optional)
+                      {t('onboardingScreen.babyName')}
                     </label>
                     <input
                       className={inputCls}
-                      placeholder="e.g. Noa"
+                      placeholder={t('onboardingScreen.babyNamePlaceholder')}
                       value={babyName}
                       onChange={e => setBabyName(e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-stone-500 mb-1.5 block">
-                      Preferred language (optional)
+                      {t('onboardingScreen.preferredLanguage')}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {LANGUAGES.map(({ id, label }) => (
+                      {LANGUAGES.map(({ id, key }) => (
                         <button
                           key={id}
                           type="button"
                           onClick={() => setLanguage(language === id ? '' : id)}
                           className={chipCls(language === id)}
                         >
-                          {label}
+                          {t(key)}
                         </button>
                       ))}
                     </div>
                     <p className="text-xs text-stone-300 mt-1">
-                      We'll prioritise activities in your language
+                      {t('onboardingScreen.prioritizeLanguage')}
                     </p>
                   </div>
                 </div>
@@ -167,19 +169,19 @@ export default function OnboardingScreen() {
             {/* Step 2 — Interests */}
             {step === 2 && (
               <div>
-                <h2 className="text-xl font-bold text-stone-800 mb-1">What sounds good to you?</h2>
+                <h2 className="text-xl font-bold text-stone-800 mb-1">{t('onboardingScreen.whatSoundsGood')}</h2>
                 <p className="text-sm text-stone-400 mb-6">
-                  Pick at least one — we'll show you what fits
+                  {t('onboardingScreen.pickAtLeastOne')}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {INTERESTS.map(({ id, label }) => (
+                  {INTERESTS.map(({ id, key }) => (
                     <button key={id} onClick={() => toggleInterest(id)} className={chipCls(interests.includes(id))}>
-                      {label}
+                      {t(key)}
                     </button>
                   ))}
                 </div>
                 {interests.length === 0 && (
-                  <p className="text-xs text-amber-500 mt-3">Pick at least one to continue</p>
+                  <p className="text-xs text-amber-500 mt-3">{t('onboardingScreen.pickAtLeastOneToContinue')}</p>
                 )}
               </div>
             )}
@@ -187,12 +189,12 @@ export default function OnboardingScreen() {
             {/* Step 3 — Free days */}
             {step === 3 && (
               <div>
-                <h2 className="text-xl font-bold text-stone-800 mb-1">When are you usually free?</h2>
-                <p className="text-sm text-stone-400 mb-6">Optional — skip if you're not sure yet</p>
+                <h2 className="text-xl font-bold text-stone-800 mb-1">{t('onboardingScreen.whenFree')}</h2>
+                <p className="text-sm text-stone-400 mb-6">{t('onboardingScreen.optionalSkip')}</p>
                 <div className="flex flex-wrap gap-2">
-                  {FREE_DAYS.map(({ id, label }) => (
+                  {FREE_DAYS.map(({ id }) => (
                     <button key={id} onClick={() => toggleDay(id)} className={chipCls(freeDays.includes(id))}>
-                      {label}
+                      {t(`days.shortByFullId.${id}`)}
                     </button>
                   ))}
                 </div>
@@ -210,7 +212,7 @@ export default function OnboardingScreen() {
                 onClick={() => setStep(s => s - 1)}
                 className="flex-1 py-3 rounded-xl border border-stone-200 text-sm text-stone-600 font-medium active:scale-[0.98] transition-transform"
               >
-                ← Back
+                {t('onboardingScreen.back')}
               </button>
               {step < 3 ? (
                 <button
@@ -218,7 +220,7 @@ export default function OnboardingScreen() {
                   disabled={step === 2 && interests.length === 0}
                   className="flex-1 py-3 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm disabled:opacity-40"
                 >
-                  Next →
+                  {t('onboardingScreen.next')}
                 </button>
               ) : (
                 <button
@@ -226,7 +228,7 @@ export default function OnboardingScreen() {
                   disabled={loading}
                   className="flex-1 py-3 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm disabled:opacity-60"
                 >
-                  {loading ? 'Saving…' : 'Done! 🌸'}
+                  {loading ? t('common.savingEllipsis') : t('onboardingScreen.doneEmoji')}
                 </button>
               )}
             </div>
@@ -241,11 +243,11 @@ export default function OnboardingScreen() {
               disabled={loading}
               className="text-xs text-stone-400 underline disabled:opacity-50"
             >
-              Skip for now
+              {t('onboardingScreen.skipForNow')}
             </button>
           )}
           <button onClick={signOut} className="text-xs text-stone-300 underline">
-            Sign out
+            {t('common.signOut')}
           </button>
         </div>
       </div>

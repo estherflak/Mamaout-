@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const CATEGORIES    = ['Movement', 'Wellness', 'Baby-focused', 'Social'];
+const CATEGORIES    = ['Movement', 'Wellness', 'Baby-focused', 'Social', 'Creative'];
 const DAYS          = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const AGE_RANGES    = ['Newborn–3m', '3–6m', '6–12m', 'All ages'];
 const LANGUAGES     = ['Hebrew', 'English', 'Both'];
-const STROLLER_OPTS = [{ key: 'yes', label: 'Yes' }, { key: 'no', label: 'No' }, { key: 'not_sure', label: 'Not sure' }];
+const STROLLER_OPTS = [{ key: 'yes', labelKey: 'common.yes' }, { key: 'no', labelKey: 'common.no' }, { key: 'not_sure', labelKey: 'common.notSure' }];
 
 const EMPTY = {
   name: '', description: '', category: '',
@@ -17,6 +18,7 @@ const EMPTY = {
 };
 
 export default function SubmitScreen({ onClose }) {
+  const { t } = useLanguage();
   const [form, setForm]           = useState(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone]           = useState(false);
@@ -43,8 +45,8 @@ export default function SubmitScreen({ onClose }) {
   }
 
   async function submit() {
-    if (!form.name.trim()) { setError('Activity name is required.'); return; }
-    if (!supabase) { setError('Not connected to database.'); return; }
+    if (!form.name.trim()) { setError(t('submitScreen.errorNameRequired')); return; }
+    if (!supabase) { setError(t('submitScreen.errorNotConnected')); return; }
     setError('');
     setSubmitting(true);
 
@@ -89,15 +91,15 @@ export default function SubmitScreen({ onClose }) {
     return (
       <div className="fixed inset-0 z-50 bg-cream-50 flex flex-col items-center justify-center px-6 text-center max-w-xl mx-auto">
         <div className="text-5xl mb-4">🌸</div>
-        <h2 className="text-xl font-semibold text-stone-800 mb-2">Thanks for submitting!</h2>
+        <h2 className="text-xl font-semibold text-stone-800 mb-2">{t('submitScreen.thanksTitle')}</h2>
         <p className="text-sm text-stone-500 mb-6 max-w-xs">
-          We'll review your activity and publish it within 24 hours.
+          {t('submitScreen.thanksBody')}
         </p>
         <button
           onClick={onClose}
           className="px-6 py-3 rounded-2xl bg-dusty-rose text-white text-sm font-semibold"
         >
-          Back to MamaOut
+          {t('submitScreen.backToApp')}
         </button>
       </div>
     );
@@ -107,12 +109,12 @@ export default function SubmitScreen({ onClose }) {
     <div className="fixed inset-0 z-50 bg-cream-50 flex flex-col max-w-xl mx-auto">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center px-4 pt-4 pb-3 bg-white border-b border-stone-100">
-        <button onClick={onClose} className="p-2 -ml-2 text-stone-400 active:text-stone-600">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <button onClick={onClose} className="p-2 -ms-2 text-stone-400 active:text-stone-600">
+          <svg className="w-5 h-5 rtl:scale-x-[-1]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
-        <h2 className="flex-1 text-center text-base font-semibold text-stone-800">Submit your activity</h2>
+        <h2 className="flex-1 text-center text-base font-semibold text-stone-800">{t('submitScreen.title')}</h2>
         <div className="w-9" />
       </div>
 
@@ -121,34 +123,34 @@ export default function SubmitScreen({ onClose }) {
 
         {/* About */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">About the activity</p>
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('submitScreen.aboutActivity')}</p>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-1.5">Activity name *</label>
+            <label className="text-xs font-medium text-stone-600 block mb-1.5">{t('submitScreen.activityName')}</label>
             <input
               value={form.name}
               onChange={e => set('name', e.target.value)}
-              placeholder="e.g. Baby yoga with Shira"
+              placeholder={t('submitScreen.activityNamePlaceholder')}
               className={inputCls}
             />
           </div>
           <div>
             <label className="text-xs font-medium text-stone-600 block mb-1.5">
-              Description
-              <span className="text-stone-300 font-normal ml-1">({form.description.length}/300)</span>
+              {t('submitScreen.description')}
+              <span className="text-stone-300 font-normal ms-1">({form.description.length}/300)</span>
             </label>
             <textarea
               value={form.description}
               onChange={e => set('description', e.target.value.slice(0, 300))}
-              placeholder="What should moms know about this activity?"
+              placeholder={t('submitScreen.descriptionPlaceholder')}
               rows={3}
               className={`${inputCls} resize-none`}
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-2">Category</label>
+            <label className="text-xs font-medium text-stone-600 block mb-2">{t('submitScreen.category')}</label>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map(c => (
-                <button key={c} onClick={() => set('category', c)} className={chip(form.category === c)}>{c}</button>
+                <button key={c} onClick={() => set('category', c)} className={chip(form.category === c)}>{t(`submitScreen.categoryOptions.${c}`)}</button>
               ))}
             </div>
           </div>
@@ -156,26 +158,26 @@ export default function SubmitScreen({ onClose }) {
 
         {/* Location */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Location</p>
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('submitScreen.location')}</p>
           <input
             value={form.address}
             onChange={e => set('address', e.target.value)}
-            placeholder="Street address or venue name"
+            placeholder={t('submitScreen.addressPlaceholder')}
             className={inputCls}
           />
           <input
             value={form.neighborhood}
             onChange={e => set('neighborhood', e.target.value)}
-            placeholder="Neighborhood (e.g. Florentin, Ramat Gan)"
+            placeholder={t('submitScreen.neighborhoodPlaceholder')}
             className={inputCls}
           />
         </div>
 
         {/* Schedule */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Schedule</p>
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('submitScreen.schedule')}</p>
           <div className="flex flex-wrap gap-2">
-            {[['Recurring', 'recurring'], ['One-time', 'one-time'], ['Drop-in', 'drop-in']].map(([label, val]) => (
+            {[[t('submitScreen.recurring'), 'recurring'], [t('submitScreen.oneTime'), 'one-time'], [t('submitScreen.dropIn'), 'drop-in']].map(([label, val]) => (
               <button key={val} onClick={() => set('scheduleType', val)} className={chip(form.scheduleType === val)}>
                 {label}
               </button>
@@ -184,10 +186,10 @@ export default function SubmitScreen({ onClose }) {
 
           {form.scheduleType === 'recurring' && (
             <div>
-              <label className="text-xs text-stone-500 block mb-2">Days of week</label>
+              <label className="text-xs text-stone-500 block mb-2">{t('submitScreen.daysOfWeek')}</label>
               <div className="flex flex-wrap gap-2">
                 {DAYS.map(d => (
-                  <button key={d} onClick={() => toggleDay(d)} className={chip(form.recurrenceDays.includes(d))}>{d}</button>
+                  <button key={d} onClick={() => toggleDay(d)} className={chip(form.recurrenceDays.includes(d))}>{t(`days.short.${d}`)}</button>
                 ))}
               </div>
             </div>
@@ -195,7 +197,7 @@ export default function SubmitScreen({ onClose }) {
 
           {form.scheduleType === 'one-time' && (
             <div>
-              <label className="text-xs text-stone-500 block mb-1.5">Date</label>
+              <label className="text-xs text-stone-500 block mb-1.5">{t('submitScreen.date')}</label>
               <input
                 type="date"
                 value={form.oneTimeDate}
@@ -209,11 +211,11 @@ export default function SubmitScreen({ onClose }) {
           {form.scheduleType && (
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="text-xs text-stone-500 block mb-1.5">Start time</label>
+                <label className="text-xs text-stone-500 block mb-1.5">{t('submitScreen.startTime')}</label>
                 <input type="time" value={form.timeStart} onChange={e => set('timeStart', e.target.value)} className={inputCls} />
               </div>
               <div className="flex-1">
-                <label className="text-xs text-stone-500 block mb-1.5">End time</label>
+                <label className="text-xs text-stone-500 block mb-1.5">{t('submitScreen.endTime')}</label>
                 <input type="time" value={form.timeEnd} onChange={e => set('timeEnd', e.target.value)} className={inputCls} />
               </div>
             </div>
@@ -222,7 +224,7 @@ export default function SubmitScreen({ onClose }) {
 
         {/* Pricing */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Pricing</p>
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('submitScreen.pricing')}</p>
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -230,7 +232,7 @@ export default function SubmitScreen({ onClose }) {
               onChange={e => set('isFree', e.target.checked)}
               className="w-4 h-4 rounded accent-dusty-rose"
             />
-            <span className="text-sm text-stone-600">This activity is free</span>
+            <span className="text-sm text-stone-600">{t('submitScreen.thisActivityFree')}</span>
           </label>
           {!form.isFree && (
             <div className="flex items-center gap-2">
@@ -239,7 +241,7 @@ export default function SubmitScreen({ onClose }) {
                 type="number"
                 value={form.price}
                 onChange={e => set('price', e.target.value)}
-                placeholder="Price per session"
+                placeholder={t('submitScreen.pricePerSession')}
                 min="0"
                 className={`${inputCls} flex-1`}
               />
@@ -249,30 +251,30 @@ export default function SubmitScreen({ onClose }) {
 
         {/* Baby details */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-4">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Baby details</p>
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('submitScreen.babyDetails')}</p>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-2">Stroller accessible?</label>
+            <label className="text-xs font-medium text-stone-600 block mb-2">{t('submitScreen.strollerAccessibleQ')}</label>
             <div className="flex gap-2">
               {STROLLER_OPTS.map(o => (
                 <button key={o.key} onClick={() => set('strollerAccessible', o.key)} className={chip(form.strollerAccessible === o.key)}>
-                  {o.label}
+                  {t(o.labelKey)}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-2">Baby age range (select all that apply)</label>
+            <label className="text-xs font-medium text-stone-600 block mb-2">{t('submitScreen.ageRangeLabel')}</label>
             <div className="flex flex-wrap gap-2">
               {AGE_RANGES.map(r => (
-                <button key={r} onClick={() => toggleAge(r)} className={chip(form.ageRange.includes(r))}>{r}</button>
+                <button key={r} onClick={() => toggleAge(r)} className={chip(form.ageRange.includes(r))}>{t(`submitScreen.ageRangeOptions.${r}`)}</button>
               ))}
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-2">Language</label>
+            <label className="text-xs font-medium text-stone-600 block mb-2">{t('submitScreen.language')}</label>
             <div className="flex gap-2">
               {LANGUAGES.map(l => (
-                <button key={l} onClick={() => set('language', l)} className={chip(form.language === l)}>{l}</button>
+                <button key={l} onClick={() => set('language', l)} className={chip(form.language === l)}>{t(`submitScreen.languageOptions.${l}`)}</button>
               ))}
             </div>
           </div>
@@ -280,24 +282,24 @@ export default function SubmitScreen({ onClose }) {
 
         {/* Contact */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">About you</p>
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('submitScreen.aboutYou')}</p>
           <input
             value={form.organizerName}
             onChange={e => set('organizerName', e.target.value)}
-            placeholder="Your name"
+            placeholder={t('profileScreen.yourName')}
             className={inputCls}
           />
           <input
             type="tel"
             value={form.organizerWhatsapp}
             onChange={e => set('organizerWhatsapp', e.target.value)}
-            placeholder="WhatsApp number (e.g. 050-1234567)"
+            placeholder={t('submitScreen.whatsappNumberPlaceholder')}
             className={inputCls}
           />
           <input
             value={form.organizerInstagram}
             onChange={e => set('organizerInstagram', e.target.value)}
-            placeholder="Instagram handle (optional)"
+            placeholder={t('submitScreen.instagramHandlePlaceholder')}
             className={inputCls}
           />
         </div>
@@ -309,11 +311,11 @@ export default function SubmitScreen({ onClose }) {
           disabled={submitting || !form.name.trim()}
           className="w-full py-3.5 rounded-2xl bg-dusty-rose text-white font-semibold text-sm disabled:opacity-50 active:scale-[0.98] transition-transform"
         >
-          {submitting ? 'Submitting…' : 'Submit activity'}
+          {submitting ? t('submitScreen.submittingEllipsis') : t('submitScreen.submit')}
         </button>
 
         <p className="text-xs text-stone-400 text-center pb-4">
-          We review all submissions before publishing. Usually within 24 hours.
+          {t('submitScreen.reviewNote')}
         </p>
       </div>
     </div>

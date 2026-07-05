@@ -1,14 +1,16 @@
 import { useFavorites } from '../hooks/useFavorites';
 import ActivityCard from '../components/ActivityCard';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function SavedScreen({ onSelect }) {
+  const { t } = useLanguage();
   const { favoritedActivities, loading } = useFavorites();
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-cream-50">
-        <h2 className="text-xl font-semibold text-stone-800 leading-snug">Saved</h2>
-        <p className="text-xs text-stone-400 mt-0.5">Activities you've hearted</p>
+        <h2 className="text-xl font-semibold text-stone-800 leading-snug">{t('savedScreen.title')}</h2>
+        <p className="text-xs text-stone-400 mt-0.5">{t('savedScreen.subtitle')}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-6 pt-2">
@@ -21,12 +23,12 @@ export default function SavedScreen({ onSelect }) {
         ) : favoritedActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center pt-16">
             <span className="text-5xl mb-4">🤍</span>
-            <p className="text-stone-600 font-medium mb-1">Nothing saved yet</p>
-            <p className="text-sm text-stone-400">Tap the heart on any activity to save it here</p>
+            <p className="text-stone-600 font-medium mb-1">{t('savedScreen.nothingSaved')}</p>
+            <p className="text-sm text-stone-400">{t('savedScreen.tapHeartHint')}</p>
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-xs text-stone-400 mb-1">{favoritedActivities.length} saved</p>
+            <p className="text-xs text-stone-400 mb-1">{t('savedScreen.savedCount', { count: favoritedActivities.length })}</p>
             {favoritedActivities.map(a => (
               <ActivityCard key={a.id} activity={a} onSelect={onSelect} />
             ))}

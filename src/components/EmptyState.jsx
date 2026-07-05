@@ -1,24 +1,27 @@
 import { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
-function formatDateLabel(dateStr) {
+function formatDateLabel(dateStr, lang) {
   if (!dateStr) return '';
   const d = new Date(`${dateStr}T00:00:00`);
-  return d.toLocaleDateString('en-IL', { weekday: 'short', day: 'numeric', month: 'short' });
+  const locale = lang === 'he' ? 'he-IL' : 'en-IL';
+  return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 function SaveSearch({ canSave, onSaveSearch }) {
+  const { t } = useLanguage();
   const [state, setState] = useState('idle'); // idle | saving | saved | duplicate
 
   if (!canSave) {
     return (
-      <p className="text-xs text-stone-300">Sign in to save this search and we'll keep an eye out.</p>
+      <p className="text-xs text-stone-300">{t('emptyState.signInToSave')}</p>
     );
   }
 
   if (state === 'saved' || state === 'duplicate') {
     return (
       <p className="text-xs text-sage-500 font-medium">
-        {state === 'saved' ? '✓ Saved — we\'ll keep an eye out' : '✓ Already in your saved searches'}
+        {state === 'saved' ? t('emptyState.savedConfirm') : t('emptyState.duplicateConfirm')}
       </p>
     );
   }
@@ -31,7 +34,7 @@ function SaveSearch({ canSave, onSaveSearch }) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <p className="text-xs text-stone-400">Want to know when one is added?</p>
+      <p className="text-xs text-stone-400">{t('emptyState.wantToKnow')}</p>
       <button
         onClick={handleSave}
         disabled={state === 'saving'}
@@ -40,24 +43,27 @@ function SaveSearch({ canSave, onSaveSearch }) {
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        {state === 'saving' ? 'Saving…' : 'Save this search'}
+        {state === 'saving' ? t('common.savingEllipsis') : t('emptyState.saveThisSearch')}
       </button>
     </div>
   );
 }
 
 export default function EmptyState({ query, dateFilter, onClearDate, onClearSearch, canSave, onSaveSearch }) {
+  const { lang, t } = useLanguage();
+
   // Search/category came up empty — lead with that, even if a day is also selected.
   if (query?.trim()) {
     const term = query.trim();
+    const suffix = dateFilter ? t('emptyState.onDate', { date: formatDateLabel(dateFilter, lang) }) : t('emptyState.yet');
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
         <span className="text-5xl mb-4">🌱</span>
         <h3 dir="auto" className="text-stone-700 font-medium text-lg mb-2">
-          No {term} {dateFilter ? `on ${formatDateLabel(dateFilter)}` : 'yet'}
+          {t('emptyState.noResultsPrefix', { term, suffix })}
         </h3>
         <p className="text-stone-400 text-sm max-w-xs leading-relaxed mb-5">
-          We're adding new activities every week. Try clearing this search or browsing everything.
+          {t('emptyState.addingWeekly')}
         </p>
         <div className="flex flex-col gap-3 items-center">
           {onSaveSearch && <SaveSearch canSave={canSave} onSaveSearch={onSaveSearch} />}
@@ -66,7 +72,7 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
               onClick={onClearSearch}
               className="px-4 py-2 rounded-full bg-dusty-rose text-white text-sm font-medium"
             >
-              Browse all activities
+              {t('emptyState.browseAll')}
             </button>
           )}
           {dateFilter && onClearDate && (
@@ -74,7 +80,7 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
               onClick={onClearDate}
               className="text-xs text-stone-400 underline underline-offset-2"
             >
-              Show {term} on any day
+              {t('emptyState.showTermAnyDay', { term })}
             </button>
           )}
         </div>
@@ -84,22 +90,22 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
 
   // No search, but a specific day is selected
   if (dateFilter) {
-    const label = formatDateLabel(dateFilter);
+    const label = formatDateLabel(dateFilter, lang);
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
         <span className="text-5xl mb-4">📅</span>
         <h3 className="text-stone-700 font-medium text-lg mb-2">
-          Nothing on {label}
+          {t('emptyState.nothingOnDate', { date: label })}
         </h3>
         <p className="text-stone-400 text-sm max-w-xs leading-relaxed mb-5">
-          No sessions scheduled — try another day or browse all.
+          {t('emptyState.noSessionsScheduled')}
         </p>
         {onClearDate && (
           <button
             onClick={onClearDate}
             className="px-4 py-2 rounded-full bg-dusty-rose text-white text-sm font-medium"
           >
-            Browse all activities
+            {t('emptyState.browseAll')}
           </button>
         )}
       </div>
@@ -111,10 +117,10 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <span className="text-5xl mb-4">🌸</span>
       <h3 className="text-stone-700 font-medium text-lg mb-2">
-        Nothing matches your filters
+        {t('emptyState.nothingMatchesFilters')}
       </h3>
       <p className="text-stone-400 text-sm max-w-xs leading-relaxed">
-        Try widening the area or age range — new activities are added regularly.
+        {t('emptyState.tryWidening')}
       </p>
     </div>
   );

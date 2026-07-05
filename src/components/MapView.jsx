@@ -4,6 +4,7 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import ActivityCard from './ActivityCard';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function InvalidateSize() {
   const map = useMap();
@@ -52,6 +53,7 @@ function jitterDuplicates(activities) {
 }
 
 export default function MapView({ activities, onSelect, className = '' }) {
+  const { t } = useLanguage();
   const mapped = jitterDuplicates(activities.filter(a => a.latitude && a.longitude));
   // Activity surfaced in the bottom sheet after tapping a pin
   const [sheet, setSheet] = useState(null);
@@ -86,7 +88,7 @@ export default function MapView({ activities, onSelect, className = '' }) {
       {mapped.length === 0 && (
         <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
           <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm border border-stone-100">
-            <p className="text-xs text-stone-500">No activities with map coordinates yet</p>
+            <p className="text-xs text-stone-500">{t('mapView.noCoordinates')}</p>
           </div>
         </div>
       )}
@@ -105,7 +107,7 @@ export default function MapView({ activities, onSelect, className = '' }) {
             <div className="flex justify-end mb-1.5">
               <button
                 onClick={() => setSheet(null)}
-                aria-label="Close"
+                aria-label={t('common.close')}
                 className="w-8 h-8 rounded-full bg-white shadow-md border border-stone-100 flex items-center justify-center text-stone-500"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

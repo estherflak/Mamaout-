@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function toLocalDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -15,6 +16,9 @@ export default function DayStrip({
   napTimeValue,
   onNapTimeChange,
 }) {
+  const { lang, t } = useLanguage();
+  const locale = lang === 'he' ? 'he-IL' : 'en-IL';
+
   const days = useMemo(() => {
     const result = [];
     for (let i = 0; i < 10; i++) {
@@ -39,7 +43,7 @@ export default function DayStrip({
           const dateStr = toLocalDateStr(d);
           const isSelected = selectedDay === dateStr;
           const hasDot = datesWithActivity.has(dateStr);
-          const weekday = d.toLocaleDateString('en-IL', { weekday: 'short' });
+          const weekday = d.toLocaleDateString(locale, { weekday: 'short' });
           const dayNum = d.getDate();
 
           return (
@@ -67,8 +71,8 @@ export default function DayStrip({
       {/* Quick filters: date ranges + nap time */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide items-center">
         {[
-          { id: 'week',    label: 'This week' },
-          { id: 'weekend', label: 'Weekend' },
+          { id: 'week',    label: t('dayStrip.thisWeek') },
+          { id: 'weekend', label: t('dayStrip.weekend') },
         ].map(r => (
           <button
             key={r.id}
@@ -92,7 +96,7 @@ export default function DayStrip({
           }`}
         >
           <span>⏰</span>
-          Back by nap time
+          {t('dayStrip.backByNapTime')}
         </button>
 
         {napTime && (

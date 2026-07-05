@@ -7,6 +7,7 @@ import { useFriendsGoing } from '../hooks/useFriendsGoing';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { rankActivities } from '../lib/rank';
+import { cityLabel } from '../lib/localize';
 import { matchesDateRange } from '../lib/dates';
 import SearchBar from '../components/SearchBar';
 import SuggestionChips from '../components/SuggestionChips';
@@ -16,6 +17,8 @@ import ActivityCard from '../components/ActivityCard';
 import MapView from '../components/MapView';
 import EmptyState from '../components/EmptyState';
 import PlacesScreen from './PlacesScreen';
+
+const CITY_LABEL_KEY = { 'Tel Aviv': 'discover.telAviv', 'Ramat Gan': 'discover.ramatGan' };
 
 function CardSkeleton() {
   return (
@@ -48,7 +51,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   const { friends } = useFriends();
   const friendsMap = useFriendsGoing(friends);
   const { user, profile } = useAuthContext();
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
   const [activeCity, setCity]         = useState('all');
@@ -84,9 +87,9 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       if (ageWeeks >= 0 && ageWeeks <= 52) updates.ageMax = ageWeeks;
     }
 
-    if (profile.language && profile.language !== 'both') {
-      updates.language = profile.language;
-    }
+    // Note: the profile's preferred language is deliberately NOT auto-applied
+    // as a filter — nearly all listings are Hebrew-language, so auto-filtering
+    // an "English" preference would empty the feed. It stays a manual filter.
 
     if (Object.keys(updates).length > 0) {
       setAdvFilters(f => ({ ...f, ...updates }));
@@ -114,14 +117,16 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
 
   // Human-readable summary for a saved search, e.g. "Pottery in Tel Aviv"
   function searchLabel() {
-    const q = query.trim();
-    const areaLabel = activeCity === 'all' ? '' : ` in ${activeCity}`;
-    return (q ? q : 'All activities') + areaLabel;
+    const q = query.trim() || t('profileScreen.allActivities');
+    if (activeCity === 'all') return q;
+    const areaLabel = CITY_LABEL_KEY[activeCity] ? t(CITY_LABEL_KEY[activeCity]) : activeCity;
+    return t('discover.searchInArea', { q, area: areaLabel });
   }
 
   // City filter options derived from the data: primary cities first, then any
   // others (Givatayim, Petah Tikva…) by frequency — so new metro cities appear
-  // automatically without hardcoding.
+  // automatically without hardcoding. Only the two primary cities have Hebrew
+  // translations; others fall back to their canonical (English) name.
   const cityOptions = useMemo(() => {
     const counts = {};
     for (const a of activities) counts[a.city] = (counts[a.city] || 0) + 1;
@@ -130,8 +135,11 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       .filter(c => c && !PRIMARY.includes(c))
       .sort((a, b) => counts[b] - counts[a]);
     const ordered = [...PRIMARY.filter(c => counts[c]), ...others];
-    return [{ id: 'all', label: 'All areas' }, ...ordered.map(c => ({ id: c, label: c }))];
-  }, [activities]);
+    return [
+      { id: 'all', label: t('discover.allAreas') },
+      ...ordered.map(c => ({ id: c, label: CITY_LABEL_KEY[c] ? t(CITY_LABEL_KEY[c]) : cityLabel(c, lang) })),
+    ];
+  }, [activities, t, lang]);
 
   const filtered = useMemo(() => {
     const today = new Date();
@@ -191,8 +199,8 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
         {/* Title row */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-xl font-semibold text-stone-800 leading-snug">What are you up for?</h2>
-            <p className="text-xs text-stone-400 mt-0.5">Tel Aviv &amp; Ramat Gan</p>
+            <h2 className="text-xl font-semibold text-stone-800 leading-snug">{t('discover.title')}</h2>
+            <p className="text-xs text-stone-400 mt-0.5">{t('discover.tagline')}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -205,7 +213,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                 <button
                   key={l.id}
                   onClick={() => setLang(l.id)}
-                  aria-label={l.id === 'en' ? 'English' : 'Hebrew'}
+                  aria-label={l.id === 'en' ? t('discover.langAriaEnglish') : t('discover.langAriaHebrew')}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     lang === l.id ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
                   }`}
@@ -226,7 +234,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                       viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
                     }`}
                   >
-                    {m === 'list' ? '☰ List' : '🗺 Map'}
+                    {m === 'list' ? t('discover.listView') : t('discover.mapView')}
                   </button>
                 ))}
               </div>
@@ -237,8 +245,8 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
         {/* Activities / Places segment control */}
         <div className="flex bg-stone-100 rounded-xl p-0.5 mb-3">
           {[
-            { id: 'activities', label: '✨ Activities' },
-            { id: 'places',     label: '📍 Places' },
+            { id: 'activities', label: t('discover.activitiesTab') },
+            { id: 'places',     label: t('discover.placesTab') },
           ].map(s => (
             <button
               key={s.id}
@@ -302,9 +310,9 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
         {section === 'places' && (
           <div className="flex items-center gap-2 pb-1">
             {[
-              { id: 'all',       label: 'All areas' },
-              { id: 'tel_aviv',  label: 'Tel Aviv' },
-              { id: 'ramat_gan', label: 'Ramat Gan' },
+              { id: 'all',       label: t('discover.allAreas') },
+              { id: 'tel_aviv',  label: t('discover.telAviv') },
+              { id: 'ramat_gan', label: t('discover.ramatGan') },
             ].map(area => (
               <button
                 key={area.id}
@@ -320,14 +328,14 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             ))}
             <button
               onClick={() => setOpenNow(o => !o)}
-              className={`ml-auto px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
+              className={`ms-auto px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
                 openNow
                   ? 'bg-green-500 text-white'
                   : 'bg-sage-50 border border-sage-200 text-stone-500'
               }`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${openNow ? 'bg-white' : 'bg-green-400'}`} />
-              Open now
+              {t('discover.openNow')}
             </button>
           </div>
         )}
@@ -347,7 +355,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       {section === 'activities' && <div className={`flex-1 ${viewMode === 'map' ? 'overflow-hidden' : 'overflow-y-auto px-4 pb-6'}`}>
         {error && (
           <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-            Could not load live data — showing sample activities.
+            {t('discover.loadError')}
           </div>
         )}
 
@@ -371,7 +379,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             <section className="mb-5 pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">👯</span>
-                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Friends are going</h3>
+                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('discover.friendsGoing')}</h3>
               </div>
               <div className="space-y-3">
                 {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
@@ -381,7 +389,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-base">✨</span>
-                  <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">More to explore</h3>
+                  <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('discover.moreToExplore')}</h3>
                 </div>
                 <div className="space-y-3">
                   {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
@@ -391,7 +399,12 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           </>
         ) : (
           <div className="pt-2">
-            <p className="text-xs text-stone-400 mb-3">{filtered.length} {filtered.length === 1 ? 'activity' : 'activities'} found</p>
+            <p className="text-xs text-stone-400 mb-3">
+              {t('discover.resultsFound', {
+                count: filtered.length,
+                noun: filtered.length === 1 ? t('discover.activitySingular') : t('discover.activityPlural'),
+              })}
+            </p>
             <div className="space-y-3">
               {filtered.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
             </div>
@@ -404,7 +417,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               onClick={onOpenSubmit}
               className="text-xs text-stone-400 underline underline-offset-2 hover:text-dusty-roseDark transition-colors"
             >
-              Are you an instructor or organizer? Submit your activity →
+              {t('discover.submitCta')}
             </button>
           </div>
         )}

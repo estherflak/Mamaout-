@@ -1,4 +1,7 @@
+import { useLanguage } from '../contexts/LanguageContext';
+
 export default function Header() {
+  const { t } = useLanguage();
   return (
     <header className="sticky top-0 z-20 bg-cream-50 border-b border-dusty-roseLight px-4">
       <div className="max-w-xl mx-auto flex items-center justify-between py-3">
@@ -8,11 +11,11 @@ export default function Header() {
             <h1 className="text-xl font-semibold text-stone-800 leading-tight tracking-tight">
               MamaOut
             </h1>
-            <p className="text-xs text-stone-400 leading-none">Tel Aviv · Ramat Gan</p>
+            <p className="text-xs text-stone-400 leading-none">{t('header.tagline')}</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="flex -space-x-1.5">
+          <div className="flex -space-x-1.5 rtl:space-x-reverse">
             {['N', 'M', 'S'].map((initial, i) => (
               <div
                 key={i}
@@ -26,7 +29,7 @@ export default function Header() {
               </div>
             ))}
           </div>
-          <span className="text-xs text-stone-400">3 friends</span>
+          <span className="text-xs text-stone-400">{t('header.friendsCount', { count: 3 })}</span>
         </div>
       </div>
     </header>

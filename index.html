@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
@@ -7,6 +7,15 @@
     <meta name="theme-color" content="#fdfaf6" />
     <meta name="description" content="Activities for moms on maternity leave in Tel Aviv and Ramat Gan" />
     <title>MamaOut — Activities for New Moms</title>
+    <script>
+      (function () {
+        try {
+          var lang = localStorage.getItem('mamaout_content_lang') || 'en';
+          document.documentElement.lang = lang;
+          document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+        } catch (e) { /* ignore */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

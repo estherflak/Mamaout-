@@ -67,7 +67,7 @@ function MainApp() {
       {tab === 'discover' && user && !anyModal && (
         <button
           onClick={() => setShowCommunityAdd(true)}
-          className="absolute bottom-[76px] right-4 w-12 h-12 rounded-full bg-dusty-rose shadow-lg flex items-center justify-center text-white z-40 active:scale-95 transition-transform"
+          className="absolute bottom-[76px] end-4 w-12 h-12 rounded-full bg-dusty-rose shadow-lg flex items-center justify-center text-white z-40 active:scale-95 transition-transform"
           title="Share an activity"
           aria-label="Share an activity with the community"
         >

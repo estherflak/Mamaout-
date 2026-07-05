@@ -77,6 +77,9 @@ export default function AdminScreen() {
       category:           sub.category?.toLowerCase() ?? 'social',
       address:            sub.address,
       neighborhood:       sub.neighborhood,
+      // resolveCity() in the app reads `location`; without it every approved
+      // submission would surface as Tel Aviv regardless of where it is.
+      location:           [sub.neighborhood, sub.address].filter(Boolean).join(', ') || null,
       schedule_type:      sub.schedule_type,
       schedule_label:     sub.schedule_label,
       time_start:         sub.time_start,

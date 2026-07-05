@@ -46,17 +46,18 @@ export function useFriends() {
   }
 
   async function sendRequest(phone) {
-    if (!supabase) throw new Error('Not configured');
+    if (!supabase) throw new Error('not_configured');
     const normPhone = normalizePhone(phone);
 
-    const { data: target } = await supabase
-      .from('profiles')
-      .select('id, name')
-      .eq('phone', normPhone)
-      .maybeSingle();
+    // RLS hides other users' profile rows, so the lookup goes through a
+    // SECURITY DEFINER RPC that returns only id + name for an exact phone match.
+    const { data: matches, error: lookupErr } = await supabase
+      .rpc('find_profile_by_phone', { p_phone: normPhone });
 
-    if (!target) throw new Error('No user found with that phone number');
-    if (target.id === user.id) throw new Error("That's your own number!");
+    if (lookupErr) throw new Error(lookupErr.message);
+    const target = matches?.[0];
+    if (!target) throw new Error('no_user_found');
+    if (target.id === user.id) throw new Error('own_number');
 
     const { error } = await supabase.from('friendships').insert({
       user_id: user.id,
@@ -64,7 +65,7 @@ export function useFriends() {
       status: 'pending',
     });
 
-    if (error?.code === '23505') throw new Error('Request already sent');
+    if (error?.code === '23505') throw new Error('already_sent');
     if (error) throw new Error(error.message);
   }
 

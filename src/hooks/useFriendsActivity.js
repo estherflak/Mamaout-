@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase, isConfigured } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import { normalizeSupabaseActivity, resolveCity } from './useActivities';
+import { t } from '../i18n/strings';
 
 /**
  * Phase 6.2 — friends activity feed.
@@ -11,7 +12,7 @@ import { normalizeSupabaseActivity, resolveCity } from './useActivities';
  *
  * `friends` is passed in (from useFriends) to avoid a duplicate friendships query.
  */
-export function useFriendsActivity(friends = []) {
+export function useFriendsActivity(friends = [], lang = 'en') {
   const { user } = useAuthContext();
   const [feed, setFeed] = useState([]);
   const [hint, setHint] = useState(null);
@@ -63,7 +64,8 @@ export function useFriendsActivity(friends = []) {
           const top = Object.values(counts).sort((a, b) => b.n - a.n)[0];
           if (top) {
             const city = resolveCity(top.loc);
-            setHint(`${top.n} ${top.n === 1 ? 'mom' : 'moms'} in ${city} saved ${top.name} this week`);
+            const key = top.n === 1 ? 'friendsScreen.hintOne' : 'friendsScreen.hintMany';
+            setHint(t(lang, key, { n: top.n, city, name: top.name }));
           } else {
             setHint(null);
           }
@@ -74,21 +76,22 @@ export function useFriendsActivity(friends = []) {
 
     run();
     return () => { cancelled = true; };
-  }, [user, friendKey]);
+  }, [user, friendKey, lang]);
 
   return { feed, hint };
 }
 
 // "2h ago" / "3d ago" / "just now" for feed timestamps
-export function relativeTime(iso) {
+export function relativeTime(iso, lang = 'en') {
   if (!iso) return '';
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t(lang, 'friendsScreen.justNow');
+  if (mins < 60) return t(lang, 'friendsScreen.minutesAgo', { n: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return t(lang, 'friendsScreen.hoursAgo', { n: hrs });
   const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString('en-IL', { day: 'numeric', month: 'short' });
+  if (days < 7) return t(lang, 'friendsScreen.daysAgo', { n: days });
+  const locale = lang === 'he' ? 'he-IL' : 'en-IL';
+  return new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }
