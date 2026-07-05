@@ -10,7 +10,7 @@
       "maxDuration": 60,
       "memory": 2048
     },
-    "api/cron/scrape-beit-emanuel-rg.js": {
+    "api/cron/scrape-smartticket.js": {
       "maxDuration": 60
     },
     "api/cron/scrape-arbox.js": {
@@ -37,7 +37,7 @@
       "schedule": "0 4 * * *"
     },
     {
-      "path": "/api/cron/scrape-beit-emanuel-rg",
+      "path": "/api/cron/scrape-smartticket",
       "schedule": "0 5 * * *"
     },
     {

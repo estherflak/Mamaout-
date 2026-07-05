@@ -13,6 +13,8 @@
  * (same series_fk) into one row with every upcoming date in `next_dates`.
  */
 
+import { ageRangeFromName, isOutOfScopeForBabies } from './hebrew-ages.js';
+
 const API = 'https://apiappv2.arboxapp.com/api/v2';
 const WINDOW_DAYS = 56;        // total look-ahead
 const CHUNK_DAYS = 14;         // per-request range (larger windows 504 on the API)
@@ -21,18 +23,23 @@ const CHUNK_DAYS = 14;         // per-request range (larger windows 504 on the A
 // deep-link URL, not required by the API.
 const VENUES = [
   { subdomain: 'prana', name: 'Prana Yoga', whitelabel: 'FranaYogaPilates' },
+  // Discovered 2026-07-05 via booking link on iampilates.co.il — subdomains are
+  // often opaque ids like this, so discovery goes through studio sites, not
+  // guessing. Postpartum reformer + strength classes in Givatayim (2 locations).
+  { subdomain: 'MAx8cAGU1616934318', name: 'I.AM Pilates', whitelabel: 'Arbox' },
 ];
 
 // A class category is baby-relevant if its (Hebrew) name signals infants /
-// postpartum. Covers common spellings incl. תניקות (a frequent typo of תינוקות).
-const BABY_CATEGORY = /תינוק|תניק|בייבי|baby|babies|אמהות\s*\+|postnatal|postpartum|אחרי\s*לידה|לאחר\s*לידה|מצנן|דולה/i;
+// postpartum. Covers common spellings incl. תניקות (a frequent typo of תינוקות)
+// and א.לידה (an abbreviation of אחרי לידה seen on schedule-grid labels).
+const BABY_CATEGORY = /תינוק|תניק|בייבי|baby|babies|אמהות\s*\+|postnatal|postpartum|אחרי\s*לידה|לאחר\s*לידה|א\.\s*לידה|מצנן|דולה/i;
 
 function isBabyCategory(name = '') {
   return BABY_CATEGORY.test(name);
 }
 
 function mapCategory(name = '') {
-  if (/יוגה|פילאטיס|מכשירים|כוח|תנועה|ריקוד|מחול|barre|בר|ספורט|אימון/i.test(name)) return 'movement';
+  if (/יוגה|פילאטיס|פ\.\s*מכ|מכשירים|כוח|תנועה|ריקוד|מחול|barre|בר|ספורט|אימון/i.test(name)) return 'movement';
   if (/עיסוי|מגע|רצפת האגן|שיקום/i.test(name)) return 'wellness';
   if (/סדנ|הרצא|התפתחות/i.test(name)) return 'wellness';
   return 'baby-focused';
@@ -117,6 +124,7 @@ function bookingUrl(venue, rep) {
 
 function mapToMamaOut({ rep, dates }, venue, boxCity) {
   const cat = (rep.box_categories?.name || '').replace(/\s*\*+\s*$/, '').trim();
+  const age = ageRangeFromName(cat);
   const loc = rep.locations_box || {};
   const city = cityFromLocation(loc, boxCity);
   const coach = rep.coach
@@ -144,8 +152,11 @@ function mapToMamaOut({ rep, dates }, venue, boxCity) {
     price:         typeof price === 'number' ? price : null,
     price_notes:   'Registration required',
     stroller_accessible: null,
-    baby_age_min:  0,
-    baby_age_max:  156,
+    // Most Arbox categories carry no age ("יוגה עם תינוקות") — the parser
+    // then returns {0, null}, i.e. "babies welcome, upper bound unknown",
+    // which matches how the other sources encode it.
+    baby_age_min:  age.min,
+    baby_age_max:  age.max,
     category:      mapCategory(cat),
     source_name:   venue.name,
     source_url:    bookingUrl(venue, rep),
@@ -176,7 +187,11 @@ async function scrapeVenue(venue) {
   }
 
   const upcoming = sessions.filter(s => s.date >= from);
-  const baby = upcoming.filter(s => isBabyCategory(s.box_categories?.name));
+  // Baby-signal match, minus categories whose own name says 1y+ ("בייבי דאנס
+  // לגילאי שנה-שנתיים") — same out-of-scope rule the SmartTicket source uses.
+  const baby = upcoming.filter(s =>
+    isBabyCategory(s.box_categories?.name) &&
+    !isOutOfScopeForBabies(s.box_categories?.name ?? ''));
   console.log(`[arbox] ${venue.name}: ${upcoming.length} sessions → ${baby.length} baby-relevant`);
 
   const grouped = groupSessions(baby);
