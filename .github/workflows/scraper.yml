@@ -2,8 +2,12 @@ name: Daily Scraper
 
 on:
   schedule:
-    # 03:00 Israel time = 00:00 UTC (UTC+3 in summer)
-    - cron: '0 0 * * *'
+    # 05:15 UTC (08:15 Israel in summer) — deliberately AFTER the Vercel scrape
+    # crons (01:00–05:00 UTC), so the translation/coords/cleanup backfill steps
+    # below repair the rows those crons just inserted. Running earlier left every
+    # day's new rows untranslated (Hebrew showing in the English UI) for ~20h.
+    # Also finishes before send-reminders at 06:00 UTC, which prefers name_en.
+    - cron: '15 5 * * *'
   workflow_dispatch:
     inputs:
       job:

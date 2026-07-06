@@ -1,7 +1,7 @@
 import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { localizedName, localizedScheduleLabel, cityLabel } from '../lib/localize';
+import { localizedName, localizedScheduleLabel, locationLine } from '../lib/localize';
 import { shareActivityOnWhatsApp } from '../lib/share';
 import { ageRangeLabelFromWeeks } from '../lib/formatAge';
 
@@ -117,8 +117,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
 
         {/* Neighborhood · City */}
         <p dir="auto" className="text-xs text-stone-400 mb-2.5">
-          {cityLabel(activity.neighborhood, lang)}
-          {activity.neighborhood !== activity.city ? ` · ${cityLabel(activity.city, lang)}` : ''}
+          {locationLine(activity, lang)}
         </p>
 
         {/* Footer: price · stroller · age · friends */}

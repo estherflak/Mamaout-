@@ -15,7 +15,6 @@ import SuggestionChips from '../components/SuggestionChips';
 import FilterPanel, { applyFilters } from '../components/FilterPanel';
 import DayStrip from '../components/DayStrip';
 import ActivityCard from '../components/ActivityCard';
-import MapView from '../components/MapView';
 import EmptyState from '../components/EmptyState';
 import PlacesScreen from './PlacesScreen';
 
@@ -59,13 +58,11 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   const [activeCity, setCity]         = useState('all');
   const [placesArea, setPlacesArea]   = useState('all');
   const [openNow, setOpenNow]         = useState(false);
-  const [viewMode, setViewMode]       = useState('list'); // 'list' | 'map'
   const [filterOpen, setFilterOpen]   = useState(false);
   const [advFilters, setAdvFilters]   = useState({ ageMax: null, language: null });
-  const [selectedDay, setSelectedDay] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  });
+  // No day pre-selected: ongoing courses have no next_dates and would be
+  // hidden behind a "today" default, making the feed look empty.
+  const [selectedDay, setSelectedDay] = useState(null);
   const [dateRange, setDateRange]     = useState(null); // null | 'week' | 'weekend'
   const [napTime, setNapTime]         = useState(false);
   const [napTimeValue, setNapTimeValue] = useState('12:00');
@@ -156,11 +153,11 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
 
     if (query.trim()) {
       const q = query.toLowerCase();
+      // Match across BOTH languages — a Hebrew query must find activities whose
+      // Hebrew source text matches even though the app prefers English fields.
       r = r.filter(a =>
-        a.name.toLowerCase().includes(q) ||
-        a.description.toLowerCase().includes(q) ||
-        a.neighborhood.toLowerCase().includes(q) ||
-        a.category.toLowerCase().includes(q)
+        [a.name, a.nameHe, a.description, a.descriptionHe, a.neighborhood, a.category]
+          .some(f => f && f.toLowerCase().includes(q))
       );
     }
 
@@ -223,23 +220,6 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                 </button>
               ))}
             </div>
-
-            {/* List / Map toggle — only in activities section */}
-            {section === 'activities' && (
-              <div className="flex bg-stone-100 rounded-xl p-0.5">
-                {['list', 'map'].map(m => (
-                  <button
-                    key={m}
-                    onClick={() => setViewMode(m)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      viewMode === m ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
-                    }`}
-                  >
-                    {m === 'list' ? t('discover.listView') : t('discover.mapView')}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -347,25 +327,18 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
 
       {/* Places content */}
       {section === 'places' && (
-        <PlacesScreen
-          activeArea={placesArea}
-          onAreaChange={setPlacesArea}
-          openNow={openNow}
-          onOpenNowToggle={() => setOpenNow(o => !o)}
-        />
+        <PlacesScreen activeArea={placesArea} openNow={openNow} />
       )}
 
       {/* Activities content area */}
-      {section === 'activities' && <div className={`flex-1 ${viewMode === 'map' ? 'overflow-hidden' : 'overflow-y-auto px-4 pb-6'}`}>
+      {section === 'activities' && <div className="flex-1 overflow-y-auto px-4 pb-6">
         {error && (
           <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
             {t('discover.loadError')}
           </div>
         )}
 
-        {viewMode === 'map' ? (
-          <MapView activities={filtered} onSelect={onSelect} className="h-full" />
-        ) : loading ? (
+        {loading ? (
           <div className="space-y-3 pt-2">
             {[1, 2, 3].map(i => <CardSkeleton key={i} />)}
           </div>
@@ -415,7 +388,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           </div>
         )}
 
-        {viewMode !== 'map' && onOpenSubmit && (
+        {onOpenSubmit && (
           <div className="mt-8 mb-4 text-center">
             <button
               onClick={onOpenSubmit}

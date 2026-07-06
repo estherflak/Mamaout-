@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { usePlaces, isOpenNow, getTodayHours } from '../hooks/usePlaces';
 import { ageRangeLabelFromMonths } from '../lib/formatAge';
 import { areaLabel } from '../lib/localize';
@@ -15,6 +15,11 @@ function PlaceCard({ place }) {
   const todayHours = getTodayHours(place.opening_hours);
   const isClosed = place.opening_hours && !todayHours;
   const placeArea = areaLabel(place.area, lang);
+  // Neighborhood is stored in English; compare against both language labels so
+  // "Ramat Gan · רמת גן" doesn't duplicate in either UI language.
+  const hoodIsArea = !place.neighborhood
+    || place.neighborhood === placeArea
+    || place.neighborhood === areaLabel(place.area, 'en');
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
@@ -39,7 +44,7 @@ function PlaceCard({ place }) {
 
           {/* Location */}
           <p className="text-xs text-stone-400 mb-2">
-            {place.neighborhood}{place.neighborhood ? ` · ${placeArea}` : placeArea}
+            {hoodIsArea ? placeArea : `${place.neighborhood} · ${placeArea}`}
           </p>
 
           {/* Today's hours */}
@@ -135,7 +140,7 @@ function SkeletonCard() {
   );
 }
 
-export default function PlacesScreen({ activeArea, onAreaChange, openNow, onOpenNowToggle }) {
+export default function PlacesScreen({ activeArea, openNow }) {
   const { t } = useLanguage();
   const { places, loading } = usePlaces();
 

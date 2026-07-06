@@ -32,15 +32,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Bottom-sheet slide-up (map pin tap) */
-@keyframes sheetSlideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-.animate-sheet-up {
-  animation: sheetSlideUp 0.2s ease-out;
-}
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 4px;

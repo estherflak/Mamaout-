@@ -6,7 +6,8 @@
 import { scrapeCoing } from '../../scraper/sources/coing.js';
 import { insertIfNew } from '../../scraper/db.js';
 
-export const config = { maxDuration: 60 };
+// Must match vercel.json — the full Coing pagination takes ~163s.
+export const config = { maxDuration: 300 };
 
 export default async function handler(req, res) {
   const auth = req.headers.authorization;

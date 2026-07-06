@@ -17,7 +17,7 @@ function looksLikeDate(text) {
   if (!text || text.trim().length < 4) return true;
   const t = text.trim();
   // Pure numbers / date separators
-  if (/^[\d\s.\/\-,]+$/.test(t)) return true;
+  if (/^[\d\s./\-,]+$/.test(t)) return true;
   // DD.MM.YYYY or DD/MM/YYYY
   if (/^\d{1,2}[./]\d{1,2}[./]\d{2,4}/.test(t)) return true;
   // ISO date

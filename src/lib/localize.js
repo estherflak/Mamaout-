@@ -49,9 +49,52 @@ const CITY_HE = {
   'Herzliya': 'הרצליה',
 };
 
+// Reverse map so a Hebrew city name that slips through a scraper still shows
+// in English in the English UI.
+const CITY_FROM_HE = Object.fromEntries(Object.entries(CITY_HE).map(([en, he]) => [he, en]));
+
 export function cityLabel(name, lang) {
   if (!name) return name;
-  return lang === 'he' ? (CITY_HE[name] || name) : name;
+  const trimmed = name.trim();
+  if (lang === 'he') return CITY_HE[trimmed] || name;
+  return CITY_FROM_HE[trimmed] || name;
+}
+
+// Known Hebrew venue names → English transliterations for the English UI.
+// Venues are proper nouns the translation backfill doesn't cover; new scraped
+// venues fall through unchanged (rendered with dir="auto") until added here.
+const VENUE_EN = {
+  'מרכז קהילתי בית עמנואל': 'Beit Emanuel Community Center',
+  'מרכז תרבות וקהילה רמת יצחק': 'Ramat Yitzhak Culture & Community Center',
+  'מרכז קהילתי רמת חן': 'Ramat Chen Community Center',
+  'המרכז לגיל הרך רמת שקמה': 'Ramat Shikma Early Childhood Center',
+};
+
+function neighborhoodLabel(name, lang) {
+  if (!name) return name;
+  if (lang !== 'he') {
+    // "venue, city" → translate each part if known
+    const parts = name.split(',').map(p => {
+      const s = p.trim();
+      return VENUE_EN[s] || CITY_FROM_HE[s] || s;
+    });
+    return parts.join(', ');
+  }
+  return cityLabel(name, lang);
+}
+
+// "Neighborhood · City" line for cards/detail; collapses to just the city when
+// the neighborhood IS the city (in either language).
+export function locationLine(activity, lang) {
+  let hood = neighborhoodLabel(activity.neighborhood, lang);
+  const city = cityLabel(activity.city, lang);
+  // Some scrapers store neighborhood as "venue, city" — drop the trailing city
+  // so it doesn't repeat as "venue, city · city".
+  if (hood && city && hood.endsWith(`, ${city}`)) {
+    hood = hood.slice(0, -(city.length + 2));
+  }
+  if (!hood || hood === city) return city || '';
+  return `${hood} · ${city}`;
 }
 
 // Canonical Gush Dan metro cities the app knows how to resolve/translate —
@@ -82,6 +125,25 @@ export function areaLabel(areaId, lang) {
 // pattern so callers fall back to their locale-aware date rendering.
 const SESSIONS_RE = /^(One|\d+) (?:upcoming )?sessions?(?: · (.+))?$/;
 const EN_DATE_RE = /^[A-Z][a-z]{2}, \d{1,2} [A-Z][a-z]{2}(?: · .+)?$/;
+
+// Scraped price notes are Hebrew and follow a handful of patterns
+// ("חינם (בהרשמה מראש)", "25 ₪ (במקום 58 ₪)"). price_notes is a volatile field
+// (re-written on every scrape), so it's localized here at render time rather
+// than translated in the DB. Unrecognized notes pass through unchanged.
+const FREE_RE = /^חינם\s*(?:\(?\s*בהרשמה מראש\s*\)?)?\s*$/;
+const DISCOUNT_RE = /^(\d+)\s*₪\s*\(במקום\s*(\d+)\s*₪\)$/;
+
+export function localizedPriceNotes(activity, lang) {
+  const notes = activity.priceNotes;
+  if (!notes || lang === 'he') return notes || null;
+  const trimmed = notes.trim();
+  if (FREE_RE.test(trimmed)) {
+    return trimmed.includes('בהרשמה') ? 'Free (advance registration)' : 'Free';
+  }
+  const m = trimmed.match(DISCOUNT_RE);
+  if (m) return `₪${m[1]} (instead of ₪${m[2]})`;
+  return notes;
+}
 
 export function localizedScheduleLabel(activity, lang) {
   const label = activity.scheduleLabel;

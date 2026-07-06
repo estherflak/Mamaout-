@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { localizedName, localizedDesc, categoryLabel, localizedScheduleLabel, cityLabel } from '../lib/localize';
+import { localizedName, localizedDesc, categoryLabel, localizedScheduleLabel, localizedPriceNotes, locationLine } from '../lib/localize';
 import { useFavorites } from '../hooks/useFavorites';
 import { useParticipants, logClick } from '../hooks/useParticipants';
 import { SHARE_TEMPLATES, shareActivityOnWhatsApp, addToCalendar } from '../lib/share';
@@ -115,8 +115,7 @@ export default function ActivityDetail({ activity, onClose }) {
                 )}
               </div>
               <p dir="auto" className="text-sm text-stone-400 mt-0.5">
-                {cityLabel(activity.neighborhood, lang)}
-                {activity.neighborhood !== activity.city ? ` · ${cityLabel(activity.city, lang)}` : ''}
+                {locationLine(activity, lang)}
               </p>
             </div>
             <button onClick={() => toggleFav(activity.id)} className="flex-shrink-0 p-1.5">
@@ -145,7 +144,7 @@ export default function ActivityDetail({ activity, onClose }) {
                 <p className="text-2xl font-bold text-stone-800">₪{activity.priceNis}</p>
               )}
               {activity.priceNotes && (
-                <p dir="auto" className="text-xs text-stone-400 mt-0.5">{activity.priceNotes}</p>
+                <p dir="auto" className="text-xs text-stone-400 mt-0.5">{localizedPriceNotes(activity, lang)}</p>
               )}
             </div>
           )}

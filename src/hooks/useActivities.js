@@ -10,9 +10,8 @@ const CATEGORY_EMOJI = {
   'baby-focused': '🌈',
 };
 
-// Internal grouping key only (matches MapView's CATEGORY_COLORS and the
-// mock-data `category` field) — never rendered directly; use categoryLabel()
-// from lib/localize.js for user-facing text.
+// Internal grouping key only (matches the mock-data `category` field) — never
+// rendered directly; use categoryLabel() from lib/localize.js for user-facing text.
 const CATEGORY_LABEL = {
   movement:       'Movement',
   wellness:       'Wellness',
@@ -133,10 +132,12 @@ export function normalizeSupabaseActivity(a) {
 }
 
 export function useActivities() {
-  const [activities, setActivities] = useState(MOCK_ACTIVITIES);
+  // Mock data is a local-dev convenience only (no Supabase env configured).
+  // In production we never show sample activities — a mom could try to attend one.
+  const [activities, setActivities] = useState(isConfigured ? [] : MOCK_ACTIVITIES);
   const [loading, setLoading] = useState(isConfigured);
   const [error, setError] = useState(null);
-  const [dataSource, setDataSource] = useState('mock');
+  const dataSource = isConfigured ? 'supabase' : 'mock';
 
   useEffect(() => {
     if (!isConfigured) return;
@@ -152,15 +153,14 @@ export function useActivities() {
         if (cancelled) return;
         if (err) {
           setError(err.message);
-        } else if (data?.length > 0) {
+        } else {
           // Safety nets: never surface toddler-only content (starts above 12
           // months) or rows whose every session already passed, whatever the
           // scraper let through.
           setActivities(
-            data.map(normalizeSupabaseActivity)
+            (data || []).map(normalizeSupabaseActivity)
               .filter(a => (a.ageFrom ?? 0) <= 52 && !a.isExpired)
           );
-          setDataSource('supabase');
         }
         setLoading(false);
       });

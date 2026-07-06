@@ -9,6 +9,8 @@
  * URL: https://www.tel-aviv.gov.il/Residents/Digitel/Pages/DigiTaf.aspx?CategoryId=40&AudID=7
  */
 
+/* global angular -- exists in the page context inside page.evaluate/waitForFunction */
+
 import { chromium as playwrightChromium } from 'playwright-core';
 import chromium from '@sparticuz/chromium';
 import { ageRangeFromName, isOutOfScopeForBabies } from './hebrew-ages.js';
@@ -86,7 +88,6 @@ function mapToMamaOut(item) {
 
   const isFree     = !val('TlvPaymentRequired') && !val('TlvPaymentCost');
   const address    = val('TlvAddress1') || val('TlvCityLocation') || 'תל אביב';
-  const institution = val('TlvInstitution');
 
   const scheduleLabel = time_start
     ? `${usedDates.length > 1 ? `${usedDates.length} sessions` : 'One session'} · ${time_start}`

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useFriends } from '../hooks/useFriends';
 import { useFriendsActivity, relativeTime } from '../hooks/useFriendsActivity';
 import { useLanguage } from '../contexts/LanguageContext';
-import { localizedName } from '../lib/localize';
+import { localizedName, locationLine } from '../lib/localize';
 
 function FriendAvatar({ name, size = 'md' }) {
   const sizeClasses = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
@@ -56,7 +56,7 @@ function FriendFeedItem({ item, onSelect, lang, t }) {
         </p>
         <p dir="auto" className="text-sm font-medium text-stone-800 truncate">{localizedName(item.activity, lang)}</p>
         <p dir="auto" className="text-xs text-stone-400 truncate">
-          {item.activity.neighborhood}
+          {locationLine(item.activity, lang)}
           {item.date ? ` · ${relativeTime(item.date, lang)}` : ''}
         </p>
       </div>
