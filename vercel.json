@@ -19,6 +19,9 @@
     "api/cron/scrape-coing.js": {
       "maxDuration": 300
     },
+    "api/cron/scrape-claylatlv.js": {
+      "maxDuration": 60
+    },
     "api/cron/scrape-ramat-gan.js": {
       "maxDuration": 60
     },
@@ -30,6 +33,10 @@
     {
       "path": "/api/cron/scrape-coing",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/scrape-claylatlv",
+      "schedule": "30 1 * * *"
     },
     {
       "path": "/api/cron/scrape-arbox",
