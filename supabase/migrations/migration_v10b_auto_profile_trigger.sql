@@ -1,4 +1,7 @@
--- Migration v10: auto-create a profiles row when a new auth user signs up.
+-- Migration v10b: auto-create a profiles row when a new auth user signs up.
+-- (Written 2026-06-23, after migration_v10.sql/saved-searches had already
+-- taken the number "v10". Renamed v10 → v10b when the accidentally nested
+-- migrations/migrations/ folder was flattened. Both are applied in prod.)
 --
 -- Until now a profile row only existed after a user finished onboarding (the
 -- upsert in OnboardingScreen). Any code path that reads a profile before that
