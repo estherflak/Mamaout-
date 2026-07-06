@@ -17,7 +17,7 @@
       "maxDuration": 60
     },
     "api/cron/scrape-coing.js": {
-      "maxDuration": 60
+      "maxDuration": 300
     },
     "api/cron/scrape-ramat-gan.js": {
       "maxDuration": 60
