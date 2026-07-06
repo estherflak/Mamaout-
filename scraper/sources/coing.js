@@ -11,9 +11,19 @@
  * the tenant page HTML as `var community = {"id":…}`).
  *
  * IMPORTANT API quirks (verified 2026-07):
- *  - The list API's activityBlock.date and location are EMPTY. Date, time,
- *    street address and price are server-rendered only on the detail page
- *    (record.resourceLink), which we fetch for records that pass the filter.
+ *  - The list API's activityBlock.date (display field) and location are
+ *    EMPTY, but activityBlock.startDate/endDate ARE populated (UTC). Street
+ *    address and price are server-rendered only on the detail page
+ *    (record.resourceLink), which we fetch for records that pass the filter;
+ *    the detail page stays the source of truth for dates too.
+ *  - Group lists are ordered by activityBlock.startDate ASCENDING — verified
+ *    across all 41 archive pages of community 5988 and every neighborhood
+ *    tenant (NOT by id: ids only loosely correlate). Future events sit on the
+ *    LAST pages, which is what makes the backward page walk below safe.
+ *  - The list API intermittently answers HTTP 200 with zero records for a
+ *    page that has records (the same page returns 50 on retry). Without a
+ *    retry one blip nulls totalPages and silently truncates paging — the
+ *    likely cause of the first production run's 17-vs-32 row variance.
  *  - Detail pages come in TWO layouts depending on the community theme:
  *    flat divs (activity-address / activity-date / activity-price) or an
  *    info-col layout (<span>כתובת</span>…<div class="info-col-value">). The
@@ -90,9 +100,10 @@ const TENANTS = [
   },
 ];
 
-// Safety valve for the 60s cron budget: TLV_organization's archive keeps
-// growing, so cap detail-page fetches per run. Candidates are sorted by
-// record id descending (newer first) before the cap, so anything cut is old.
+// Safety valve for the cron budget: candidates are pre-filtered to listings
+// the API still shows as current (see listedAsEnded), so this cap should
+// rarely bind — it only guards against a platform-side date blowup. Candidates
+// are sorted by record id descending (newer first) before the cap.
 const MAX_DETAIL_FETCHES = 200;
 
 // ─── Relevance filter ────────────────────────────────────────────────────────
@@ -162,18 +173,65 @@ function mapCategory(name = '') {
 
 // ─── List API ────────────────────────────────────────────────────────────────
 
-async function fetchAllGroups(cfg) {
-  const records = [];
-  let page = 1, totalPages = 1;
-  while (page <= totalPages && page <= 60) { // hard stop, ~3000 records
+// The list API's own startDate/endDate are enough to prove a record already
+// ended — no point burning a detail fetch on it. Records missing both dates
+// prove nothing and stay in (the detail-page future-date gate remains the
+// real barrier). Cutoff carries a day of slack because these fields are UTC
+// while event dates are Israel-local.
+function listedAsEnded(record, pastCutoff) {
+  const end = (record.activityBlock?.endDate ?? record.activityBlock?.startDate ?? '').slice(0, 10);
+  return Boolean(end) && end < pastCutoff;
+}
+
+// Blips are per-request random, NOT CDN caching (responses are cf DYNAMIC; the
+// same page can fail, succeed on immediate retry, then fail again) — but they
+// burst for several seconds under load, so back off progressively rather than
+// hammering the same window.
+const PAGE_RETRY_DELAYS_MS = [500, 1500, 4000];
+
+async function fetchGroupsPage(cfg, page) {
+  for (let attempt = 0; ; attempt++) {
     const url = `${API_BASE}/communities/${cfg.communityId}/groups?page=${page}&pageSize=50`;
     const res = await fetch(url, { headers: { Accept: 'application/json', ...UA } });
-    const data = await res.json();
-    totalPages = data.data?.pagination?.totalPages ?? 0;
-    const raw = data.data?.records ?? [];
+    const data = await res.json().catch(() => null);
+    const pagination = data?.data?.pagination;
+    const raw = data?.data?.records ?? [];
     // PHP-style serialization: array OR object keyed by numeric index.
-    records.push(...(Array.isArray(raw) ? raw : Object.values(raw)));
-    page++;
+    const records = Array.isArray(raw) ? raw : Object.values(raw);
+    // A truly empty community reports totalResults 0 (e.g. TLV_Kalisher-5_Taf);
+    // zero records DESPITE a nonzero total (or no pagination at all) is a blip.
+    if (records.length > 0 || pagination?.totalResults === 0) return { records, pagination };
+    if (attempt >= PAGE_RETRY_DELAYS_MS.length) {
+      console.error(`[coing:${cfg.slug}] page ${page} empty after ${attempt + 1} attempts`);
+      return { records, pagination };
+    }
+    await new Promise(r => setTimeout(r, PAGE_RETRY_DELAYS_MS[attempt]));
+  }
+}
+
+// Lists are startDate-ascending (see header), so future events sit on the
+// LAST pages while TLV_organization's ~40-page archive fills the front. Walk
+// backwards from the last page and stop once a page holds only records that
+// already ended — every earlier page can only be older. A page with any
+// undated record (or an empty blip) proves nothing, so the walk continues.
+async function fetchAllGroups(cfg, pastCutoff) {
+  const first = await fetchGroupsPage(cfg, 1);
+  const totalPages = Math.min(first.pagination?.totalPages ?? 0, 60); // hard stop, ~3000 records
+  const records = [...first.records];
+  const blippedPages = [];
+  for (let page = totalPages; page >= 2; page--) {
+    const { records: pageRecords } = await fetchGroupsPage(cfg, page);
+    if (pageRecords.length === 0) blippedPages.push(page); // never triggers the stop below
+    records.push(...pageRecords);
+    if (pageRecords.length > 0 && pageRecords.every(r => listedAsEnded(r, pastCutoff))) break;
+    if (page > 2) await new Promise(r => setTimeout(r, 100));
+  }
+  // Second chance for pages that stayed empty through the retry ladder: by the
+  // time the walk finishes the blip burst has passed, so one more ladder
+  // usually recovers them (a page lost here = its ~50 records silently gone).
+  for (const page of blippedPages) {
+    const { records: pageRecords } = await fetchGroupsPage(cfg, page);
+    records.push(...pageRecords);
   }
   return records;
 }
@@ -310,16 +368,18 @@ function mapToMamaOut(record, detail, cfg, today) {
 
 export async function scrapeCoing() {
   const today = new Date().toISOString().slice(0, 10);
+  const pastCutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 10);
   const seenIds = new Set(); // shared records appear in several communities
   const candidates = [];     // { record, cfg }
 
   for (const cfg of TENANTS) {
     try {
-      const records = await fetchAllGroups(cfg);
+      const records = await fetchAllGroups(cfg, pastCutoff);
       const relevant = records.filter(r =>
         r.type === 'regular' &&        // skip subcommunity/checking stubs
         !r.isEventFull &&
         r.resourceLink &&
+        !listedAsEnded(r, pastCutoff) &&
         isBabyRelevant(r.name)
       );
       console.log(`[coing:${cfg.slug}] ${records.length} groups → ${relevant.length} baby-relevant`);
@@ -342,19 +402,33 @@ export async function scrapeCoing() {
   }
 
   const results = [];
+  // The cron's console output is our only observability — count detail-fetch
+  // failures per tenant so vanished rows are attributable, not silent.
+  const stats = new Map(TENANTS.map(cfg => [cfg.slug, { fetched: 0, failed: 0, rows: 0 }]));
   const BATCH = 5;
   for (let i = 0; i < toFetch.length; i += BATCH) {
     const batch = toFetch.slice(i, i + BATCH);
     const details = await Promise.all(batch.map(c => fetchDetail(c.record.resourceLink)));
     batch.forEach(({ record, cfg }, j) => {
       const detail = details[j];
+      const s = stats.get(cfg.slug);
+      s.fetched++;
+      if (!detail) { s.failed++; return; } // fetch error or unrecognized page layout
       // No parseable primary date, or a past one → archive entry, drop it.
-      if (!detail?.date || detail.date < today) return;
+      if (!detail.date || detail.date < today) return;
+      s.rows++;
       results.push(mapToMamaOut(record, detail, cfg, today));
     });
     if (i + BATCH < toFetch.length) await new Promise(r => setTimeout(r, 150));
   }
 
-  console.log(`[coing] total: ${results.length} upcoming baby events across ${TENANTS.length} tenant(s)`);
+  let totalFailed = 0;
+  for (const cfg of TENANTS) {
+    const s = stats.get(cfg.slug);
+    totalFailed += s.failed;
+    if (s.fetched === 0) continue;
+    console.log(`[coing:${cfg.slug}] ${s.fetched} detail fetches → ${s.rows} rows (${s.failed} failed)`);
+  }
+  console.log(`[coing] total: ${results.length} upcoming baby events across ${TENANTS.length} tenant(s), ${totalFailed} detail fetch failure(s)`);
   return results;
 }
