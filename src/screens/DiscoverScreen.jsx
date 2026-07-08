@@ -63,7 +63,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   // No day pre-selected: ongoing courses have no next_dates and would be
   // hidden behind a "today" default, making the feed look empty.
   const [selectedDay, setSelectedDay] = useState(null);
-  const [dateRange, setDateRange]     = useState(null); // null | 'week' | 'weekend'
+  const [dateRange, setDateRange]     = useState(null); // null | 'week' | 'weekend' | 'nextWeek'
   const [napTime, setNapTime]         = useState(false);
   const [napTimeValue, setNapTimeValue] = useState('12:00');
 

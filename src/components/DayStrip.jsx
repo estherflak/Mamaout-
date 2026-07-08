@@ -19,9 +19,10 @@ export default function DayStrip({
   const { lang, t } = useLanguage();
   const locale = lang === 'he' ? 'he-IL' : 'en-IL';
 
+  // 30 days out — matches how far ahead the scrapers reliably have data.
   const days = useMemo(() => {
     const result = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 30; i++) {
       const d = new Date();
       d.setDate(d.getDate() + i);
       result.push(d);
@@ -37,33 +38,44 @@ export default function DayStrip({
 
   return (
     <div className="space-y-2">
-      {/* Day pills */}
+      {/* Day pills — a month label separates the strip at each month boundary
+          so identical day numbers (e.g. two "15"s) stay unambiguous. */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
-        {days.map(d => {
+        {days.map((d, i) => {
           const dateStr = toLocalDateStr(d);
           const isSelected = selectedDay === dateStr;
           const hasDot = datesWithActivity.has(dateStr);
           const weekday = d.toLocaleDateString(locale, { weekday: 'short' });
           const dayNum = d.getDate();
+          const newMonth = i > 0 && d.getMonth() !== days[i - 1].getMonth();
 
           return (
-            <button
-              key={dateStr}
-              onClick={() => onDaySelect(isSelected ? null : dateStr)}
-              className={`flex-shrink-0 flex flex-col items-center px-3 pt-2 pb-1.5 rounded-2xl border transition-colors ${
-                isSelected
-                  ? 'bg-dusty-rose border-dusty-rose text-white'
-                  : 'bg-white border-stone-200 text-stone-600'
-              }`}
-            >
-              <span className="text-[10px] font-medium leading-none mb-0.5">{weekday}</span>
-              <span className="text-sm font-bold leading-none">{dayNum}</span>
-              <span className={`w-1 h-1 rounded-full mt-1 ${
-                hasDot
-                  ? isSelected ? 'bg-white/70' : 'bg-dusty-rose'
-                  : 'bg-transparent'
-              }`} />
-            </button>
+            <div key={dateStr} className="flex-shrink-0 flex gap-2">
+              {newMonth && (
+                <div className="flex flex-col items-center justify-center px-0.5">
+                  <span className="text-[10px] font-semibold text-stone-400 uppercase [writing-mode:vertical-rl] rotate-180">
+                    {d.toLocaleDateString(locale, { month: 'short' })}
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => onDaySelect(isSelected ? null : dateStr)}
+                aria-label={d.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}
+                className={`flex flex-col items-center px-3 pt-2 pb-1.5 rounded-2xl border transition-colors ${
+                  isSelected
+                    ? 'bg-dusty-rose border-dusty-rose text-white'
+                    : 'bg-white border-stone-200 text-stone-600'
+                }`}
+              >
+                <span className="text-[10px] font-medium leading-none mb-0.5">{weekday}</span>
+                <span className="text-sm font-bold leading-none">{dayNum}</span>
+                <span className={`w-1 h-1 rounded-full mt-1 ${
+                  hasDot
+                    ? isSelected ? 'bg-white/70' : 'bg-dusty-rose'
+                    : 'bg-transparent'
+                }`} />
+              </button>
+            </div>
           );
         })}
       </div>
@@ -71,8 +83,9 @@ export default function DayStrip({
       {/* Quick filters: date ranges + nap time */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide items-center">
         {[
-          { id: 'week',    label: t('dayStrip.thisWeek') },
-          { id: 'weekend', label: t('dayStrip.weekend') },
+          { id: 'week',     label: t('dayStrip.thisWeek') },
+          { id: 'weekend',  label: t('dayStrip.weekend') },
+          { id: 'nextWeek', label: t('dayStrip.nextWeek') },
         ].map(r => (
           <button
             key={r.id}

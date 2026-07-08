@@ -41,7 +41,9 @@ function parseSessionDates(timePos) {
   }
 
   return {
-    next_dates: [...new Set(dates)].sort().slice(0, 4),
+    // Cap covers the app's 30-day browse window for a weekly class (~4-5
+    // sessions) with headroom for twice-weekly ones.
+    next_dates: [...new Set(dates)].sort().slice(0, 8),
     time_start,
   };
 }

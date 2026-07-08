@@ -87,6 +87,7 @@ export const strings = {
     },
     dayStrip: {
       thisWeek: 'This week',
+      nextWeek: 'Next week',
       weekend: 'Weekend',
       backByNapTime: 'Back by nap time',
     },
@@ -478,6 +479,7 @@ export const strings = {
     },
     dayStrip: {
       thisWeek: 'השבוע',
+      nextWeek: 'שבוע הבא',
       weekend: 'סוף השבוע',
       backByNapTime: 'בחזרה לפני השינה',
     },

@@ -6,9 +6,11 @@ export function toLocalDateStr(d) {
 
 /**
  * Set of YYYY-MM-DD strings covered by a named quick-range, relative to today.
- *   'week'    — today through the next 6 days (the visible 7-day window)
- *   'weekend' — the coming Friday + Saturday (Israel weekend); includes today
- *               if today is already Fri/Sat
+ *   'week'     — today through the next 6 days (the visible 7-day window)
+ *   'nextWeek' — the next calendar week, Sunday through Saturday (Israel
+ *                weeks start Sunday); always strictly after today
+ *   'weekend'  — the coming Friday + Saturday (Israel weekend); includes today
+ *                if today is already Fri/Sat
  * Returns null for an unknown range.
  */
 export function dateRangeSet(range) {
@@ -20,6 +22,17 @@ export function dateRangeSet(range) {
     for (let i = 0; i < 7; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() + i);
+      set.add(toLocalDateStr(d));
+    }
+    return set;
+  }
+
+  if (range === 'nextWeek') {
+    const set = new Set();
+    const daysToSunday = 7 - today.getDay(); // next Sunday, always in the future
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + daysToSunday + i);
       set.add(toLocalDateStr(d));
     }
     return set;
