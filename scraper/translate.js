@@ -1,6 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Lazily constructed so that merely importing this module has no side effects.
+// The Anthropic SDK throws at construction when no key is resolvable; deferring
+// it means a caller without ANTHROPIC_API_KEY (e.g. a Vercel cron that only
+// inserts) can import db.js → translate.js without crashing, and only pays the
+// cost if it actually calls translateActivity().
+let _client;
+function getClient() {
+  return _client ?? (_client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }));
+}
 
 export const TRANSLATE_MODEL = 'claude-haiku-4-5-20251001';
 export const TRANSLATE_MAX_TOKENS = 500;
@@ -51,7 +59,7 @@ export function parseTranslation(text, { name, description }) {
  * Kept for ad-hoc/synchronous use; the daily backfill batches instead (50% cheaper).
  */
 export async function translateActivity({ name, description }) {
-  const res = await client.messages.create({
+  const res = await getClient().messages.create({
     model: TRANSLATE_MODEL,
     max_tokens: TRANSLATE_MAX_TOKENS,
     system: TRANSLATE_SYSTEM,

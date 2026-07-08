@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { translateActivity } from './translate.js';
 
 function getClient() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -129,4 +130,49 @@ export async function insertIfNew(activity) {
 
   if (error) throw error;
   return data;
+}
+
+/**
+ * Translate freshly-inserted rows to English inline, right after a scrape, so a
+ * new listing never sits in Hebrew until the next daily backfill runs. Pass the
+ * rows returned by insertIfNew() (it returns the new row, or null when it folds
+ * into an existing one).
+ *
+ * Design notes:
+ * - Only rows missing name_en are translated; already-English rows just mirror
+ *   their source text (same rule as scraper/backfill-translations.js).
+ * - Uses live per-row calls (not the async Batch API) so it completes within a
+ *   Vercel cron's runtime. Bounded by `concurrency` and `cap` to stay in budget.
+ * - Best-effort: a per-row failure (e.g. ANTHROPIC_API_KEY unset in the cron
+ *   env, or no credit) is logged and swallowed — those rows keep name_en NULL
+ *   and are picked up by the daily backfill, so this never blocks a scrape.
+ */
+export async function translateNewRows(rows, { concurrency = 5, cap = 40 } = {}) {
+  const queue = (rows || []).filter(r => r && r.id && !r.name_en).slice(0, cap);
+  if (queue.length === 0) return 0;
+
+  let done = 0;
+  async function worker() {
+    while (queue.length) {
+      const r = queue.shift();
+      try {
+        const { name_en, description_en } = r.language === 'en'
+          ? { name_en: r.name, description_en: r.description }
+          : await translateActivity({ name: r.name, description: r.description });
+        const { error } = await supabase
+          .from('activities')
+          .update({ name_en, description_en })
+          .eq('id', r.id);
+        if (error) throw error;
+        done++;
+      } catch (err) {
+        console.error(`[translate] failed for ${r.id}: ${err.message}`);
+      }
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, queue.length) }, worker)
+  );
+  return done;
 }
