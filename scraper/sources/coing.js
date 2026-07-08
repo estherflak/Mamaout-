@@ -124,6 +124,10 @@ const STRONG_PATTERNS = [
   /התפתחות/, // development (matches התפתחותי too)
   /משחקיה/,  // playroom
   /חל["״']ד/, // maternity leave (חופשת לידה) — "אימון לאימהות בחל"ד" etc.
+  /הנקה/,    // breastfeeding — prefixed forms (בהנקה, להנקה…) are all still on-topic
+  // starting solids. Plural only ("מעבר למוצקים", "ביסוס מוצקים") — the bare
+  // stem מוצק would also match kids' states-of-matter workshops ("מוצק, נוזל וגז").
+  /מוצקים/,
 ];
 
 const WEAK_PATTERNS = [

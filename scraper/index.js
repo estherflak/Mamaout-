@@ -3,7 +3,6 @@
  *   node scraper/index.js
  */
 import 'dotenv/config';
-import { scrapeBeitEmanuel } from './sources/beit-emanuel.js';
 import { scrapeDigitaf } from './sources/digitaf.js';
 import { scrapeRamatGanMuni } from './sources/ramat-gan-muni.js';
 import { scrapeMommyJogger } from './sources/mommy-jogger.js';
@@ -93,8 +92,14 @@ export async function runScrape() {
   console.log(`\n[scraper] Starting scrape — ${new Date().toISOString()}`);
 
   // Priority sources run first — authoritative, is_verified: true
+  //
+  // Beit Emanuel (sources/beit-emanuel.js) was retired 2026-07-08: the venue is
+  // covered by the SmartTicket mbe-rg tenant in the Vercel cron pipeline, which
+  // gets dated sessions, prices, and addresses from the calendar API. The HTML
+  // scraper emitted slug-URL, date-less rows whose AI-cleaned names never
+  // matched the calendar names, so every class it caught duplicated its
+  // SmartTicket row (dedup keys on `name | city`, and the URL schemes differ).
   const prioritySources = [
-    { name: 'Beit Emanuel Ramat Gan',          fn: scrapeBeitEmanuel,   verified: true },
     { name: 'Tel Aviv Municipality (Digitaf)', fn: scrapeDigitaf,        verified: true },
     { name: 'Ramat Gan Municipality',          fn: scrapeRamatGanMuni,  verified: true },
     { name: 'Mommy Jogger',                    fn: scrapeMommyJogger,   verified: true },
