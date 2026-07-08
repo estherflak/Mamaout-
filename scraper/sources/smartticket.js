@@ -75,6 +75,10 @@ const STRONG_PATTERNS = [
   /עיסוי/,   // massage
   /התפתחות/, // development
   /משחקיה/,  // playroom
+  /הנקה/,    // breastfeeding — prefixed forms (בהנקה, להנקה…) are all still on-topic
+  // starting solids. Plural only ("מעבר למוצקים", "ביסוס מוצקים") — the bare
+  // stem מוצק would also match kids' states-of-matter workshops ("מוצק, נוזל וגז").
+  /מוצקים/,
 ];
 
 // WEAK words appear on teen/adult/toddler events too. גיל הרך lives here
