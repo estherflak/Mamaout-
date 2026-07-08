@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useActivities, resolveCity } from '../hooks/useActivities';
 import { usePlaces } from '../hooks/usePlaces';
 import { useRsvpCounts } from '../hooks/useRsvpCounts';
@@ -66,6 +66,12 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   const [dateRange, setDateRange]     = useState(null); // null | 'week' | 'weekend' | 'nextWeek'
   const [napTime, setNapTime]         = useState(false);
   const [napTimeValue, setNapTimeValue] = useState('12:00');
+
+  // Scrollable feed area (below the fixed title/tabs bar) + back-to-top control
+  const scrollRef = useRef(null);
+  const [showTop, setShowTop] = useState(false);
+  function handleScroll(e) { setShowTop(e.currentTarget.scrollTop > 300); }
+  function scrollToTop() { scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   // Quick date-range and specific-day selection are mutually exclusive
   function handleDaySelect(day) { setDateRange(null); setSelectedDay(day); }
@@ -193,7 +199,8 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
 
   return (
     <div className="flex flex-col h-full">
-      {/* Sticky header area */}
+      {/* Fixed top bar — title, language toggle, and Activities/Places tabs stay
+          pinned while the filters and feed scroll beneath them. */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-cream-50">
         {/* Title row */}
         <div className="flex items-center justify-between mb-3">
@@ -224,7 +231,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
         </div>
 
         {/* Activities / Places segment control */}
-        <div className="flex bg-stone-100 rounded-xl p-0.5 mb-3">
+        <div className="flex bg-stone-100 rounded-xl p-0.5">
           {[
             { id: 'activities', label: t('discover.activitiesTab') },
             { id: 'places',     label: t('discover.placesTab') },
@@ -240,7 +247,12 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             </button>
           ))}
         </div>
+      </div>
 
+      {/* Scrollable area — filters scroll away with the feed */}
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto">
+        {/* Filters */}
+        <div className="px-4 pt-3 pb-2 bg-cream-50">
         {/* Activities-specific filters */}
         {section === 'activities' && (
           <>
@@ -331,7 +343,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       )}
 
       {/* Activities content area */}
-      {section === 'activities' && <div className="flex-1 overflow-y-auto px-4 pb-6">
+      {section === 'activities' && <div className="px-4 pb-6">
         {error && (
           <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
             {t('discover.loadError')}
@@ -399,6 +411,21 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           </div>
         )}
       </div>}
+      </div>
+
+      {/* Back to top — appears once the feed is scrolled down. Placed opposite
+          the community-add FAB (which sits at the end side) to avoid overlap. */}
+      {showTop && (
+        <button
+          onClick={scrollToTop}
+          aria-label={t('discover.backToTop')}
+          className="absolute bottom-[76px] start-4 w-11 h-11 rounded-full bg-white shadow-lg border border-stone-100 flex items-center justify-center text-stone-500 z-40 active:scale-95 transition-transform"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7"/>
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

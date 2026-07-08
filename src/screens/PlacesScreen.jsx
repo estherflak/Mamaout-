@@ -155,7 +155,7 @@ export default function PlacesScreen({ activeArea, openNow }) {
   const libraries   = filtered.filter(p => p.place_type === 'library');
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 pb-6">
+    <div className="px-4 pb-6">
       {loading ? (
         <div className="space-y-3 pt-2">
           {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}

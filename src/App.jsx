@@ -58,7 +58,7 @@ function MainApp() {
   const anyModal = !!(selected || showSubmit || showCommunityAdd);
 
   return (
-    <div className="h-screen bg-cream-50 flex flex-col max-w-xl mx-auto relative">
+    <div className="h-[100dvh] bg-cream-50 flex flex-col max-w-xl mx-auto relative">
       <div className="flex-1 overflow-hidden flex flex-col">
         {renderTab()}
       </div>
