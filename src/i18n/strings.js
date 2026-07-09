@@ -43,6 +43,7 @@ export const strings = {
     },
     discover: {
       title: 'What are you up for?',
+      signUp: 'Sign up',
       langAriaEnglish: 'English',
       langAriaHebrew: 'Hebrew',
       backToTop: 'Back to top',
@@ -193,6 +194,12 @@ export const strings = {
     },
     loginScreen: {
       tagline: 'Activities for you and your little one',
+      signInTab: 'Sign in',
+      signUpTab: 'Sign up',
+      signUpSubtitle: "Free — save favorites, RSVP, and find friends",
+      saveFavesPrompt: 'Create a free account to save activities you love 🤍',
+      rsvpPrompt: 'Create a free account to RSVP and see who else is going',
+      close: 'Close',
       checkYourInbox: 'Check your inbox',
       backToSignIn: 'Back to sign in',
       email: 'Email',
@@ -436,6 +443,7 @@ export const strings = {
     },
     discover: {
       title: 'מה מתחשק לך היום?',
+      signUp: 'הרשמה',
       langAriaEnglish: 'אנגלית',
       langAriaHebrew: 'עברית',
       backToTop: 'חזרה למעלה',
@@ -586,6 +594,12 @@ export const strings = {
     },
     loginScreen: {
       tagline: 'פעילויות בשבילך ובשביל הקטנטן/ה שלך',
+      signInTab: 'התחברות',
+      signUpTab: 'הרשמה',
+      signUpSubtitle: 'בחינם — שמרי מועדפים, סמני הגעה ומצאי חברות',
+      saveFavesPrompt: 'צרי חשבון חינם כדי לשמור פעילויות שאהבת 🤍',
+      rsvpPrompt: 'צרי חשבון חינם כדי לסמן הגעה ולראות מי עוד מגיעה',
+      close: 'סגירה',
       checkYourInbox: 'בדקי את תיבת הדואר',
       backToSignIn: 'חזרה להתחברות',
       email: 'אימייל',

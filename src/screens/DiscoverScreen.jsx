@@ -51,7 +51,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
   const { add: addSavedSearch } = useSavedSearches();
   const { friends } = useFriends();
   const friendsMap = useFriendsGoing(friends);
-  const { user, profile } = useAuthContext();
+  const { user, profile, promptSignIn } = useAuthContext();
   const { lang, setLang, t } = useLanguage();
   const [section, setSection]         = useState('activities'); // 'activities' | 'places'
   const [query, setQuery]             = useState('');
@@ -209,6 +209,17 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Sign-up entry for visitors — without it, auth is only reachable
+                by stumbling onto a gated tab */}
+            {!user && (
+              <button
+                onClick={() => promptSignIn('signup')}
+                className="px-3 py-1.5 rounded-xl bg-dusty-rose text-white text-xs font-semibold active:scale-95 transition-transform whitespace-nowrap flex-shrink-0"
+              >
+                {t('discover.signUp')}
+              </button>
+            )}
+
             {/* Content language toggle */}
             <div className="flex bg-stone-100 rounded-xl p-0.5">
               {[

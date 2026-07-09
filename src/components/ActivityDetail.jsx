@@ -26,7 +26,7 @@ function NavigateButton({ address, label }) {
 }
 
 export default function ActivityDetail({ activity, onClose }) {
-  const { user } = useAuthContext();
+  const { user, promptSignIn } = useAuthContext();
   const { lang, t } = useLanguage();
   const { favoriteIds, toggle: toggleFav } = useFavorites();
   const { participants, myStatus, setStatus } = useParticipants(activity.id);
@@ -118,7 +118,11 @@ export default function ActivityDetail({ activity, onClose }) {
                 {locationLine(activity, lang)}
               </p>
             </div>
-            <button onClick={() => toggleFav(activity.id)} className="flex-shrink-0 p-1.5">
+            <button
+              onClick={() => user ? toggleFav(activity.id) : promptSignIn('signup', 'loginScreen.saveFavesPrompt')}
+              className="flex-shrink-0 p-1.5"
+              aria-label={t('activityCard.favoriteAria')}
+            >
               <svg className={`w-6 h-6 ${isFav ? 'fill-dusty-rose stroke-dusty-rose' : 'fill-none stroke-stone-300'}`} strokeWidth="1.8" viewBox="0 0 24 24">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
@@ -218,13 +222,13 @@ export default function ActivityDetail({ activity, onClose }) {
               ].map(opt => (
                 <button
                   key={opt.status}
-                  onClick={() => user && setStatus(myStatus === opt.status ? null : opt.status)}
+                  onClick={() => user
+                    ? setStatus(myStatus === opt.status ? null : opt.status)
+                    : promptSignIn('signup', 'loginScreen.rsvpPrompt')}
                   className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-colors ${
                     myStatus === opt.status
                       ? 'bg-sage-400 border-sage-400 text-white'
-                      : user
-                        ? 'bg-white border-stone-200 text-stone-600'
-                        : 'bg-white border-stone-100 text-stone-300 cursor-default'
+                      : 'bg-white border-stone-200 text-stone-600'
                   }`}
                 >
                   {opt.label}

@@ -22,7 +22,7 @@ function shareOnWhatsApp(e, activity, lang) {
 }
 
 export default function ActivityCard({ activity, onSelect, friendsGoing = [], rsvpCounts }) {
-  const { user } = useAuthContext();
+  const { user, promptSignIn } = useAuthContext();
   const { lang, t } = useLanguage();
   const { favoriteIds, toggle } = useFavorites();
   const isFav = favoriteIds.has(activity.id);
@@ -64,17 +64,19 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
 
           {/* Actions */}
           <div className="flex items-center gap-1 flex-shrink-0">
-            {user && (
-              <button
-                onClick={e => { e.stopPropagation(); toggle(activity.id); }}
-                className="p-1"
-                aria-label={t('activityCard.favoriteAria')}
-              >
-                <svg className={`w-4 h-4 ${isFav ? 'fill-dusty-rose stroke-dusty-rose' : 'fill-none stroke-stone-300'}`} strokeWidth="1.8" viewBox="0 0 24 24">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-              </button>
-            )}
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                if (user) toggle(activity.id);
+                else promptSignIn('signup', 'loginScreen.saveFavesPrompt');
+              }}
+              className="p-1"
+              aria-label={t('activityCard.favoriteAria')}
+            >
+              <svg className={`w-4 h-4 ${isFav ? 'fill-dusty-rose stroke-dusty-rose' : 'fill-none stroke-stone-300'}`} strokeWidth="1.8" viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
             <button
               onClick={e => shareOnWhatsApp(e, activity, lang)}
               className="p-1"

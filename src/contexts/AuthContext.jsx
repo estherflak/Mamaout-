@@ -9,6 +9,17 @@ export function AuthProvider({ children }) {
   const [profileError, setProfileError]   = useState(false);
   const [authLoading, setAuthLoading]     = useState(isConfigured);
   const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
+  // When set, the app shows the sign-in/sign-up sheet over the current screen:
+  // { view: 'login' | 'signup', messageKey?: string }
+  const [authPrompt, setAuthPrompt]       = useState(null);
+
+  function promptSignIn(view = 'login', messageKey = null) {
+    setAuthPrompt({ view, messageKey });
+  }
+
+  function closeAuthPrompt() {
+    setAuthPrompt(null);
+  }
 
   // Returns { data, error }. We distinguish "no profile row yet" (data null, no
   // error → genuinely new user, send to onboarding) from "fetch failed" (error
@@ -64,6 +75,7 @@ export function AuthProvider({ children }) {
       }
       if (session?.user) {
         setUser(session.user);
+        setAuthPrompt(null); // signed in — dismiss the prompt sheet if open
         // IMPORTANT: never await supabase queries inside this callback —
         // supabase-js holds its auth lock while it runs, and a query that
         // needs the session token deadlocks the whole client (symptom:
@@ -100,7 +112,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, profileError, authLoading, needsPasswordReset, setNeedsPasswordReset, refreshProfile, patchProfile, signOut }}>
+    <AuthContext.Provider value={{ user, profile, profileError, authLoading, needsPasswordReset, setNeedsPasswordReset, refreshProfile, patchProfile, signOut, authPrompt, promptSignIn, closeAuthPrompt }}>
       {children}
     </AuthContext.Provider>
   );

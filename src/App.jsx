@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AuthProvider, useAuthContext } from './contexts/AuthContext';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { FavoritesProvider } from './hooks/useFavorites';
 import { useFriends } from './hooks/useFriends';
 import BottomNav from './components/BottomNav';
 import ActivityDetail from './components/ActivityDetail';
@@ -15,8 +16,31 @@ import SubmitScreen from './screens/SubmitScreen';
 import CommunityAddScreen from './screens/CommunityAddScreen';
 import AdminScreen from './screens/AdminScreen';
 
+// Sign-in/sign-up sheet that slides over whatever screen the user is on, so
+// tapping a heart or RSVP never rips them away from their place in the feed.
+function AuthSheet() {
+  const { authPrompt, closeAuthPrompt } = useAuthContext();
+  const { t } = useLanguage();
+  if (!authPrompt) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-sm"
+      onClick={e => { if (e.target === e.currentTarget) closeAuthPrompt(); }}
+    >
+      <div className="w-full max-w-xl mx-auto bg-cream-50 rounded-t-3xl max-h-[92vh] overflow-y-auto">
+        <LoginScreen
+          sheet
+          initialView={authPrompt.view}
+          promptMessage={authPrompt.messageKey ? t(authPrompt.messageKey) : null}
+          onClose={closeAuthPrompt}
+        />
+      </div>
+    </div>
+  );
+}
+
 function MainApp() {
-  const { user, profile, profileError, authLoading, needsPasswordReset } = useAuthContext();
+  const { user, profile, profileError, authLoading, needsPasswordReset, authPrompt } = useAuthContext();
   const { requests } = useFriends();
   const [tab, setTab]             = useState('discover');
   const [selected, setSelected]   = useState(null);
@@ -49,13 +73,13 @@ function MainApp() {
 
   function renderTab() {
     if (tab === 'discover') return <DiscoverScreen onSelect={setSelected} onOpenSubmit={() => setShowSubmit(true)} seed={discoverSeed} onSeedConsumed={() => setDiscoverSeed(null)} />;
-    if (tab === 'saved')    return user ? <SavedScreen onSelect={setSelected} /> : <LoginScreen />;
-    if (tab === 'friends')  return user ? <FriendsScreen onSelect={setSelected} /> : <LoginScreen />;
-    if (tab === 'profile')  return user ? <ProfileScreen onOpenSubmit={() => setShowSubmit(true)} onRunSearch={s => { setDiscoverSeed(s); setTab('discover'); }} /> : <LoginScreen />;
+    if (tab === 'saved')    return user ? <SavedScreen onSelect={setSelected} /> : <LoginScreen initialView="signup" />;
+    if (tab === 'friends')  return user ? <FriendsScreen onSelect={setSelected} /> : <LoginScreen initialView="signup" />;
+    if (tab === 'profile')  return user ? <ProfileScreen onOpenSubmit={() => setShowSubmit(true)} onRunSearch={s => { setDiscoverSeed(s); setTab('discover'); }} /> : <LoginScreen initialView="signup" />;
     return null;
   }
 
-  const anyModal = !!(selected || showSubmit || showCommunityAdd);
+  const anyModal = !!(selected || showSubmit || showCommunityAdd || authPrompt);
 
   return (
     <div className="h-[100dvh] bg-cream-50 flex flex-col max-w-xl mx-auto relative">
@@ -87,6 +111,7 @@ function MainApp() {
       {showCommunityAdd && (
         <CommunityAddScreen onClose={() => setShowCommunityAdd(false)} />
       )}
+      <AuthSheet />
     </div>
   );
 }
@@ -105,7 +130,9 @@ export default function App() {
   return (
     <AuthProvider>
       <LanguageProvider>
-        <MainApp />
+        <FavoritesProvider>
+          <MainApp />
+        </FavoritesProvider>
       </LanguageProvider>
     </AuthProvider>
   );
