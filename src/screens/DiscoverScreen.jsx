@@ -350,7 +350,13 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
 
       {/* Places content */}
       {section === 'places' && (
-        <PlacesScreen activeArea={placesArea} openNow={openNow} />
+        <PlacesScreen
+          activeArea={placesArea}
+          openNow={openNow}
+          activities={activities}
+          onSelectActivity={onSelect}
+          rsvpCounts={rsvpCounts}
+        />
       )}
 
       {/* Activities content area */}

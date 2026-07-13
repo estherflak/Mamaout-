@@ -1,16 +1,24 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { usePlaces, isOpenNow, getTodayHours } from '../hooks/usePlaces';
 import { ageRangeLabelFromMonths } from '../lib/formatAge';
 import { areaLabel } from '../lib/localize';
 import { useLanguage } from '../contexts/LanguageContext';
+import { placeBookingUrl, activitiesAtPlace } from '../data/placeDetails';
+import ActivityCard from '../components/ActivityCard';
 
 const TYPE_BORDER = {
   playground: '#f9a8d4',
   library: '#7dd3fc',
 };
 
-function PlaceCard({ place }) {
+function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
   const { lang, t } = useLanguage();
+  const [expanded, setExpanded] = useState(false);
+  const bookingUrl = placeBookingUrl(place);
+  const placeActivities = useMemo(
+    () => activitiesAtPlace(place, activities),
+    [place, activities]
+  );
   const openNow = isOpenNow(place.opening_hours);
   const todayHours = getTodayHours(place.opening_hours);
   const isClosed = place.opening_hours && !todayHours;
@@ -22,11 +30,14 @@ function PlaceCard({ place }) {
     || place.neighborhood === areaLabel(place.area, 'en');
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+    <div
+      onClick={() => setExpanded(e => !e)}
+      className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden cursor-pointer"
+    >
       <div className="flex">
         <div className="w-1 flex-shrink-0" style={{ backgroundColor: TYPE_BORDER[place.place_type] }} />
         <div className="flex-1 p-4 min-w-0">
-          {/* Name + open badge */}
+          {/* Name + open badge + expand chevron */}
           <div className="flex items-start justify-between gap-2 mb-0.5">
             <h3 dir="auto" className="font-semibold text-stone-800 text-base leading-tight">{place.name}</h3>
             {place.opening_hours && (
@@ -40,6 +51,13 @@ function PlaceCard({ place }) {
                 {isClosed ? t('placesScreen.closedToday') : openNow ? t('placesScreen.openNow') : t('placesScreen.closedNow')}
               </span>
             )}
+            <svg
+              className={`w-4 h-4 flex-shrink-0 text-stone-300 transition-transform ${expanded ? 'rotate-180' : ''}`}
+              fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"
+              strokeLinecap="round" strokeLinejoin="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           </div>
 
           {/* Location */}
@@ -72,6 +90,14 @@ function PlaceCard({ place }) {
                 <span dir="auto">{place.story_hour_schedule}</span>
               </span>
             )}
+
+            {placeActivities.length > 0 && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-500 font-medium">
+                {placeActivities.length === 1
+                  ? t('placesScreen.oneActivity')
+                  : t('placesScreen.activityCount', { count: placeActivities.length })}
+              </span>
+            )}
           </div>
 
           {/* Notes */}
@@ -80,8 +106,19 @@ function PlaceCard({ place }) {
           )}
 
           {/* Contact row */}
-          {(place.phone || place.whatsapp || place.instagram) && (
-            <div className="flex gap-2 mt-3 pt-2 border-t border-stone-50">
+          {(bookingUrl || place.phone || place.whatsapp || place.instagram) && (
+            <div className="flex items-center gap-3 mt-3 pt-2 border-t border-stone-50">
+              {bookingUrl && (
+                <a
+                  href={bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  className="px-3 py-1 rounded-full bg-dusty-rose text-white text-xs font-semibold active:scale-95 transition-transform"
+                >
+                  {t('placesScreen.reserve')}
+                </a>
+              )}
               {place.whatsapp && (
                 <a
                   href={`https://wa.me/${place.whatsapp}`}
@@ -95,7 +132,7 @@ function PlaceCard({ place }) {
                 </a>
               )}
               {place.phone && !place.whatsapp && (
-                <a href={`tel:${place.phone}`} className="text-xs text-stone-500">
+                <a href={`tel:${place.phone}`} onClick={e => e.stopPropagation()} className="text-xs text-stone-500">
                   {place.phone}
                 </a>
               )}
@@ -104,6 +141,7 @@ function PlaceCard({ place }) {
                   href={`https://instagram.com/${place.instagram}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
                   className="text-xs text-stone-400 flex items-center gap-1"
                 >
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -111,6 +149,32 @@ function PlaceCard({ place }) {
                   </svg>
                   @{place.instagram}
                 </a>
+              )}
+            </div>
+          )}
+
+          {/* Expanded: scheduled activities held at this place */}
+          {expanded && (
+            <div className="mt-3 pt-3 border-t border-stone-100" onClick={e => e.stopPropagation()}>
+              {placeActivities.length > 0 ? (
+                <>
+                  <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+                    {t('placesScreen.activitiesHere')}
+                  </p>
+                  <div className="space-y-2">
+                    {placeActivities.map(a => (
+                      <ActivityCard
+                        key={a.id}
+                        activity={a}
+                        onSelect={onSelectActivity}
+                        rsvpCounts={rsvpCounts}
+                        friendsGoing={a.friendsGoing}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-stone-400">{t('placesScreen.noActivities')}</p>
               )}
             </div>
           )}
@@ -140,7 +204,7 @@ function SkeletonCard() {
   );
 }
 
-export default function PlacesScreen({ activeArea, openNow }) {
+export default function PlacesScreen({ activeArea, openNow, activities = [], onSelectActivity, rsvpCounts }) {
   const { t } = useLanguage();
   const { places, loading } = usePlaces();
 
@@ -171,7 +235,9 @@ export default function PlacesScreen({ activeArea, openNow }) {
                 </h3>
               </div>
               <div className="space-y-3">
-                {playgrounds.map(p => <PlaceCard key={p.id} place={p} />)}
+                {playgrounds.map(p => (
+                  <PlaceCard key={p.id} place={p} activities={activities} onSelectActivity={onSelectActivity} rsvpCounts={rsvpCounts} />
+                ))}
               </div>
             </section>
           )}
@@ -185,7 +251,9 @@ export default function PlacesScreen({ activeArea, openNow }) {
                 </h3>
               </div>
               <div className="space-y-3">
-                {libraries.map(p => <PlaceCard key={p.id} place={p} />)}
+                {libraries.map(p => (
+                  <PlaceCard key={p.id} place={p} activities={activities} onSelectActivity={onSelectActivity} rsvpCounts={rsvpCounts} />
+                ))}
               </div>
             </section>
           )}

@@ -263,6 +263,11 @@ export const strings = {
       tryTurningOffOpenNow: 'Try turning off "Open now" to see all places',
       tryDifferentArea: 'Try a different area filter',
       whatsapp: 'WhatsApp',
+      reserve: 'Book a spot',
+      activitiesHere: 'Activities here',
+      oneActivity: '1 activity',
+      activityCount: '{count} activities',
+      noActivities: 'No scheduled activities here yet',
     },
     profileScreen: {
       title: 'Profile',
@@ -663,6 +668,11 @@ export const strings = {
       tryTurningOffOpenNow: 'נסי לכבות את "פתוח עכשיו" כדי לראות את כל המקומות',
       tryDifferentArea: 'נסי סינון אזור אחר',
       whatsapp: 'וואטסאפ',
+      reserve: 'להזמנת מקום',
+      activitiesHere: 'פעילויות במקום',
+      oneActivity: 'פעילות אחת',
+      activityCount: '{count} פעילויות',
+      noActivities: 'אין כאן עדיין פעילויות מתוזמנות',
     },
     profileScreen: {
       title: 'פרופיל',

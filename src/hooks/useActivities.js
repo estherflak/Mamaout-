@@ -124,6 +124,8 @@ export function normalizeSupabaseActivity(a) {
     sourceName: a.source_name,
     isVerified: a.is_verified,
     ctaLabel: a.cta_label || null,
+    venue: a.venue?.trim() || null,
+    location: a.location?.trim() || null,
     latitude: a.latitude ?? null,
     longitude: a.longitude ?? null,
     language: a.language || 'he',
