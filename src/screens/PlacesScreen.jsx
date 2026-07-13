@@ -23,6 +23,8 @@ function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
   const todayHours = getTodayHours(place.opening_hours);
   const isClosed = place.opening_hours && !todayHours;
   const placeArea = areaLabel(place.area, lang);
+  // notes is stored in English; notes_he is backfilled by the translation cron
+  const notes = lang === 'he' && place.notes_he ? place.notes_he : place.notes;
   // Neighborhood is stored in English; compare against both language labels so
   // "Ramat Gan · רמת גן" doesn't duplicate in either UI language.
   const hoodIsArea = !place.neighborhood
@@ -101,8 +103,8 @@ function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
           </div>
 
           {/* Notes */}
-          {place.notes && (
-            <p dir="auto" className="text-xs text-stone-400 mt-2 leading-relaxed line-clamp-2">{place.notes}</p>
+          {notes && (
+            <p dir="auto" className="text-xs text-stone-400 mt-2 leading-relaxed line-clamp-2">{notes}</p>
           )}
 
           {/* Contact row */}

@@ -54,6 +54,30 @@ export function parseTranslation(text, { name, description }) {
   };
 }
 
+// ── Places: English notes → Hebrew (notes_he) ────────────────────────────────
+// Reverse direction from activities: places.notes is curated in English and the
+// Hebrew UI shows notes_he.
+
+export const TRANSLATE_NOTES_HE_SYSTEM = `You translate short venue descriptions for MamaOut, an app that helps mothers on
+maternity leave find baby-friendly places in the Tel Aviv area. Translate the English text into natural,
+concise Hebrew a young Israeli mother would find clear and warm. Keep venue, brand, and proper names
+recognizable, and keep prices (₪), times, ages, and URLs exactly as written. Do not invent details.
+Respond ONLY with a valid JSON object — no markdown.`;
+
+export function buildNotesHeUserMsg({ notes }) {
+  return `Translate to Hebrew. Return JSON matching exactly:
+{"notes_he":"Hebrew translation, ≤300 chars"}
+
+notes: ${sanitize(notes)}`;
+}
+
+// No source-text fallback here (unlike parseTranslation): writing English into
+// notes_he would look "done" and never get retried. null = try again next run.
+export function parseNotesHe(text) {
+  const parsed = parseJson((text || '').trim());
+  return parsed?.notes_he?.trim() || null;
+}
+
 /**
  * Translate one activity's name/description to English with a single live call.
  * Kept for ad-hoc/synchronous use; the daily backfill batches instead (50% cheaper).

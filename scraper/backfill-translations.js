@@ -17,8 +17,11 @@ import {
   TRANSLATE_MODEL,
   TRANSLATE_MAX_TOKENS,
   TRANSLATE_SYSTEM,
+  TRANSLATE_NOTES_HE_SYSTEM,
   buildTranslateUserMsg,
+  buildNotesHeUserMsg,
   parseTranslation,
+  parseNotesHe,
 } from './translate.js';
 
 const supabase = createClient(
@@ -101,6 +104,41 @@ if (toTranslate.length) {
       const text = result.result.message.content.find(b => b.type === 'text')?.text ?? '';
       const out = parseTranslation(text, a);
       await applyTranslation(a.id, out.name_en, out.description_en);
+    }
+  }
+}
+
+// ── Places: Hebrew notes (notes_he) ─────────────────────────────────────────
+// places.notes is curated in English; the Hebrew UI shows notes_he. Places are
+// hand-added (not scraped), so only a handful of rows ever need this — plain
+// live calls beat widening the batch above. Clear notes_he after editing notes
+// to get a row retranslated.
+const { data: placeRows, error: placesErr } = await supabase
+  .from('places')
+  .select('id, name, notes')
+  .not('notes', 'is', null)
+  .is('notes_he', null);
+
+if (placesErr) {
+  console.error('Failed to fetch places:', placesErr.message);
+} else if (placeRows.length) {
+  console.log(`\nTranslating ${placeRows.length} place notes to Hebrew…`);
+  for (const p of placeRows) {
+    try {
+      const res = await client.messages.create({
+        model: TRANSLATE_MODEL,
+        max_tokens: TRANSLATE_MAX_TOKENS,
+        system: TRANSLATE_NOTES_HE_SYSTEM,
+        messages: [{ role: 'user', content: buildNotesHeUserMsg(p) }],
+      });
+      const notes_he = parseNotesHe(res.content.find(b => b.type === 'text')?.text);
+      if (!notes_he) { console.log(`  ✗ ${p.name} — unparseable response`); failed++; continue; }
+      const { error: e } = await supabase.from('places').update({ notes_he }).eq('id', p.id);
+      if (e) { console.log(`  ✗ ${p.name} — DB error: ${e.message}`); failed++; }
+      else { ok++; }
+    } catch (err) {
+      console.log(`  ✗ ${p.name} — ${err.message}`);
+      failed++;
     }
   }
 }
