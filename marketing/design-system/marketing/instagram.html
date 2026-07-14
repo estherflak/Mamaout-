@@ -1,0 +1,51 @@
+<!-- @dsCard group="Marketing" name="Instagram & social" subtitle="Post anatomy, 3-color rule, doodle accents, no-FOMO" -->
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap');
+:root{--lilac:#A78BFA;--lilac-pale:#F3EEFF;--plum:#4C2A85;--butter:#FFD97A;--cream:#FAF6EF;--ink-soft:#7A6C99;--card:#FFFDF9}
+body{background:var(--cream);font-family:'Nunito Sans',system-ui,sans-serif;color:var(--plum);margin:0;padding:32px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 24px}
+.posts{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px}
+.post{width:270px;height:270px;border-radius:20px;padding:26px;box-sizing:border-box;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(76,42,133,.10)}
+.post .kicker{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:8px}
+.post h3{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:23px;line-height:1.2;margin:0}
+.post .foot{position:absolute;bottom:22px;left:26px;font-size:12px;font-weight:700}
+.sun{position:absolute;top:20px;right:20px;width:36px;height:36px;background:var(--butter);border-radius:50%}
+.sun::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px dashed var(--butter);opacity:.7}
+.squiggle{position:absolute;bottom:18px;right:20px;width:70px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.rule{background:var(--card);border-radius:16px;padding:14px 16px;font-size:13.5px;line-height:1.5;box-shadow:0 1px 3px rgba(76,42,133,.08)}
+.rule b{display:block;margin-bottom:2px}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;margin:24px 0 12px}
+</style>
+<h1>Instagram &amp; social</h1>
+<p class="sub">Clean layouts, one doodle, one butter pop. The feed should feel like sunlight, not a sale.</p>
+
+<div class="posts">
+  <div class="post" style="background:var(--cream)">
+    <div class="sun"></div>
+    <div class="kicker">This week · Ramat Gan</div>
+    <h3>5 mornings out with a baby under 6 months</h3>
+    <div class="foot">@mamaout.app</div>
+  </div>
+  <div class="post" style="background:var(--lilac-pale)">
+    <div class="kicker">Small wins</div>
+    <h3>We left the house before noon. Framed it.</h3>
+    <svg class="squiggle" viewBox="0 0 100 20"><path d="M2 12 Q 14 2, 26 12 T 50 12 T 74 12 T 98 12" fill="none" stroke="#FFD97A" stroke-width="4" stroke-linecap="round"/></svg>
+    <div class="foot">@mamaout.app</div>
+  </div>
+  <div class="post" style="background:var(--plum);color:var(--cream)">
+    <div class="kicker" style="color:#C9B8EA">New in the app</div>
+    <h3 style="color:var(--cream)">Places with a changing table, verified ✓</h3>
+    <div class="foot" style="color:var(--butter)">mamaout.app</div>
+  </div>
+</div>
+
+<h2>Rules</h2>
+<div class="grid">
+  <div class="rule"><b>Max 3 colors per post</b> Canvas (cream, pale lilac, or plum) + plum/cream text + one butter accent. That's it.</div>
+  <div class="rule"><b>One doodle per post</b> Sun, squiggle, star, or stroller path — hand-drawn feel, butter or lilac, corner placement. Doodles decorate; they never carry the layout.</div>
+  <div class="rule"><b>Serif headline, sentence case</b> Fraunces ≥ 60pt at 1080px. Kicker and handle in Nunito Sans. Hebrew posts: Noto Serif Hebrew + Assistant, RTL.</div>
+  <div class="rule"><b>No FOMO mechanics</b> No countdowns, no "last spots", no urgency stickers. Content lists what's on; the tone celebrates small wins.</div>
+</div>

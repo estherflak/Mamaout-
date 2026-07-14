@@ -1,0 +1,65 @@
+/* MamaOut design tokens — v1, July 2026
+   Canonical palette per brand.md; the app's legacy dusty-rose/sage
+   tailwind theme migrates toward these. */
+
+:root {
+  /* Color — brand */
+  --mo-lilac: #A78BFA;        /* primary: selected states, hearts, links */
+  --mo-lilac-pale: #F3EEFF;   /* alt background, chips, tonal buttons */
+  --mo-plum: #4C2A85;         /* all text, wordmark, high-contrast fills */
+  --mo-butter: #FFD97A;       /* accent: CTAs, suns — one pop per screen */
+  --mo-cream: #FAF6EF;        /* default canvas */
+  --mo-card: #FFFDF9;         /* card surface (never pure #FFF full-bleed) */
+
+  /* Color — text */
+  --mo-ink: #4C2A85;
+  --mo-ink-soft: #7A6C99;     /* secondary text, captions */
+  --mo-ink-disabled: #B5AC9F;
+
+  /* Color — functional only (not brand colors) */
+  --mo-success: #7DA37D;      /* "open now", confirmations */
+  --mo-error: #D98B8B;        /* gentle errors, "sold out" — never alarm red */
+  --mo-border: #EEE5D8;       /* warm hairlines */
+
+  /* Type */
+  --mo-font-serif: 'Fraunces', Georgia, serif;          /* headlines (Latin) */
+  --mo-font-sans: 'Nunito Sans', system-ui, sans-serif; /* body/UI (Latin) */
+  --mo-font-serif-he: 'Noto Serif Hebrew', serif;       /* headlines (Hebrew) */
+  --mo-font-sans-he: 'Assistant', system-ui, sans-serif;/* body/UI (Hebrew) */
+
+  --mo-text-display: 600 32px/1.15 var(--mo-font-serif);
+  --mo-text-h1: 600 24px/1.2 var(--mo-font-serif);
+  --mo-text-h2: 600 19px/1.3 var(--mo-font-serif);
+  --mo-text-body: 400 15px/1.55 var(--mo-font-sans);
+  --mo-text-small: 400 13px/1.5 var(--mo-font-sans);
+  --mo-text-caption: 700 11.5px/1.4 var(--mo-font-sans);
+
+  /* Spacing — 4pt scale */
+  --mo-space-1: 4px;
+  --mo-space-2: 8px;
+  --mo-space-3: 12px;
+  --mo-space-4: 16px;   /* default gap, mobile side padding */
+  --mo-space-6: 24px;   /* card padding */
+  --mo-space-8: 32px;   /* section gap */
+  --mo-space-12: 48px;  /* hero air */
+
+  /* Radius */
+  --mo-radius-md: 12px;   /* inputs, nested chips */
+  --mo-radius-lg: 16px;   /* cards, sheets */
+  --mo-radius-xl: 24px;   /* modals, hero blocks */
+  --mo-radius-pill: 999px;/* buttons, chips, tags */
+
+  /* Elevation — plum-tinted, never gray */
+  --mo-shadow-soft: 0 1px 3px rgba(76, 42, 133, .08);
+  --mo-shadow-raised: 0 4px 12px rgba(76, 42, 133, .10);
+  --mo-shadow-float: 0 8px 24px rgba(76, 42, 133, .14);
+
+  /* Touch */
+  --mo-tap-min: 44px;
+}
+
+/* Hebrew: swap font stacks by lang, mirror by dir */
+:lang(he) {
+  --mo-font-serif: var(--mo-font-serif-he);
+  --mo-font-sans: var(--mo-font-sans-he);
+}

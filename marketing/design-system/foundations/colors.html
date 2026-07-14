@@ -1,0 +1,60 @@
+<!-- @dsCard group="Colors" name="Palette" subtitle="Lilac / Plum / Butter / Cream + rules" -->
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap');
+:root{--lilac:#A78BFA;--lilac-pale:#F3EEFF;--plum:#4C2A85;--butter:#FFD97A;--cream:#FAF6EF;--ink-soft:#7A6C99;--card:#FFFDF9}
+body{background:var(--cream);font-family:'Nunito Sans',system-ui,sans-serif;color:var(--plum);margin:0;padding:32px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 24px}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px}
+.sw{border-radius:16px;overflow:hidden;background:var(--card);box-shadow:0 1px 3px rgba(76,42,133,.08)}
+.sw .chip{height:88px}
+.sw .meta{padding:10px 14px 12px}
+.sw .name{font-weight:700;font-size:14px}
+.sw .hex{font-size:12px;color:var(--ink-soft);font-family:ui-monospace,monospace}
+.sw .role{font-size:12px;color:var(--ink-soft);margin-top:2px}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;margin:24px 0 10px}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rule{background:var(--card);border-radius:16px;padding:14px 16px;font-size:13.5px;line-height:1.5;box-shadow:0 1px 3px rgba(76,42,133,.08)}
+.rule b{display:block;margin-bottom:2px}
+.pairs{display:flex;gap:12px;flex-wrap:wrap}
+.pair{border-radius:14px;padding:12px 18px;font-weight:700;font-size:14px}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 10px;margin-left:6px;vertical-align:middle}
+.ok{background:#E6F2E6;color:#3E6B3E}.no{background:#F9E7E7;color:#A05252}
+.note{font-size:12.5px;color:var(--ink-soft);margin-top:20px;line-height:1.5}
+</style>
+<h1>Color palette</h1>
+<p class="sub">Anchored in the purple family, softened toward lilac. Warm, sunny, never corporate.</p>
+<div class="swatches">
+  <div class="sw"><div class="chip" style="background:#A78BFA"></div><div class="meta"><div class="name">Lilac</div><div class="hex">#A78BFA</div><div class="role">Primary — brand color, selected states, hearts, links on cream</div></div></div>
+  <div class="sw"><div class="chip" style="background:#4C2A85"></div><div class="meta"><div class="name">Plum</div><div class="hex">#4C2A85</div><div class="role">Deep — all text, wordmark on light, high-contrast fills</div></div></div>
+  <div class="sw"><div class="chip" style="background:#FFD97A"></div><div class="meta"><div class="name">Butter</div><div class="hex">#FFD97A</div><div class="role">Accent — the "go outside" color: CTAs, suns, one pop per screen</div></div></div>
+  <div class="sw"><div class="chip" style="background:#FAF6EF;border-bottom:1px solid #eee5d8"></div><div class="meta"><div class="name">Warm cream</div><div class="hex">#FAF6EF</div><div class="role">Background — the default canvas everywhere</div></div></div>
+  <div class="sw"><div class="chip" style="background:#F3EEFF"></div><div class="meta"><div class="name">Pale lilac</div><div class="hex">#F3EEFF</div><div class="role">Background alt — cards, chips, alternating sections</div></div></div>
+  <div class="sw"><div class="chip" style="background:#FFFDF9;border-bottom:1px solid #eee5d8"></div><div class="meta"><div class="name">Card white</div><div class="hex">#FFFDF9</div><div class="role">Card surfaces on cream — warm, never pure #FFF full-bleed</div></div></div>
+</div>
+
+<h2>Supporting</h2>
+<div class="swatches">
+  <div class="sw"><div class="chip" style="background:#7A6C99"></div><div class="meta"><div class="name">Soft ink</div><div class="hex">#7A6C99</div><div class="role">Secondary text, captions, metadata</div></div></div>
+  <div class="sw"><div class="chip" style="background:#7DA37D"></div><div class="meta"><div class="name">Sage</div><div class="hex">#7DA37D</div><div class="role">Functional success / "open now" only — not a brand color</div></div></div>
+  <div class="sw"><div class="chip" style="background:#D98B8B"></div><div class="meta"><div class="name">Soft rose</div><div class="hex">#D98B8B</div><div class="role">Functional error / "sold out" only — gentle, never alarming red</div></div></div>
+</div>
+
+<h2>Text pairings</h2>
+<div class="pairs">
+  <div class="pair" style="background:#FAF6EF;color:#4C2A85">Plum on cream <span class="tag ok">AA ✓ body</span></div>
+  <div class="pair" style="background:#FFD97A;color:#4C2A85">Plum on butter <span class="tag ok">AA ✓ CTAs</span></div>
+  <div class="pair" style="background:#4C2A85;color:#FAF6EF">Cream on plum <span class="tag ok">AA ✓ fills</span></div>
+  <div class="pair" style="background:#A78BFA;color:#fff">White on lilac <span class="tag no">✗ never for text</span></div>
+  <div class="pair" style="background:#FAF6EF;color:#A78BFA">Lilac on cream <span class="tag no">✗ decorative only</span></div>
+</div>
+
+<h2>Rules</h2>
+<div class="rules">
+  <div class="rule"><b>Cream or pale lilac canvas</b> Never pure white or saturated purple as a full background.</div>
+  <div class="rule"><b>Butter is earned</b> One yellow pop per composition — the CTA, the sun, the highlight. Not everywhere.</div>
+  <div class="rule"><b>Text is always plum</b> Lilac is for fills, borders and selected states; it never carries text on light backgrounds.</div>
+  <div class="rule"><b>Max 3 colors per Instagram post</b> Cream counts as canvas, not a color.</div>
+</div>
+<p class="note">Migration note: the live app still ships the legacy dusty-rose/sage palette (#d4a5a5 etc. in tailwind.config.js). This palette is canonical; the app migrates toward it. Sage survives only as a functional success color.</p>

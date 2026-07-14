@@ -1,0 +1,45 @@
+<!-- @dsCard group="Brand" name="Wordmark direction" subtitle="lowercase 'mamaout' · sun-dot 'o' concept · clear space & don'ts" -->
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700&display=swap');
+:root{--lilac:#A78BFA;--lilac-pale:#F3EEFF;--plum:#4C2A85;--butter:#FFD97A;--cream:#FAF6EF;--ink-soft:#7A6C99;--card:#FFFDF9}
+body{background:var(--cream);font-family:'Nunito Sans',system-ui,sans-serif;color:var(--plum);margin:0;padding:32px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 24px}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;margin:26px 0 12px}
+.hero{background:var(--card);border-radius:24px;padding:56px 32px;text-align:center;box-shadow:0 1px 3px rgba(76,42,133,.08)}
+.wm{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:64px;letter-spacing:-.02em;color:var(--plum);display:inline-flex;align-items:baseline}
+.wm .sun{position:relative;display:inline-block;width:.62em;height:.62em;background:var(--butter);border-radius:50%;margin:0 .03em;transform:translateY(-.02em)}
+.wm .sun svg{position:absolute;inset:-38%;overflow:visible}
+.hero .cap{margin-top:18px;font-size:13px;color:var(--ink-soft)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tile{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(76,42,133,.08);font-size:13.5px;line-height:1.5}
+.tile b{display:block;margin-bottom:4px}
+.vars{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.var{border-radius:16px;padding:22px 30px;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.02em}
+.donts li{margin-bottom:6px}
+ul{padding-left:18px;font-size:13.5px;line-height:1.55;margin:0}
+.note{font-size:12.5px;color:var(--ink-soft);margin-top:18px;line-height:1.5}
+</style>
+<h1>Wordmark direction</h1>
+<p class="sub">No final logo yet — this is the working direction to iterate from. The name is the promise: mama, out of the house.</p>
+
+<div class="hero">
+  <div class="wm">mama<span class="sun"><svg viewBox="0 0 100 100"><g stroke="#FFD97A" stroke-width="7" stroke-linecap="round"><line x1="50" y1="0" x2="50" y2="14"/><line x1="50" y1="86" x2="50" y2="100"/><line x1="0" y1="50" x2="14" y2="50"/><line x1="86" y1="50" x2="100" y2="50"/><line x1="15" y1="15" x2="25" y2="25"/><line x1="75" y1="75" x2="85" y2="85"/><line x1="75" y1="25" x2="85" y2="15"/><line x1="15" y1="85" x2="25" y2="75"/></g></svg></span>ut</div>
+  <div class="cap">Concept: lowercase Fraunces wordmark in plum; the "o" of "out" becomes a butter sun with hand-drawn rays — the one yellow pop.</div>
+</div>
+
+<h2>Color variants</h2>
+<div class="vars">
+  <div class="var" style="background:var(--cream);color:var(--plum);border:1px solid #EEE5D8">mamaout</div>
+  <div class="var" style="background:var(--lilac-pale);color:var(--plum)">mamaout</div>
+  <div class="var" style="background:var(--plum);color:var(--cream)">mamaout</div>
+</div>
+
+<div class="grid">
+  <div class="tile"><b>Casing</b> Always lowercase "mamaout" in the wordmark and handle (@mamaout.app). In running text it's written MamaOut — one word, capital M and O.</div>
+  <div class="tile"><b>Clear space & minimum size</b> Keep clear space equal to the height of the "m" on all sides. Minimum width 90px digital; below that use the sun-dot alone as the mark.</div>
+  <div class="tile"><b>The sun is the mark</b> The butter sun-dot can stand alone as app icon / favicon / avatar: butter sun on plum or pale-lilac circle.</div>
+  <div class="tile"><b>Don'ts</b><ul class="donts"><li>No ALL CAPS, no gradients, no outlines</li><li>Never white text on lilac</li><li>Never on pure white or saturated purple</li><li>Don't add strollers, storks or pacifiers to the mark</li></ul></div>
+</div>
+<p class="note">Open question for the logo session: hand-drawn vs. geometric sun rays, and whether the Hebrew wordmark (מאמאאאוט or Latin kept as-is) is needed — recommendation: keep the Latin wordmark in Hebrew contexts.</p>

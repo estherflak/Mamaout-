@@ -1,0 +1,47 @@
+<!-- @dsCard group="Foundations" name="Spacing, radius & elevation" subtitle="4pt scale · pill-heavy radii · soft plum shadows" -->
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700&display=swap');
+:root{--lilac:#A78BFA;--lilac-pale:#F3EEFF;--plum:#4C2A85;--butter:#FFD97A;--cream:#FAF6EF;--ink-soft:#7A6C99;--card:#FFFDF9}
+body{background:var(--cream);font-family:'Nunito Sans',system-ui,sans-serif;color:var(--plum);margin:0;padding:32px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 24px}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;margin:26px 0 12px}
+.row{display:flex;align-items:center;gap:16px;margin-bottom:8px;font-size:13px}
+.row .name{width:110px;font-weight:700}
+.row .px{width:50px;color:var(--ink-soft);font-family:ui-monospace,monospace;font-size:12px}
+.bar{height:14px;background:var(--lilac);border-radius:4px}
+.radii,.shadows{display:flex;gap:16px;flex-wrap:wrap}
+.rbox{background:var(--card);width:150px;height:92px;box-shadow:0 1px 3px rgba(76,42,133,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;gap:2px}
+.rbox b{font-size:14px}.rbox span{color:var(--ink-soft);font-size:11.5px;font-family:ui-monospace,monospace}
+.sbox{background:var(--card);width:190px;height:100px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;gap:2px}
+.sbox b{font-size:14px}.sbox span{color:var(--ink-soft);font-size:11px;font-family:ui-monospace,monospace}
+.note{font-size:12.5px;color:var(--ink-soft);margin-top:18px;line-height:1.5}
+</style>
+<h1>Spacing, radius &amp; elevation</h1>
+<p class="sub">Rounded corners everywhere; nothing sharp, nothing gridlocked. Air is part of the brand.</p>
+
+<h2>Spacing — 4pt scale</h2>
+<div class="row"><div class="name">space-1</div><div class="px">4px</div><div class="bar" style="width:4px"></div></div>
+<div class="row"><div class="name">space-2</div><div class="px">8px</div><div class="bar" style="width:8px"></div></div>
+<div class="row"><div class="name">space-3</div><div class="px">12px</div><div class="bar" style="width:12px"></div></div>
+<div class="row"><div class="name">space-4 · default gap</div><div class="px">16px</div><div class="bar" style="width:16px"></div></div>
+<div class="row"><div class="name">space-6 · card padding</div><div class="px">24px</div><div class="bar" style="width:24px"></div></div>
+<div class="row"><div class="name">space-8 · section gap</div><div class="px">32px</div><div class="bar" style="width:32px"></div></div>
+<div class="row"><div class="name">space-12 · hero air</div><div class="px">48px</div><div class="bar" style="width:48px"></div></div>
+
+<h2>Radius</h2>
+<div class="radii">
+  <div class="rbox" style="border-radius:12px"><b>radius-md</b><span>12px · inputs, chips-in-cards</span></div>
+  <div class="rbox" style="border-radius:16px"><b>radius-lg</b><span>16px · cards, sheets</span></div>
+  <div class="rbox" style="border-radius:24px"><b>radius-xl</b><span>24px · modals, hero blocks</span></div>
+  <div class="rbox" style="border-radius:999px;width:150px;height:52px;flex-direction:row;gap:8px"><b>pill</b><span>999px · buttons, chips, tags</span></div>
+</div>
+
+<h2>Elevation — always plum-tinted, never gray</h2>
+<div class="shadows">
+  <div class="sbox" style="box-shadow:0 1px 3px rgba(76,42,133,.08)"><b>shadow-soft</b><span>0 1px 3px plum @ 8%</span><span>resting cards</span></div>
+  <div class="sbox" style="box-shadow:0 4px 12px rgba(76,42,133,.10)"><b>shadow-raised</b><span>0 4px 12px plum @ 10%</span><span>sticky nav, pressed cards</span></div>
+  <div class="sbox" style="box-shadow:0 8px 24px rgba(76,42,133,.14)"><b>shadow-float</b><span>0 8px 24px plum @ 14%</span><span>modals, sheets</span></div>
+</div>
+<p class="note">Tap targets ≥ 44px. Mobile screen padding: 16px sides. Borders, when needed, are 1px #EEE5D8 (warm) or pale lilac — never gray.</p>

@@ -1,0 +1,42 @@
+<!-- @dsCard group="Components" name="Buttons" subtitle="Butter CTA · plum secondary · ghost — pills, sentence case" -->
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap');
+:root{--lilac:#A78BFA;--lilac-pale:#F3EEFF;--plum:#4C2A85;--butter:#FFD97A;--cream:#FAF6EF;--ink-soft:#7A6C99;--card:#FFFDF9}
+body{background:var(--cream);font-family:'Nunito Sans',system-ui,sans-serif;color:var(--plum);margin:0;padding:32px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 24px}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;margin:26px 0 12px}
+.row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.btn{border:none;border-radius:999px;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:15px;padding:13px 26px;cursor:pointer;min-height:44px}
+.primary{background:var(--butter);color:var(--plum);box-shadow:0 1px 3px rgba(76,42,133,.10)}
+.primary:active{transform:scale(.98)}
+.secondary{background:var(--plum);color:var(--cream)}
+.tonal{background:var(--lilac-pale);color:var(--plum)}
+.ghost{background:transparent;color:var(--plum);text-decoration:underline;text-underline-offset:3px;padding:13px 10px}
+.disabled{background:#EFE9E0;color:#B5AC9F;cursor:default}
+.small{font-size:13px;padding:9px 18px;min-height:36px}
+.full{width:100%;max-width:420px;display:block;text-align:center}
+.lab{font-size:12px;color:var(--ink-soft);width:150px;flex:none}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+.rule{background:var(--card);border-radius:16px;padding:14px 16px;font-size:13.5px;line-height:1.5;box-shadow:0 1px 3px rgba(76,42,133,.08)}
+.rule b{display:block;margin-bottom:2px}
+</style>
+<h1>Buttons</h1>
+<p class="sub">Butter is the "go outside" action. One primary per screen. Always pills, always sentence case, always ≥44px tall.</p>
+
+<div class="row"><span class="lab">Primary — the one CTA</span><button class="btn primary">Save my spot</button><button class="btn primary small">Book</button></div>
+<div class="row"><span class="lab">Secondary</span><button class="btn secondary">See details</button><button class="btn secondary small">Filter</button></div>
+<div class="row"><span class="lab">Tonal — quiet actions</span><button class="btn tonal">Show map</button><button class="btn tonal small">Share</button></div>
+<div class="row"><span class="lab">Ghost — inline</span><button class="btn ghost">Maybe later</button></div>
+<div class="row"><span class="lab">Disabled</span><button class="btn disabled">Sold out</button></div>
+
+<h2>Mobile full-width CTA</h2>
+<button class="btn primary full">Add to my Tuesday ☀️</button>
+
+<div class="rules" style="margin-top:24px">
+  <div class="rule"><b>One butter button per screen</b> If two actions compete, the second is secondary (plum) or tonal (pale lilac).</div>
+  <div class="rule"><b>Text on butter is always plum</b> Never white, never lilac. Disabled is warm gray, not faded yellow.</div>
+  <div class="rule"><b>No urgency language</b> "Save my spot", not "Don't miss out!". No countdown styling, ever.</div>
+  <div class="rule"><b>Pressed state</b> Scale to 98% + shadow-raised. No color flashing.</div>
+</div>

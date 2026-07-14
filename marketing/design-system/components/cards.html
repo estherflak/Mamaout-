@@ -1,0 +1,59 @@
+<!-- @dsCard group="Components" name="Activity & place cards" subtitle="The core list unit: time-led, heart, age tag, expandable places" -->
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=Assistant:wght@400;600;700&family=Noto+Serif+Hebrew:wght@600&display=swap');
+:root{--lilac:#A78BFA;--lilac-pale:#F3EEFF;--plum:#4C2A85;--butter:#FFD97A;--cream:#FAF6EF;--ink-soft:#7A6C99;--card:#FFFDF9}
+body{background:var(--cream);font-family:'Nunito Sans',system-ui,sans-serif;color:var(--plum);margin:0;padding:32px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 24px}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;margin:26px 0 12px}
+.wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.acard{width:340px;background:var(--card);border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(76,42,133,.08)}
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+.when{font-size:12px;font-weight:700;color:var(--ink-soft)}
+.heart{width:36px;height:36px;border-radius:999px;background:var(--lilac-pale);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer}
+.title{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;line-height:1.25;margin:6px 0 4px}
+.venue{font-size:13px;color:var(--ink-soft)}
+.tags{display:flex;gap:6px;margin-top:10px}
+.tag{border-radius:999px;padding:4px 12px;font-size:11.5px;font-weight:700;background:var(--lilac-pale)}
+.tag.free{background:#E9F2E9;color:#3E6B3E}
+.cta{margin-top:14px;display:flex;gap:8px}
+.btn{border:none;border-radius:999px;font-family:inherit;font-weight:700;font-size:13px;padding:10px 18px;cursor:pointer}
+.bp{background:var(--butter);color:var(--plum)}
+.bt{background:var(--lilac-pale);color:var(--plum)}
+.pcard{width:340px;background:var(--lilac-pale);border-radius:16px;padding:16px}
+.pcard .title{margin-top:0}
+.rowline{display:flex;justify-content:space-between;font-size:13px;padding:9px 0;border-bottom:1px solid rgba(76,42,133,.08)}
+.rowline:last-child{border:none}
+.rowline span:last-child{color:var(--ink-soft)}
+.note{font-size:12.5px;color:var(--ink-soft);margin-top:20px;line-height:1.55;max-width:720px}
+</style>
+<h1>Activity &amp; place cards</h1>
+<p class="sub">The core unit of the app. Time first — she's planning a morning, not browsing a catalog.</p>
+
+<div class="wrap">
+  <div class="acard">
+    <div class="top"><span class="when">TUE · 10:30 · 45 MIN</span><span class="heart">🤍</span></div>
+    <div class="title">Baby movement &amp; massage circle</div>
+    <div class="venue">Beit HaKerem community center · Ramat Gan · 12 min walk</div>
+    <div class="tags"><span class="tag">Ages 0–8m</span><span class="tag free">Free</span></div>
+    <div class="cta"><button class="btn bp">Save my spot</button><button class="btn bt">Details</button></div>
+  </div>
+
+  <div class="acard" style="direction:rtl;text-align:right">
+    <div class="top"><span class="when">יום ג׳ · 10:30</span><span class="heart" style="background:var(--lilac);color:#fff">💜</span></div>
+    <div class="title" style="font-family:'Noto Serif Hebrew',serif">חוג מוזיקה לאמהות ותינוקות</div>
+    <div class="venue">מרכז קהילתי גבעתיים · 10 דק׳ הליכה</div>
+    <div class="tags"><span class="tag">גילאי 0–8 ח׳</span></div>
+    <div class="cta"><button class="btn bp">שמרי לי מקום</button><button class="btn bt">פרטים</button></div>
+  </div>
+
+  <div class="pcard">
+    <div class="title">☕ Café Nula — expanded place card</div>
+    <div class="rowline"><span>Changing table</span><span>Yes, ground floor</span></div>
+    <div class="rowline"><span>Stroller access</span><span>Wide door, ramp</span></div>
+    <div class="rowline"><span>Activities held here</span><span>2 this week</span></div>
+    <div class="cta"><button class="btn bp">Book a table</button></div>
+  </div>
+</div>
+<p class="note">Anatomy: metadata caption (soft ink, 12px) → Fraunces title → venue line → tags → actions. Heart: pale-lilac circle when unsaved (🤍), lilac fill when saved (💜) — tapping while signed out opens the AuthSheet, never a dead tap. Cards sit on cream; expanded place cards use pale lilac to differ from activities.</p>
