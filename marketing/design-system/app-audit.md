@@ -2,7 +2,7 @@
 
 *July 15, 2026 · Audited against `marketing/brand.md` + `guidelines.md`. Ranked by importance; effort noted per item.*
 
-*Update Aug 2, 2026 — items 1, 2, 3, 4 (interim), 6, 7, 9 shipped across two commits (quick wins + full theme migration). Remaining: item 5 (category/badge color decision), item 8 (component respec: BottomNav icons, hearts, DayStrip), and the real wordmark asset once the logo is designed. Status notes added inline below; sections are kept as-written for the historical record.*
+*Update Aug 2, 2026 — items 1, 2, 3, 4 (interim), 6, 7, 9 shipped (quick wins + theme migration); items 5 and 8 shipped in the component pass. Remaining: the real wordmark asset once the logo is designed, and item 10 (copy polish, whenever). Status notes added inline below; sections are kept as-written for the historical record.*
 
 **Overall:** the app still runs entirely on the pre-brand theme (dusty-rose/sage/stone, Inter, gray shadows). The voice/copy is largely already on-brand (no FOMO, no guru tone, warm bilingual strings) — the gap is almost all visual.
 
@@ -44,6 +44,9 @@ Favicon (`index.html`), Login/Reset/Onboarding/Submit hero emoji, generic empty 
 ## Medium
 
 ### 5. Off-palette badge/category colors
+
+**✅ Done (Aug 2, 2026).** Design decision: dropped the per-category left-border color coding entirely rather than inventing a new ramp — the actual card spec has no colored left edge, and brand's icon system is emoji, not color. Informational badges (stroller, English, mom-tip, story-hour, activity-count, language/notif prefs) unified to pale-lilac; genuinely positive signals (Free, Open now, stroller-OK, age chip) promoted from raw Tailwind green to the brand's `sage` token. WhatsApp's own green icons left untouched (third-party brand recognition).
+
 `ActivityCard.jsx` hardcodes 7 category border hexes (soft pink `#f9a8d4`, light blue `#7dd3fc`…); stroller + English badges are SaaS-blue (`bg-sky-50 text-sky-600`); free = green, mom-tip = amber, friend badge = sage. Brand allows sage only as functional success and wants accents from the lilac/butter family.
 **Importance: medium** — cards are the core surface, but these are small elements.
 **Effort: medium** — needs a small design decision (a brand-derived category ramp), then a one-file remap.
@@ -64,6 +67,9 @@ Friend-request badge `bg-red-400` (`BottomNav.jsx:43`), ~16 `red-*` usages for e
 **Importance: medium**. **Effort: low** — swap to `blush` token; keep semantics.
 
 ### 8. Component specs: nav, hearts, day strip
+
+**✅ Done (Aug 2, 2026).** BottomNav is now emoji icons (grayscale when inactive, full color + butter underline when active). Hearts are pale-lilac/lilac circles with 🤍/💜. DayStrip's today pill is butter-filled (selected still wins if today is also selected).
+
 - `BottomNav.jsx`: SVG line icons + rose active state; spec = emoji icons (grayscale when inactive) + butter underline on active.
 - Hearts (`ActivityCard.jsx:76`, SavedScreen): SVG heart in dusty-rose; spec = pale-lilac circle with 🤍/💜.
 - `DayStrip.jsx`: today/selected should be butter fill per spec.
@@ -88,5 +94,6 @@ Strings avoid FOMO/urgency/guru tone; exclamation marks are of the celebratory k
 
 1. ~~**Quick wins, one small PR:** items 6 + 7 + 4-interim (caps, reds, sun-for-flower) — trivial, no design decisions.~~ ✅ Shipped Aug 2, 2026.
 2. ~~**The theme migration, one focused PR:** items 1 + 3 + 9 together (color swap done with the approved text pairings), then 2 (type).~~ ✅ Shipped Aug 2, 2026.
-3. **Component pass (next up):** items 8 and 5 (needs the category-ramp decision).
+3. ~~**Component pass:** items 8 and 5 (needs the category-ramp decision).~~ ✅ Shipped Aug 2, 2026.
 4. **Blocked on assets:** real wordmark/app icon (4) after the logo is designed in Claude Design.
+5. **Whenever:** item 10, copy polish pass.
