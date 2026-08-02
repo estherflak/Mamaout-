@@ -27,7 +27,7 @@ function AuthSheet() {
       className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-sm"
       onClick={e => { if (e.target === e.currentTarget) closeAuthPrompt(); }}
     >
-      <div className="w-full max-w-xl mx-auto bg-cream-50 rounded-t-3xl max-h-[92vh] overflow-y-auto">
+      <div className="w-full max-w-xl mx-auto bg-canvas rounded-t-3xl max-h-[92vh] overflow-y-auto">
         <LoginScreen
           sheet
           initialView={authPrompt.view}
@@ -59,8 +59,8 @@ function MainApp() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-dusty-rose border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-lilac border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -82,7 +82,7 @@ function MainApp() {
   const anyModal = !!(selected || showSubmit || showCommunityAdd || authPrompt);
 
   return (
-    <div className="h-[100dvh] bg-cream-50 flex flex-col max-w-xl mx-auto relative">
+    <div className="h-[100dvh] bg-canvas flex flex-col max-w-xl mx-auto relative">
       <div className="flex-1 overflow-hidden flex flex-col">
         {renderTab()}
       </div>
@@ -91,7 +91,7 @@ function MainApp() {
       {tab === 'discover' && user && !anyModal && (
         <button
           onClick={() => setShowCommunityAdd(true)}
-          className="absolute bottom-[76px] end-4 w-12 h-12 rounded-full bg-dusty-rose shadow-lg flex items-center justify-center text-white z-40 active:scale-95 transition-transform"
+          className="absolute bottom-[76px] end-4 w-12 h-12 rounded-full bg-butter shadow-float flex items-center justify-center text-plum z-40 active:scale-95 transition-transform"
           title="Share an activity"
           aria-label="Share an activity with the community"
         >

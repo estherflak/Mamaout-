@@ -22,22 +22,22 @@ const CITY_LABEL_KEY = { 'Tel Aviv': 'discover.telAviv', 'Ramat Gan': 'discover.
 
 function CardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden animate-pulse flex">
-      <div className="w-1 flex-shrink-0 bg-stone-100" />
+    <div className="bg-card rounded-2xl shadow-soft border border-warmline overflow-hidden animate-pulse flex">
+      <div className="w-1 flex-shrink-0 bg-lilac-pale" />
       <div className="flex-1 p-4 space-y-3">
         <div className="flex items-center gap-3">
           <div className="flex-1 space-y-1.5">
-            <div className="h-4 bg-stone-100 rounded w-2/3" />
-            <div className="h-3 bg-stone-100 rounded w-1/3" />
+            <div className="h-4 bg-lilac-pale rounded w-2/3" />
+            <div className="h-3 bg-lilac-pale rounded w-1/3" />
           </div>
         </div>
         <div className="space-y-1.5">
-          <div className="h-3 bg-stone-100 rounded w-full" />
-          <div className="h-3 bg-stone-100 rounded w-4/5" />
+          <div className="h-3 bg-lilac-pale rounded w-full" />
+          <div className="h-3 bg-lilac-pale rounded w-4/5" />
         </div>
         <div className="flex gap-2">
-          <div className="h-5 bg-stone-100 rounded-full w-16" />
-          <div className="h-5 bg-stone-100 rounded-full w-20" />
+          <div className="h-5 bg-lilac-pale rounded-full w-16" />
+          <div className="h-5 bg-lilac-pale rounded-full w-20" />
         </div>
       </div>
     </div>
@@ -201,11 +201,11 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
     <div className="flex flex-col h-full">
       {/* Fixed top bar — title, language toggle, and Activities/Places tabs stay
           pinned while the filters and feed scroll beneath them. */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-cream-50">
+      <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-canvas">
         {/* Title row */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-xl font-semibold text-stone-800 leading-snug">{t('discover.title')}</h2>
+            <h2 className="text-xl font-serif font-semibold text-plum leading-snug">{t('discover.title')}</h2>
           </div>
 
           <div className="flex items-center gap-2">
@@ -214,14 +214,14 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             {!user && (
               <button
                 onClick={() => promptSignIn('signup')}
-                className="px-3 py-1.5 rounded-xl bg-dusty-rose text-white text-xs font-semibold active:scale-95 transition-transform whitespace-nowrap flex-shrink-0"
+                className="px-3 py-1.5 rounded-xl bg-butter text-plum text-xs font-semibold active:scale-95 transition-transform whitespace-nowrap flex-shrink-0"
               >
                 {t('discover.signUp')}
               </button>
             )}
 
             {/* Content language toggle */}
-            <div className="flex bg-stone-100 rounded-xl p-0.5">
+            <div className="flex bg-lilac-pale rounded-xl p-0.5">
               {[
                 { id: 'en', label: 'EN' },
                 { id: 'he', label: 'עב' },
@@ -231,7 +231,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                   onClick={() => setLang(l.id)}
                   aria-label={l.id === 'en' ? t('discover.langAriaEnglish') : t('discover.langAriaHebrew')}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    lang === l.id ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                    lang === l.id ? 'bg-card shadow-soft text-plum' : 'text-plum-soft'
                   }`}
                 >
                   {l.label}
@@ -242,7 +242,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
         </div>
 
         {/* Activities / Places segment control */}
-        <div className="flex bg-stone-100 rounded-xl p-0.5">
+        <div className="flex bg-lilac-pale rounded-xl p-0.5">
           {[
             { id: 'activities', label: t('discover.activitiesTab') },
             { id: 'places',     label: t('discover.placesTab') },
@@ -251,7 +251,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               key={s.id}
               onClick={() => setSection(s.id)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                section === s.id ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                section === s.id ? 'bg-card shadow-soft text-plum' : 'text-plum-soft'
               }`}
             >
               {s.label}
@@ -263,7 +263,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       {/* Scrollable area — filters scroll away with the feed */}
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto">
         {/* Filters */}
-        <div className="px-4 pt-3 pb-2 bg-cream-50">
+        <div className="px-4 pt-3 pb-2 bg-canvas">
         {/* Activities-specific filters */}
         {section === 'activities' && (
           <>
@@ -290,8 +290,8 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                   onClick={() => setCity(city.id)}
                   className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     activeCity === city.id
-                      ? 'bg-sage-300 text-white'
-                      : 'bg-sage-50 border border-sage-200 text-stone-500'
+                      ? 'bg-plum text-cream'
+                      : 'bg-card border-warmline text-plum-soft'
                   }`}
                 >
                   {city.label}
@@ -326,8 +326,8 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
                 onClick={() => setPlacesArea(area.id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   placesArea === area.id
-                    ? 'bg-sage-300 text-white'
-                    : 'bg-sage-50 border border-sage-200 text-stone-500'
+                    ? 'bg-plum text-cream'
+                    : 'bg-card border-warmline text-plum-soft'
                 }`}
               >
                 {area.label}
@@ -338,10 +338,10 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               className={`ms-auto px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
                 openNow
                   ? 'bg-green-500 text-white'
-                  : 'bg-sage-50 border border-sage-200 text-stone-500'
+                  : 'bg-card border-warmline text-plum-soft'
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${openNow ? 'bg-white' : 'bg-green-400'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${openNow ? 'bg-card' : 'bg-green-400'}`} />
               {t('discover.openNow')}
             </button>
           </div>
@@ -385,7 +385,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             <section className="mb-5 pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">👯</span>
-                <h3 className="text-xs font-semibold text-stone-500">{t('discover.friendsGoing')}</h3>
+                <h3 className="text-xs font-semibold text-plum-soft">{t('discover.friendsGoing')}</h3>
               </div>
               <div className="space-y-3">
                 {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
@@ -395,7 +395,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-base">✨</span>
-                  <h3 className="text-xs font-semibold text-stone-500">{t('discover.moreToExplore')}</h3>
+                  <h3 className="text-xs font-semibold text-plum-soft">{t('discover.moreToExplore')}</h3>
                 </div>
                 <div className="space-y-3">
                   {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
@@ -405,7 +405,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           </>
         ) : (
           <div className="pt-2">
-            <p className="text-xs text-stone-400 mb-3">
+            <p className="text-xs text-plum-soft mb-3">
               {t('discover.resultsFound', {
                 count: filtered.length,
                 noun: filtered.length === 1 ? t('discover.activitySingular') : t('discover.activityPlural'),
@@ -421,7 +421,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
           <div className="mt-8 mb-4 text-center">
             <button
               onClick={onOpenSubmit}
-              className="text-xs text-stone-400 underline underline-offset-2 hover:text-dusty-roseDark transition-colors"
+              className="text-xs text-plum-soft underline underline-offset-2 hover:text-plum transition-colors"
             >
               {t('discover.submitCta')}
             </button>
@@ -436,7 +436,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
         <button
           onClick={scrollToTop}
           aria-label={t('discover.backToTop')}
-          className="absolute bottom-[76px] start-4 w-11 h-11 rounded-full bg-white shadow-lg border border-stone-100 flex items-center justify-center text-stone-500 z-40 active:scale-95 transition-transform"
+          className="absolute bottom-[76px] start-4 w-11 h-11 rounded-full bg-card shadow-float border border-warmline flex items-center justify-center text-plum-soft z-40 active:scale-95 transition-transform"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 19V5M5 12l7-7 7 7"/>

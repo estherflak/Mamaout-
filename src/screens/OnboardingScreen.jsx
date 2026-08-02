@@ -69,29 +69,29 @@ export default function OnboardingScreen() {
 
   const chipCls = active =>
     `px-4 py-2.5 rounded-full text-sm font-medium border transition-colors ${
-      active ? 'bg-dusty-rose border-dusty-rose text-white' : 'bg-white border-stone-200 text-stone-600'
+      active ? 'bg-plum border-plum text-cream' : 'bg-card border-warmline text-plum'
     }`;
 
-  const inputCls = 'w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose text-sm';
+  const inputCls = 'w-full px-4 py-3 rounded-xl border border-warmline bg-card text-plum placeholder-plum-disabled focus:outline-none focus:ring-2 focus:ring-lilac text-sm';
 
   return (
-    <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-canvas flex flex-col items-center justify-center px-6 py-10">
       <div className="w-full max-w-sm">
 
         {/* Step 0 — Welcome */}
         {step === 0 && (
           <div className="text-center">
             <div className="text-5xl mb-4">☀️</div>
-            <h1 className="text-2xl font-bold text-stone-800 mb-2">{t('onboardingScreen.welcome')}</h1>
-            <p className="text-stone-500 text-sm mb-2">
+            <h1 className="text-2xl font-serif font-bold text-plum mb-2">{t('onboardingScreen.welcome')}</h1>
+            <p className="text-plum-soft text-sm mb-2">
               {t('onboardingScreen.findActivities')}
             </p>
-            <p className="text-stone-400 text-xs mb-10">
+            <p className="text-plum-soft text-xs mb-10">
               {t('onboardingScreen.letsPersonalize')}
             </p>
             <button
               onClick={() => setStep(1)}
-              className="w-full py-3.5 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm"
+              className="w-full py-3.5 rounded-xl font-semibold text-plum bg-butter active:scale-[0.98] transition-transform text-sm"
             >
               {t('onboardingScreen.letsGo')}
             </button>
@@ -107,7 +107,7 @@ export default function OnboardingScreen() {
                 <div
                   key={i}
                   className={`w-2 h-2 rounded-full transition-colors ${
-                    step >= i ? 'bg-dusty-rose' : 'bg-stone-200'
+                    step >= i ? 'bg-plum' : 'bg-lilac-pale'
                   }`}
                 />
               ))}
@@ -116,11 +116,11 @@ export default function OnboardingScreen() {
             {/* Step 1 — Baby info */}
             {step === 1 && (
               <div>
-                <h2 className="text-xl font-bold text-stone-800 mb-1">{t('onboardingScreen.aboutYourBaby')}</h2>
-                <p className="text-sm text-stone-400 mb-6">{t('onboardingScreen.fewBasics')}</p>
+                <h2 className="text-xl font-serif font-bold text-plum mb-1">{t('onboardingScreen.aboutYourBaby')}</h2>
+                <p className="text-sm text-plum-soft mb-6">{t('onboardingScreen.fewBasics')}</p>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-medium text-stone-500 mb-1.5 block">
+                    <label className="text-xs font-medium text-plum-soft mb-1.5 block">
                       {t('onboardingScreen.birthdate')}
                     </label>
                     <input
@@ -130,12 +130,12 @@ export default function OnboardingScreen() {
                       onChange={e => setBirthdate(e.target.value)}
                       max={new Date().toISOString().split('T')[0]}
                     />
-                    <p className="text-xs text-stone-300 mt-1">
+                    <p className="text-xs text-plum-disabled mt-1">
                       {t('onboardingScreen.birthdateHint')}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-stone-500 mb-1.5 block">
+                    <label className="text-xs font-medium text-plum-soft mb-1.5 block">
                       {t('onboardingScreen.babyName')}
                     </label>
                     <input
@@ -146,7 +146,7 @@ export default function OnboardingScreen() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-stone-500 mb-1.5 block">
+                    <label className="text-xs font-medium text-plum-soft mb-1.5 block">
                       {t('onboardingScreen.preferredLanguage')}
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -161,7 +161,7 @@ export default function OnboardingScreen() {
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs text-stone-300 mt-1">
+                    <p className="text-xs text-plum-disabled mt-1">
                       {t('onboardingScreen.prioritizeLanguage')}
                     </p>
                   </div>
@@ -172,8 +172,8 @@ export default function OnboardingScreen() {
             {/* Step 2 — Interests */}
             {step === 2 && (
               <div>
-                <h2 className="text-xl font-bold text-stone-800 mb-1">{t('onboardingScreen.whatSoundsGood')}</h2>
-                <p className="text-sm text-stone-400 mb-6">
+                <h2 className="text-xl font-serif font-bold text-plum mb-1">{t('onboardingScreen.whatSoundsGood')}</h2>
+                <p className="text-sm text-plum-soft mb-6">
                   {t('onboardingScreen.pickAtLeastOne')}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -192,8 +192,8 @@ export default function OnboardingScreen() {
             {/* Step 3 — Free days */}
             {step === 3 && (
               <div>
-                <h2 className="text-xl font-bold text-stone-800 mb-1">{t('onboardingScreen.whenFree')}</h2>
-                <p className="text-sm text-stone-400 mb-6">{t('onboardingScreen.optionalSkip')}</p>
+                <h2 className="text-xl font-serif font-bold text-plum mb-1">{t('onboardingScreen.whenFree')}</h2>
+                <p className="text-sm text-plum-soft mb-6">{t('onboardingScreen.optionalSkip')}</p>
                 <div className="flex flex-wrap gap-2">
                   {FREE_DAYS.map(({ id }) => (
                     <button key={id} onClick={() => toggleDay(id)} className={chipCls(freeDays.includes(id))}>
@@ -213,7 +213,7 @@ export default function OnboardingScreen() {
             <div className="flex gap-3 mt-8">
               <button
                 onClick={() => setStep(s => s - 1)}
-                className="flex-1 py-3 rounded-xl border border-stone-200 text-sm text-stone-600 font-medium active:scale-[0.98] transition-transform"
+                className="flex-1 py-3 rounded-xl border border-warmline text-sm text-plum font-medium active:scale-[0.98] transition-transform"
               >
                 {t('onboardingScreen.back')}
               </button>
@@ -221,7 +221,7 @@ export default function OnboardingScreen() {
                 <button
                   onClick={() => setStep(s => s + 1)}
                   disabled={step === 2 && interests.length === 0}
-                  className="flex-1 py-3 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm disabled:opacity-40"
+                  className="flex-1 py-3 rounded-xl font-semibold text-plum bg-butter active:scale-[0.98] transition-transform text-sm disabled:opacity-40"
                 >
                   {t('onboardingScreen.next')}
                 </button>
@@ -229,7 +229,7 @@ export default function OnboardingScreen() {
                 <button
                   onClick={handleFinish}
                   disabled={loading}
-                  className="flex-1 py-3 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm disabled:opacity-60"
+                  className="flex-1 py-3 rounded-xl font-semibold text-plum bg-butter active:scale-[0.98] transition-transform text-sm disabled:opacity-60"
                 >
                   {loading ? t('common.savingEllipsis') : t('onboardingScreen.doneEmoji')}
                 </button>
@@ -244,12 +244,12 @@ export default function OnboardingScreen() {
             <button
               onClick={handleFinish}
               disabled={loading}
-              className="text-xs text-stone-400 underline disabled:opacity-50"
+              className="text-xs text-plum-soft underline disabled:opacity-50"
             >
               {t('onboardingScreen.skipForNow')}
             </button>
           )}
-          <button onClick={signOut} className="text-xs text-stone-300 underline">
+          <button onClick={signOut} className="text-xs text-plum-disabled underline">
             {t('common.signOut')}
           </button>
         </div>

@@ -1,7 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 /* Brand fonts (marketing/brand.md): Fraunces headlines, Nunito Sans body;
-   Hebrew pair: Noto Serif Hebrew + Assistant. Loaded ahead of the theme
-   migration so brand classes/tokens resolve. */
+   Hebrew pair: Noto Serif Hebrew + Assistant. */
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Nunito+Sans:wght@400;600;700&family=Assistant:wght@400;600;700&family=Noto+Serif+Hebrew:wght@600&display=swap');
 @import './styles/tokens.css';
 
@@ -16,8 +14,8 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #fdfaf6;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--mo-cream);
+  font-family: var(--mo-font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,9 +40,9 @@ html {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #faf3e8;
+  background: var(--mo-border);
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4a5a5;
+  background: var(--mo-lilac);
   border-radius: 2px;
 }

@@ -11,19 +11,16 @@ export default {
         // The legacy dusty/sage/cream theme below migrates toward these;
         // use only brand tokens in new UI.
         lilac: { DEFAULT: '#A78BFA', pale: '#F3EEFF' },
-        plum: { DEFAULT: '#4C2A85', soft: '#7A6C99' },
+        plum: { DEFAULT: '#4C2A85', soft: '#7A6C99', disabled: '#B5AC9F' },
         butter: { DEFAULT: '#FFD97A' },
         canvas: '#FAF6EF',   // default background — never pure white
+        cream: '#FAF6EF',    // same hex as canvas; use for "cream text on plum"
         card: '#FFFDF9',     // card surfaces
         warmline: '#EEE5D8', // hairline borders
         blush: '#D98B8B',    // functional error — never alarm red
-        // Legacy theme (pre-brand) — being phased out:
-        dusty: {
-          rose: '#d4a5a5',
-          roseDark: '#c08080',
-          roseLight: '#eedede',
-          rosePale: '#f9efef',
-        },
+        // Legacy theme (pre-brand) — sage survives as the functional
+        // success/confirmation color (see app-audit.md); dusty/cream shades
+        // fully migrated off and removed.
         sage: {
           50: '#f4f7f4',
           100: '#e2ece2',
@@ -32,18 +29,13 @@ export default {
           400: '#7da37d',
           500: '#5a8a5a',
         },
-        cream: {
-          50: '#fdfaf6',
-          100: '#faf3e8',
-          200: '#f4e6d0',
-        },
       },
       fontFamily: {
-        // Legacy default — migrates to Nunito Sans / Assistant (brand.md)
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        // Brand default (brand.md): Nunito Sans / Assistant for Hebrew
+        sans: ['Nunito Sans', 'Assistant', 'system-ui', '-apple-system', 'sans-serif'],
         // Brand: headlines (Fraunces; Noto Serif Hebrew via :lang(he) tokens)
         serif: ['Fraunces', 'Noto Serif Hebrew', 'Georgia', 'serif'],
-        // Brand: body/UI (Nunito Sans; Assistant covers Hebrew)
+        // Alias of `sans`, kept for explicit intent at call sites
         'brand-sans': ['Nunito Sans', 'Assistant', 'system-ui', 'sans-serif'],
       },
       boxShadow: {

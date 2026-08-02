@@ -53,7 +53,7 @@ export default function DayStrip({
             <div key={dateStr} className="flex-shrink-0 flex gap-2">
               {newMonth && (
                 <div className="flex flex-col items-center justify-center px-0.5">
-                  <span className="text-[10px] font-semibold text-stone-400 [writing-mode:vertical-rl] rotate-180">
+                  <span className="text-[10px] font-semibold text-plum-soft [writing-mode:vertical-rl] rotate-180">
                     {d.toLocaleDateString(locale, { month: 'short' })}
                   </span>
                 </div>
@@ -63,15 +63,15 @@ export default function DayStrip({
                 aria-label={d.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}
                 className={`flex flex-col items-center px-3 pt-2 pb-1.5 rounded-2xl border transition-colors ${
                   isSelected
-                    ? 'bg-dusty-rose border-dusty-rose text-white'
-                    : 'bg-white border-stone-200 text-stone-600'
+                    ? 'bg-plum border-plum text-cream'
+                    : 'bg-card border-warmline text-plum'
                 }`}
               >
                 <span className="text-[10px] font-medium leading-none mb-0.5">{weekday}</span>
                 <span className="text-sm font-bold leading-none">{dayNum}</span>
                 <span className={`w-1 h-1 rounded-full mt-1 ${
                   hasDot
-                    ? isSelected ? 'bg-white/70' : 'bg-dusty-rose'
+                    ? isSelected ? 'bg-cream/70' : 'bg-lilac'
                     : 'bg-transparent'
                 }`} />
               </button>
@@ -92,8 +92,8 @@ export default function DayStrip({
             onClick={() => onRangeSelect?.(r.id)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
               dateRange === r.id
-                ? 'bg-dusty-rose border-dusty-rose text-white'
-                : 'bg-white border-stone-200 text-stone-500'
+                ? 'bg-plum border-plum text-cream'
+                : 'bg-card border-warmline text-plum-soft'
             }`}
           >
             {r.label}
@@ -105,7 +105,7 @@ export default function DayStrip({
           className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
             napTime
               ? 'bg-amber-50 border-amber-300 text-amber-700'
-              : 'bg-white border-stone-200 text-stone-500'
+              : 'bg-card border-warmline text-plum-soft'
           }`}
         >
           <span>⏰</span>

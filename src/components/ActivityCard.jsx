@@ -39,7 +39,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
   return (
     <div
       onClick={() => onSelect?.(activity)}
-      className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform flex"
+      className="bg-card rounded-2xl shadow-soft border border-warmline overflow-hidden cursor-pointer active:scale-[0.99] transition-transform flex"
     >
       {/* Left category border */}
       <div className="w-1 flex-shrink-0" style={{ backgroundColor: borderColor }} />
@@ -49,7 +49,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
         <div className="flex items-start justify-between gap-3 mb-1">
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-1.5 min-w-0">
-              <h2 dir="auto" className="font-semibold text-stone-800 text-base leading-tight line-clamp-2">
+              <h2 dir="auto" className="font-semibold text-plum text-base leading-tight line-clamp-2">
                 {localizedName(activity, lang)}
               </h2>
               {activity.isVerified && (
@@ -73,7 +73,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
               className="p-1"
               aria-label={t('activityCard.favoriteAria')}
             >
-              <svg className={`w-4 h-4 ${isFav ? 'fill-dusty-rose stroke-dusty-rose' : 'fill-none stroke-stone-300'}`} strokeWidth="1.8" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${isFav ? 'fill-lilac stroke-lilac' : 'fill-none stroke-plum-disabled'}`} strokeWidth="1.8" viewBox="0 0 24 24">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </button>
@@ -113,12 +113,12 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
             line = `${scheduleLabel} · ${timeRange}`;
           }
           return line ? (
-            <p dir="auto" className="text-sm font-medium text-stone-700 mb-0.5">{line}</p>
+            <p dir="auto" className="text-sm font-medium text-plum mb-0.5">{line}</p>
           ) : null;
         })()}
 
         {/* Neighborhood · City */}
-        <p dir="auto" className="text-xs text-stone-400 mb-2.5">
+        <p dir="auto" className="text-xs text-plum-soft mb-2.5">
           {locationLine(activity, lang)}
         </p>
 
@@ -130,9 +130,9 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
               {t('common.free')}
             </span>
           ) : activity.priceNis != null ? (
-            <span className="text-xs font-semibold text-stone-600">₪{activity.priceNis}</span>
+            <span className="text-xs font-semibold text-plum">₪{activity.priceNis}</span>
           ) : priceTierLabel ? (
-            <span dir="auto" className="text-xs text-stone-400">{priceTierLabel}</span>
+            <span dir="auto" className="text-xs text-plum-soft">{priceTierLabel}</span>
           ) : null}
 
           {/* Stroller accessible */}
@@ -163,7 +163,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
           )}
 
           {/* Age */}
-          <span className="text-xs text-stone-400 flex items-center gap-1">
+          <span className="text-xs text-plum-soft flex items-center gap-1">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
             </svg>
@@ -173,8 +173,8 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
           {/* Friends going */}
           {firstFriend && (
             <div className="flex items-center gap-1 bg-sage-50 border border-sage-200 px-2.5 py-1 rounded-full ms-auto">
-              <div className="w-4 h-4 rounded-full bg-dusty-rose flex items-center justify-center">
-                <span className="text-white text-[8px] font-bold">{firstFriend.name[0]}</span>
+              <div className="w-4 h-4 rounded-full bg-plum flex items-center justify-center">
+                <span className="text-cream text-[8px] font-bold">{firstFriend.name[0]}</span>
               </div>
               <span dir="auto" className="text-xs text-sage-500 font-medium">
                 {friendsGoing.length > 1

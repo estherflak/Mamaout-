@@ -59,8 +59,8 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
   const pillCls = active =>
     `px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
       active
-        ? 'bg-dusty-rose border-dusty-rose text-white'
-        : 'border-stone-200 text-stone-500 bg-white'
+        ? 'bg-plum border-plum text-cream'
+        : 'border-warmline text-plum-soft bg-card'
     }`;
 
   return (
@@ -69,24 +69,24 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
         onClick={onToggle}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
           hasFilters
-            ? 'border-dusty-rose bg-dusty-rose/10 text-dusty-roseDark'
-            : 'border-stone-200 bg-white text-stone-600'
+            ? 'border-lilac bg-lilac/10 text-plum'
+            : 'border-warmline bg-card text-plum'
         }`}
       >
         <svg className="w-3.5 h-3.5" fill="none" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
           <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
         </svg>
         {t('filterPanel.filters')}
-        {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-dusty-rose" />}
+        {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-lilac" />}
       </button>
 
       {isOpen && (
-        <div className="absolute end-0 top-full mt-2 w-72 bg-white rounded-2xl border border-stone-100 shadow-lg p-4 space-y-5 z-50">
+        <div className="absolute end-0 top-full mt-2 w-72 bg-card rounded-2xl border border-warmline shadow-float p-4 space-y-5 z-50">
           {/* Age filter */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-stone-600">{t('filterPanel.babyAgeUpTo')}</span>
-              <span className="text-xs text-dusty-roseDark font-medium">
+              <span className="text-xs font-semibold text-plum">{t('filterPanel.babyAgeUpTo')}</span>
+              <span className="text-xs text-plum font-medium">
                 {ageMax < 8 ? t('common.weeksValue', { n: ageMax }) : t('common.monthsValue', { n: Math.round(ageMax / 4.3) })}
               </span>
             </div>
@@ -96,9 +96,9 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
               max={52}
               value={ageMax}
               onChange={e => setAgeMax(Number(e.target.value))}
-              className="w-full accent-dusty-rose"
+              className="w-full accent-lilac"
             />
-            <div className="flex justify-between text-xs text-stone-300 mt-0.5">
+            <div className="flex justify-between text-xs text-plum-disabled mt-0.5">
               <span>{t('filterPanel.newborn')}</span>
               <span>{t('filterPanel.twelveMonths')}</span>
             </div>
@@ -106,7 +106,7 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
 
           {/* Language filter */}
           <div>
-            <span className="text-xs font-semibold text-stone-600 block mb-2">{t('filterPanel.activityLanguage')}</span>
+            <span className="text-xs font-semibold text-plum block mb-2">{t('filterPanel.activityLanguage')}</span>
             <div className="flex gap-2 flex-wrap">
               {LANGUAGES.map(l => (
                 <button
@@ -121,10 +121,10 @@ export default function FilterPanel({ filters, onChange, isOpen, onToggle }) {
           </div>
 
           <div className="flex gap-2">
-            <button onClick={reset} className="flex-1 py-2 rounded-xl border border-stone-200 text-xs text-stone-600">
+            <button onClick={reset} className="flex-1 py-2 rounded-xl border border-warmline text-xs text-plum">
               {t('filterPanel.reset')}
             </button>
-            <button onClick={apply} className="flex-1 py-2 rounded-xl bg-dusty-rose text-white text-xs font-semibold">
+            <button onClick={apply} className="flex-1 py-2 rounded-xl bg-butter text-plum text-xs font-semibold">
               {t('filterPanel.apply')}
             </button>
           </div>

@@ -14,7 +14,7 @@ function NavigateButton({ address, label }) {
       href={`https://maps.google.com/?q=${query}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full border border-stone-200 text-xs text-stone-500 hover:border-stone-400 transition-colors"
+      className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full border border-warmline text-xs text-plum-soft hover:border-plum-soft transition-colors"
       onClick={e => e.stopPropagation()}
     >
       <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -83,14 +83,14 @@ export default function ActivityDetail({ activity, onClose }) {
       className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-sm"
       onClick={handleBackdrop}
     >
-      <div className="w-full max-w-xl mx-auto bg-white rounded-t-3xl max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-xl mx-auto bg-card rounded-t-3xl max-h-[90vh] overflow-y-auto">
         {/* Drag handle + close */}
         <div className="relative flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-stone-200" />
+          <div className="w-10 h-1 rounded-full bg-lilac-pale" />
           <button
             onClick={onClose}
             aria-label={t('activityDetail.close')}
-            className="absolute end-3 top-2 w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 active:scale-95 transition-transform"
+            className="absolute end-3 top-2 w-8 h-8 flex items-center justify-center rounded-full bg-lilac-pale text-plum-soft active:scale-95 transition-transform"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
@@ -99,7 +99,7 @@ export default function ActivityDetail({ activity, onClose }) {
         </div>
 
         {/* Accent bar */}
-        <div className="h-1 w-full bg-gradient-to-r from-dusty-rose via-dusty-roseLight to-sage-200 mb-4" />
+        <div className="h-1 w-full bg-gradient-to-r from-lilac via-lilac-pale to-butter mb-4" />
 
         <div className="px-5 pb-8 space-y-5">
 
@@ -107,14 +107,14 @@ export default function ActivityDetail({ activity, onClose }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h2 dir="auto" className="font-bold text-stone-800 text-lg leading-tight">{localizedName(activity, lang)}</h2>
+                <h2 dir="auto" className="font-serif font-bold text-plum text-lg leading-tight">{localizedName(activity, lang)}</h2>
                 {activity.isVerified && (
                   <svg className="w-4 h-4 flex-shrink-0 text-sage-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 )}
               </div>
-              <p dir="auto" className="text-sm text-stone-400 mt-0.5">
+              <p dir="auto" className="text-sm text-plum-soft mt-0.5">
                 {locationLine(activity, lang)}
               </p>
             </div>
@@ -123,7 +123,7 @@ export default function ActivityDetail({ activity, onClose }) {
               className="flex-shrink-0 p-1.5"
               aria-label={t('activityCard.favoriteAria')}
             >
-              <svg className={`w-6 h-6 ${isFav ? 'fill-dusty-rose stroke-dusty-rose' : 'fill-none stroke-stone-300'}`} strokeWidth="1.8" viewBox="0 0 24 24">
+              <svg className={`w-6 h-6 ${isFav ? 'fill-lilac stroke-lilac' : 'fill-none stroke-plum-disabled'}`} strokeWidth="1.8" viewBox="0 0 24 24">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </button>
@@ -131,8 +131,8 @@ export default function ActivityDetail({ activity, onClose }) {
 
           {/* Schedule */}
           {scheduleStr && (
-            <div className="flex items-center gap-2 text-sm text-stone-700 font-medium">
-              <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 text-sm text-plum font-medium">
+              <svg className="w-4 h-4 text-plum-soft flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
               <span dir="auto">{scheduleStr}</span>
@@ -145,10 +145,10 @@ export default function ActivityDetail({ activity, onClose }) {
               {activity.isFree ? (
                 <p className="text-2xl font-bold text-green-600">{t('activityDetail.free')}</p>
               ) : (
-                <p className="text-2xl font-bold text-stone-800">₪{activity.priceNis}</p>
+                <p className="text-2xl font-bold text-plum">₪{activity.priceNis}</p>
               )}
               {activity.priceNotes && (
-                <p dir="auto" className="text-xs text-stone-400 mt-0.5">{localizedPriceNotes(activity, lang)}</p>
+                <p dir="auto" className="text-xs text-plum-soft mt-0.5">{localizedPriceNotes(activity, lang)}</p>
               )}
             </div>
           )}
@@ -158,7 +158,7 @@ export default function ActivityDetail({ activity, onClose }) {
             {activity.strollerAccessible === true ? (
               <p className="text-sm text-green-600 font-medium">{t('activityDetail.strollerAccessible')}</p>
             ) : (
-              <p className="text-sm text-stone-400">{t('activityDetail.askOrganizer')}</p>
+              <p className="text-sm text-plum-soft">{t('activityDetail.askOrganizer')}</p>
             )}
 
             {activity.language === 'en' && (
@@ -169,10 +169,10 @@ export default function ActivityDetail({ activity, onClose }) {
 
             {activity.address && (
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-plum-soft flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
-                <span dir="auto" className="text-sm text-stone-600 flex-1">{activity.address}</span>
+                <span dir="auto" className="text-sm text-plum flex-1">{activity.address}</span>
                 <NavigateButton address={activity.address} label={t('activityDetail.navigate')} />
               </div>
             )}
@@ -180,10 +180,10 @@ export default function ActivityDetail({ activity, onClose }) {
 
           {/* Organizer */}
           {(activity.organizerName || activity.organizerWhatsapp) && (
-            <div className="flex items-center justify-between gap-3 py-2 border-t border-stone-100">
+            <div className="flex items-center justify-between gap-3 py-2 border-t border-warmline">
               <div>
-                <p className="text-xs text-stone-400">{t('activityDetail.organizer')}</p>
-                <p dir="auto" className="text-sm text-stone-700 font-medium">{activity.organizerName || t('activityDetail.contact')}</p>
+                <p className="text-xs text-plum-soft">{t('activityDetail.organizer')}</p>
+                <p dir="auto" className="text-sm text-plum font-medium">{activity.organizerName || t('activityDetail.contact')}</p>
               </div>
               {activity.organizerWhatsapp && (
                 <a
@@ -203,18 +203,18 @@ export default function ActivityDetail({ activity, onClose }) {
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2">
-            <span className="px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">{categoryLabel(activity, lang)}</span>
+            <span className="px-2.5 py-1 rounded-full bg-lilac-pale text-plum text-xs font-medium">{categoryLabel(activity, lang)}</span>
             <span className="px-2.5 py-1 rounded-full bg-sage-50 text-sage-500 text-xs">{ageLabel}</span>
           </div>
 
           {/* Description */}
           {localizedDesc(activity, lang) && (
-            <p dir="auto" className="text-sm text-stone-600 leading-relaxed">{localizedDesc(activity, lang)}</p>
+            <p dir="auto" className="text-sm text-plum leading-relaxed">{localizedDesc(activity, lang)}</p>
           )}
 
           {/* RSVP + social proof */}
-          <div className="bg-sage-50 rounded-xl p-3 space-y-2">
-            <p className="text-xs font-semibold text-stone-600">{t('activityDetail.areYouGoing')}</p>
+          <div className="bg-lilac-pale rounded-xl p-3 space-y-2">
+            <p className="text-xs font-semibold text-plum">{t('activityDetail.areYouGoing')}</p>
             <div className="flex gap-2">
               {[
                 { status: 'interested', label: t('activityDetail.interested') },
@@ -227,8 +227,8 @@ export default function ActivityDetail({ activity, onClose }) {
                     : promptSignIn('signup', 'loginScreen.rsvpPrompt')}
                   className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-colors ${
                     myStatus === opt.status
-                      ? 'bg-sage-400 border-sage-400 text-white'
-                      : 'bg-white border-stone-200 text-stone-600'
+                      ? 'bg-plum border-plum text-cream'
+                      : 'bg-card border-warmline text-plum'
                   }`}
                 >
                   {opt.label}
@@ -236,7 +236,7 @@ export default function ActivityDetail({ activity, onClose }) {
               ))}
             </div>
             {(interestedCount > 0 || goingCount > 0) && (
-              <p className="text-xs text-stone-400 pt-0.5">
+              <p className="text-xs text-plum-soft pt-0.5">
                 {[
                   interestedCount > 0 && t(interestedCount === 1 ? 'activityDetail.momInterested' : 'activityDetail.momsInterested', { n: interestedCount }),
                   goingCount > 0      && t(goingCount === 1 ? 'activityDetail.momGoing' : 'activityDetail.momsGoing', { n: goingCount }),
@@ -244,7 +244,7 @@ export default function ActivityDetail({ activity, onClose }) {
               </p>
             )}
             {!user && (
-              <p className="text-xs text-stone-400">{t('activityDetail.signInToGoing')}</p>
+              <p className="text-xs text-plum-soft">{t('activityDetail.signInToGoing')}</p>
             )}
           </div>
 
@@ -254,7 +254,7 @@ export default function ActivityDetail({ activity, onClose }) {
               <button
                 onClick={handleCta}
                 dir="auto"
-                className="flex-1 py-3.5 rounded-2xl bg-dusty-rose text-white font-semibold text-sm active:scale-[0.98] transition-transform"
+                className="flex-1 py-3.5 rounded-2xl bg-butter text-plum font-semibold text-sm active:scale-[0.98] transition-transform"
               >
                 {activity.ctaLabel || t('activityDetail.moreInfo')} {lang === 'he' ? '←' : '→'}
               </button>
@@ -264,7 +264,7 @@ export default function ActivityDetail({ activity, onClose }) {
             {hasCalendarDate && (
               <button
                 onClick={() => addToCalendar(activity)}
-                className="w-14 py-3.5 rounded-2xl border border-stone-200 bg-white flex items-center justify-center text-stone-500 active:scale-[0.98] transition-transform"
+                className="w-14 py-3.5 rounded-2xl border border-warmline bg-card flex items-center justify-center text-plum-soft active:scale-[0.98] transition-transform"
                 title={t('activityDetail.addToCalendarTitle')}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -281,7 +281,7 @@ export default function ActivityDetail({ activity, onClose }) {
             {/* WhatsApp share */}
             <button
               onClick={() => setShowShareMenu(v => !v)}
-              className="w-14 py-3.5 rounded-2xl border border-stone-200 bg-white flex items-center justify-center text-green-500 active:scale-[0.98] transition-transform"
+              className="w-14 py-3.5 rounded-2xl border border-warmline bg-card flex items-center justify-center text-green-500 active:scale-[0.98] transition-transform"
               title={t('activityDetail.shareOnWhatsAppTitle')}
             >
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -292,23 +292,23 @@ export default function ActivityDetail({ activity, onClose }) {
 
           {/* WhatsApp template picker */}
           {showShareMenu && (
-            <div className="border border-stone-100 rounded-2xl overflow-hidden">
-              <p className="text-xs font-semibold text-stone-600 px-4 py-2.5 bg-stone-50 border-b border-stone-100">
+            <div className="border border-warmline rounded-2xl overflow-hidden">
+              <p className="text-xs font-semibold text-plum px-4 py-2.5 bg-lilac-pale border-b border-warmline">
                 {t('activityDetail.chooseMessageStyle')}
               </p>
               {SHARE_TEMPLATES.map(tpl => (
                 <button
                   key={tpl.id}
                   onClick={() => { shareActivityOnWhatsApp(activity, tpl.id, lang); setShowShareMenu(false); }}
-                  className="w-full text-start px-4 py-3 border-b border-stone-100 hover:bg-stone-50 transition-colors"
+                  className="w-full text-start px-4 py-3 border-b border-warmline hover:bg-lilac-pale transition-colors"
                 >
-                  <span className="text-xs font-semibold text-stone-700 block mb-0.5">{t(tpl.labelKey)}</span>
-                  <span dir="auto" className="text-xs text-stone-400 line-clamp-2">{tpl.build(activity, lang)}</span>
+                  <span className="text-xs font-semibold text-plum block mb-0.5">{t(tpl.labelKey)}</span>
+                  <span dir="auto" className="text-xs text-plum-soft line-clamp-2">{tpl.build(activity, lang)}</span>
                 </button>
               ))}
               <button
                 onClick={() => setShowShareMenu(false)}
-                className="w-full py-2.5 text-xs text-stone-400 hover:bg-stone-50 transition-colors"
+                className="w-full py-2.5 text-xs text-plum-soft hover:bg-lilac-pale transition-colors"
               >
                 {t('activityDetail.cancel')}
               </button>

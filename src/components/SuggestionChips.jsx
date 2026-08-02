@@ -15,10 +15,10 @@ export default function SuggestionChips({ onSelect, value = '' }) {
             key={chip}
             onClick={() => onSelect(active ? '' : label)}
             className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
-              transition-colors shadow-sm border ${
+              transition-colors shadow-soft border ${
               active
-                ? 'bg-dusty-rose border-dusty-rose text-white'
-                : 'bg-white border-dusty-roseLight text-stone-600 active:bg-dusty-rosePale active:border-dusty-rose hover:bg-dusty-rosePale hover:border-dusty-rose'
+                ? 'bg-plum border-plum text-cream'
+                : 'bg-card border-lilac-pale text-plum active:bg-lilac-pale active:border-lilac hover:bg-lilac-pale hover:border-lilac'
             }`}
           >
             {label}

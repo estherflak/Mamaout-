@@ -14,7 +14,7 @@ function SaveSearch({ canSave, onSaveSearch }) {
 
   if (!canSave) {
     return (
-      <p className="text-xs text-stone-300">{t('emptyState.signInToSave')}</p>
+      <p className="text-xs text-plum-disabled">{t('emptyState.signInToSave')}</p>
     );
   }
 
@@ -34,11 +34,11 @@ function SaveSearch({ canSave, onSaveSearch }) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <p className="text-xs text-stone-400">{t('emptyState.wantToKnow')}</p>
+      <p className="text-xs text-plum-soft">{t('emptyState.wantToKnow')}</p>
       <button
         onClick={handleSave}
         disabled={state === 'saving'}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-dusty-rose text-dusty-roseDark text-sm font-medium disabled:opacity-50"
+        className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-lilac text-plum text-sm font-medium disabled:opacity-50"
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" strokeLinecap="round" strokeLinejoin="round" />
@@ -59,10 +59,10 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
         <span className="text-5xl mb-4">🌱</span>
-        <h3 dir="auto" className="text-stone-700 font-medium text-lg mb-2">
+        <h3 dir="auto" className="text-plum font-serif font-medium text-lg mb-2">
           {t('emptyState.noResultsPrefix', { term, suffix })}
         </h3>
-        <p className="text-stone-400 text-sm max-w-xs leading-relaxed mb-5">
+        <p className="text-plum-soft text-sm max-w-xs leading-relaxed mb-5">
           {t('emptyState.addingWeekly')}
         </p>
         <div className="flex flex-col gap-3 items-center">
@@ -70,7 +70,7 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
           {onClearSearch && (
             <button
               onClick={onClearSearch}
-              className="px-4 py-2 rounded-full bg-dusty-rose text-white text-sm font-medium"
+              className="px-4 py-2 rounded-full bg-butter text-plum text-sm font-medium"
             >
               {t('emptyState.browseAll')}
             </button>
@@ -78,7 +78,7 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
           {dateFilter && onClearDate && (
             <button
               onClick={onClearDate}
-              className="text-xs text-stone-400 underline underline-offset-2"
+              className="text-xs text-plum-soft underline underline-offset-2"
             >
               {t('emptyState.showTermAnyDay', { term })}
             </button>
@@ -94,16 +94,16 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
         <span className="text-5xl mb-4">📅</span>
-        <h3 className="text-stone-700 font-medium text-lg mb-2">
+        <h3 className="text-plum font-serif font-medium text-lg mb-2">
           {t('emptyState.nothingOnDate', { date: label })}
         </h3>
-        <p className="text-stone-400 text-sm max-w-xs leading-relaxed mb-5">
+        <p className="text-plum-soft text-sm max-w-xs leading-relaxed mb-5">
           {t('emptyState.noSessionsScheduled')}
         </p>
         {onClearDate && (
           <button
             onClick={onClearDate}
-            className="px-4 py-2 rounded-full bg-dusty-rose text-white text-sm font-medium"
+            className="px-4 py-2 rounded-full bg-butter text-plum text-sm font-medium"
           >
             {t('emptyState.browseAll')}
           </button>
@@ -116,10 +116,10 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <span className="text-5xl mb-4">☀️</span>
-      <h3 className="text-stone-700 font-medium text-lg mb-2">
+      <h3 className="text-plum font-serif font-medium text-lg mb-2">
         {t('emptyState.nothingMatchesFilters')}
       </h3>
-      <p className="text-stone-400 text-sm max-w-xs leading-relaxed">
+      <p className="text-plum-soft text-sm max-w-xs leading-relaxed">
         {t('emptyState.tryWidening')}
       </p>
     </div>

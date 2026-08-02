@@ -115,26 +115,26 @@ export default function AdminScreen() {
     setActionLoading(null);
   }
 
-  const inputCls = 'w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose text-sm';
-  const btnCls   = 'w-full py-3 rounded-xl font-semibold text-white bg-dusty-rose text-sm disabled:opacity-60';
+  const inputCls = 'w-full px-4 py-3 rounded-xl border border-warmline bg-card text-plum placeholder-plum-disabled focus:outline-none focus:ring-2 focus:ring-lilac text-sm';
+  const btnCls   = 'w-full py-3 rounded-xl font-semibold text-plum bg-butter text-sm disabled:opacity-60';
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-dusty-rose border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-lilac border-t-transparent animate-spin" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center px-6">
         <div className="mb-8 text-center">
           <div className="text-3xl mb-2">🔐</div>
-          <h1 className="text-xl font-bold text-stone-800">Admin</h1>
-          <p className="text-xs text-stone-400 mt-1">MamaOut admin panel</p>
+          <h1 className="text-xl font-serif font-bold text-plum">Admin</h1>
+          <p className="text-xs text-plum-soft mt-1">MamaOut admin panel</p>
         </div>
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-3">
+        <div className="w-full max-w-sm bg-card rounded-2xl shadow-soft border border-warmline p-6 space-y-3">
           {loginErr && (
             <div className="px-3 py-2 bg-blush/10 border border-blush/30 rounded-lg text-xs text-blush">{loginErr}</div>
           )}
@@ -151,28 +151,28 @@ export default function AdminScreen() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-6 text-center">
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center px-6 text-center">
         <div className="text-3xl mb-3">🚫</div>
-        <h2 className="text-lg font-semibold text-stone-800 mb-2">Access denied</h2>
-        <p className="text-sm text-stone-500">This page is for admin use only.</p>
-        <a href="/" className="mt-6 text-sm text-dusty-roseDark underline">Go to MamaOut</a>
+        <h2 className="text-lg font-serif font-semibold text-plum mb-2">Access denied</h2>
+        <p className="text-sm text-plum-soft">This page is for admin use only.</p>
+        <a href="/" className="mt-6 text-sm text-plum underline">Go to MamaOut</a>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 pb-12">
+    <div className="min-h-screen bg-canvas pb-12">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl font-bold text-stone-800">Submissions</h1>
-            <p className="text-xs text-stone-400 mt-0.5">Logged in as {user.email}</p>
+            <h1 className="text-xl font-serif font-bold text-plum">Submissions</h1>
+            <p className="text-xs text-plum-soft mt-0.5">Logged in as {user.email}</p>
           </div>
-          <a href="/" className="text-xs text-dusty-roseDark underline">Back to app</a>
+          <a href="/" className="text-xs text-plum underline">Back to app</a>
         </div>
 
         {/* Tabs */}
-        <div className="flex bg-stone-100 rounded-xl p-0.5 mb-5">
+        <div className="flex bg-lilac-pale rounded-xl p-0.5 mb-5">
           {[
             { id: 'pending',  label: 'Pending' },
             { id: 'approved', label: 'Approved' },
@@ -182,7 +182,7 @@ export default function AdminScreen() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                tab === t.id ? 'bg-white shadow-sm text-stone-800' : 'text-stone-400'
+                tab === t.id ? 'bg-card shadow-soft text-plum' : 'text-plum-soft'
               }`}
             >
               {t.label}
@@ -196,44 +196,44 @@ export default function AdminScreen() {
 
         {dataLoading ? (
           <div className="flex justify-center py-16">
-            <div className="w-8 h-8 rounded-full border-2 border-dusty-rose border-t-transparent animate-spin" />
+            <div className="w-8 h-8 rounded-full border-2 border-lilac border-t-transparent animate-spin" />
           </div>
         ) : submissions.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">{tab === 'pending' ? '✅' : '📭'}</div>
-            <p className="text-stone-500 text-sm">
+            <p className="text-plum-soft text-sm">
               {tab === 'pending' ? 'No pending submissions.' : `No ${tab} submissions.`}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             {submissions.map(sub => (
-              <div key={sub.id} className="bg-white rounded-2xl border border-stone-100 p-4">
+              <div key={sub.id} className="bg-card rounded-2xl border border-warmline p-4">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-stone-800 text-base leading-tight">{sub.name}</h3>
+                      <h3 className="font-semibold text-plum text-base leading-tight">{sub.name}</h3>
                       {sub.submission_type === 'community' && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium shrink-0">
                           💎 Mom tip
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-stone-400 mt-0.5">
+                    <p className="text-xs text-plum-soft mt-0.5">
                       {[sub.category, sub.neighborhood ?? sub.address, sub.schedule_type]
                         .filter(Boolean).join(' · ')}
                     </p>
                   </div>
-                  <span className="text-xs text-stone-300 shrink-0 mt-0.5">
+                  <span className="text-xs text-plum-disabled shrink-0 mt-0.5">
                     {new Date(sub.submitted_at).toLocaleDateString('en-GB')}
                   </span>
                 </div>
 
                 {sub.description && (
-                  <p className="text-sm text-stone-600 mb-3 leading-snug">{sub.description}</p>
+                  <p className="text-sm text-plum mb-3 leading-snug">{sub.description}</p>
                 )}
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 mb-3">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-plum-soft mb-3">
                   {(sub.time_start || sub.time_end) && (
                     <span>
                       ⏰ {sub.time_start ? sub.time_start.slice(0, 5) : '?'}
@@ -251,7 +251,7 @@ export default function AdminScreen() {
                 </div>
 
                 {(sub.organizer_name || sub.organizer_whatsapp || sub.organizer_instagram) && (
-                  <p className="text-xs text-stone-400 mb-3">
+                  <p className="text-xs text-plum-soft mb-3">
                     By {sub.organizer_name ?? '—'}
                     {sub.organizer_whatsapp && ` · 📱 ${sub.organizer_whatsapp}`}
                     {sub.organizer_instagram && ` · @${sub.organizer_instagram}`}
@@ -270,7 +270,7 @@ export default function AdminScreen() {
                     <button
                       onClick={() => reject(sub)}
                       disabled={actionLoading === sub.id}
-                      className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium disabled:opacity-50"
+                      className="px-4 py-2 rounded-xl border border-warmline text-plum text-sm font-medium disabled:opacity-50"
                     >
                       ✗ Reject
                     </button>

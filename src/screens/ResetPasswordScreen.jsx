@@ -25,17 +25,17 @@ export default function ResetPasswordScreen() {
     setLoading(false);
   }
 
-  const inputCls = 'w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-dusty-rose text-sm';
+  const inputCls = 'w-full px-4 py-3 rounded-xl border border-warmline bg-card text-plum placeholder-plum-disabled focus:outline-none focus:ring-2 focus:ring-lilac text-sm';
 
   return (
-    <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-canvas flex flex-col items-center justify-center px-6">
       <div className="mb-8 text-center">
         <div className="text-4xl mb-2">☀️</div>
-        <h1 className="text-2xl font-bold text-stone-800">MamaOut</h1>
+        <h1 className="text-2xl font-serif font-bold text-plum">MamaOut</h1>
       </div>
 
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-3">
-        <p className="text-sm font-semibold text-stone-700">{t('resetPasswordScreen.chooseNewPassword')}</p>
+      <div className="w-full max-w-sm bg-card rounded-2xl shadow-soft border border-warmline p-6 space-y-3">
+        <p className="text-sm font-semibold text-plum">{t('resetPasswordScreen.chooseNewPassword')}</p>
 
         {error && (
           <div className="px-3 py-2 bg-blush/10 border border-blush/30 rounded-lg text-xs text-blush">
@@ -60,7 +60,7 @@ export default function ResetPasswordScreen() {
         <button
           onClick={handleReset}
           disabled={loading || !password || !confirm}
-          className="w-full py-3 rounded-xl font-semibold text-white bg-dusty-rose active:scale-[0.98] transition-transform text-sm disabled:opacity-60"
+          className="w-full py-3 rounded-xl font-semibold text-plum bg-butter active:scale-[0.98] transition-transform text-sm disabled:opacity-60"
         >
           {loading ? '…' : t('resetPasswordScreen.setNewPassword')}
         </button>

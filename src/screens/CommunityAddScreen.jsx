@@ -78,25 +78,25 @@ export default function CommunityAddScreen({ onClose }) {
     setDone(true);
   }
 
-  const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-dusty-rose bg-white';
+  const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-warmline text-sm focus:outline-none focus:border-lilac bg-card';
   const chip = active =>
     `px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
       active
-        ? 'bg-dusty-rose border-dusty-rose text-white'
-        : 'border-stone-200 text-stone-600 bg-white'
+        ? 'bg-plum border-plum text-cream'
+        : 'border-warmline text-plum bg-card'
     }`;
 
   if (done) {
     return (
-      <div className="fixed inset-0 z-50 bg-cream-50 flex flex-col items-center justify-center px-6 text-center max-w-xl mx-auto">
+      <div className="fixed inset-0 z-50 bg-canvas flex flex-col items-center justify-center px-6 text-center max-w-xl mx-auto">
         <div className="text-5xl mb-4">☀️</div>
-        <h2 className="text-xl font-semibold text-stone-800 mb-2">{t('communityAddScreen.thanksTitle')}</h2>
-        <p className="text-sm text-stone-500 mb-6 max-w-xs">
+        <h2 className="text-xl font-serif font-semibold text-plum mb-2">{t('communityAddScreen.thanksTitle')}</h2>
+        <p className="text-sm text-plum-soft mb-6 max-w-xs">
           {t('communityAddScreen.thanksBody')}
         </p>
         <button
           onClick={onClose}
-          className="px-6 py-3 rounded-2xl bg-dusty-rose text-white text-sm font-semibold"
+          className="px-6 py-3 rounded-2xl bg-butter text-plum text-sm font-semibold"
         >
           {t('submitScreen.backToApp')}
         </button>
@@ -105,17 +105,17 @@ export default function CommunityAddScreen({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-cream-50 flex flex-col max-w-xl mx-auto">
+    <div className="fixed inset-0 z-50 bg-canvas flex flex-col max-w-xl mx-auto">
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center px-4 pt-4 pb-3 bg-white border-b border-stone-100">
-        <button onClick={onClose} className="p-2 -ms-2 text-stone-400 active:text-stone-600">
+      <div className="flex-shrink-0 flex items-center px-4 pt-4 pb-3 bg-card border-b border-warmline">
+        <button onClick={onClose} className="p-2 -ms-2 text-plum-soft active:text-plum">
           <svg className="w-5 h-5 rtl:scale-x-[-1]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
         <div className="flex-1 text-center">
-          <h2 className="text-base font-semibold text-stone-800">{t('communityAddScreen.shareTitle')}</h2>
-          <p className="text-xs text-stone-400">{t('communityAddScreen.shareSubtitle')}</p>
+          <h2 className="text-base font-serif font-semibold text-plum">{t('communityAddScreen.shareTitle')}</h2>
+          <p className="text-xs text-plum-soft">{t('communityAddScreen.shareSubtitle')}</p>
         </div>
         <div className="w-9" />
       </div>
@@ -124,9 +124,9 @@ export default function CommunityAddScreen({ onClose }) {
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4 pb-10">
 
         {/* Name + Category */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
+        <div className="bg-card rounded-2xl border border-warmline p-4 space-y-3">
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-1.5">{t('communityAddScreen.whatsActivity')}</label>
+            <label className="text-xs font-medium text-plum block mb-1.5">{t('communityAddScreen.whatsActivity')}</label>
             <input
               value={form.name}
               onChange={e => set('name', e.target.value)}
@@ -135,7 +135,7 @@ export default function CommunityAddScreen({ onClose }) {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-2">{t('submitScreen.category')}</label>
+            <label className="text-xs font-medium text-plum block mb-2">{t('submitScreen.category')}</label>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map(c => (
                 <button key={c} onClick={() => set('category', form.category === c ? '' : c)} className={chip(form.category === c)}>
@@ -147,8 +147,8 @@ export default function CommunityAddScreen({ onClose }) {
         </div>
 
         {/* Location */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.where')}</p>
+        <div className="bg-card rounded-2xl border border-warmline p-4 space-y-3">
+          <p className="text-xs font-semibold text-plum-soft">{t('communityAddScreen.where')}</p>
           {/* Any Gush Dan metro city — not just the two the app launched with */}
           <select
             value={form.city}
@@ -168,22 +168,22 @@ export default function CommunityAddScreen({ onClose }) {
         </div>
 
         {/* When */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.when')}</p>
+        <div className="bg-card rounded-2xl border border-warmline p-4 space-y-3">
+          <p className="text-xs font-semibold text-plum-soft">{t('communityAddScreen.when')}</p>
 
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={form.isRecurring}
               onChange={e => set('isRecurring', e.target.checked)}
-              className="w-4 h-4 rounded accent-dusty-rose"
+              className="w-4 h-4 rounded accent-lilac"
             />
-            <span className="text-sm text-stone-600">{t('communityAddScreen.recurringWeekly')}</span>
+            <span className="text-sm text-plum">{t('communityAddScreen.recurringWeekly')}</span>
           </label>
 
           {form.isRecurring ? (
             <div>
-              <label className="text-xs text-stone-500 block mb-2">{t('communityAddScreen.whichDays')}</label>
+              <label className="text-xs text-plum-soft block mb-2">{t('communityAddScreen.whichDays')}</label>
               <div className="flex flex-wrap gap-2">
                 {DAYS.map(d => (
                   <button key={d} onClick={() => toggleDay(d)} className={chip(form.recurrenceDays.includes(d))}>{t(`days.short.${d}`)}</button>
@@ -192,7 +192,7 @@ export default function CommunityAddScreen({ onClose }) {
             </div>
           ) : (
             <div>
-              <label className="text-xs text-stone-500 block mb-1.5">{t('submitScreen.date')}</label>
+              <label className="text-xs text-plum-soft block mb-1.5">{t('submitScreen.date')}</label>
               <input
                 type="date"
                 value={form.date}
@@ -205,31 +205,31 @@ export default function CommunityAddScreen({ onClose }) {
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="text-xs text-stone-500 block mb-1.5">{t('submitScreen.startTime')}</label>
+              <label className="text-xs text-plum-soft block mb-1.5">{t('submitScreen.startTime')}</label>
               <input type="time" value={form.timeStart} onChange={e => set('timeStart', e.target.value)} className={inputCls} />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-stone-500 block mb-1.5">{t('submitScreen.endTime')}</label>
+              <label className="text-xs text-plum-soft block mb-1.5">{t('submitScreen.endTime')}</label>
               <input type="time" value={form.timeEnd} onChange={e => set('timeEnd', e.target.value)} className={inputCls} />
             </div>
           </div>
         </div>
 
         {/* Price */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.price')}</p>
+        <div className="bg-card rounded-2xl border border-warmline p-4 space-y-3">
+          <p className="text-xs font-semibold text-plum-soft">{t('communityAddScreen.price')}</p>
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={form.isFree}
               onChange={e => set('isFree', e.target.checked)}
-              className="w-4 h-4 rounded accent-dusty-rose"
+              className="w-4 h-4 rounded accent-lilac"
             />
-            <span className="text-sm text-stone-600">{t('communityAddScreen.itsFree')}</span>
+            <span className="text-sm text-plum">{t('communityAddScreen.itsFree')}</span>
           </label>
           {!form.isFree && (
             <div className="flex items-center gap-2">
-              <span className="text-stone-400 text-sm font-medium">₪</span>
+              <span className="text-plum-soft text-sm font-medium">₪</span>
               <input
                 type="number"
                 value={form.price}
@@ -243,10 +243,10 @@ export default function CommunityAddScreen({ onClose }) {
         </div>
 
         {/* Link + Notes */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.moreInfo')}</p>
+        <div className="bg-card rounded-2xl border border-warmline p-4 space-y-3">
+          <p className="text-xs font-semibold text-plum-soft">{t('communityAddScreen.moreInfo')}</p>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-1.5">{t('communityAddScreen.linkPlaceholder')}</label>
+            <label className="text-xs font-medium text-plum block mb-1.5">{t('communityAddScreen.linkPlaceholder')}</label>
             <input
               type="url"
               value={form.sourceUrl}
@@ -256,8 +256,8 @@ export default function CommunityAddScreen({ onClose }) {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-stone-600 block mb-1.5">
-              {t('communityAddScreen.notesLabel')} <span className="text-stone-300 font-normal">({form.notes.length}/200)</span>
+            <label className="text-xs font-medium text-plum block mb-1.5">
+              {t('communityAddScreen.notesLabel')} <span className="text-plum-disabled font-normal">({form.notes.length}/200)</span>
             </label>
             <textarea
               value={form.notes}
@@ -274,12 +274,12 @@ export default function CommunityAddScreen({ onClose }) {
         <button
           onClick={submit}
           disabled={submitting || !form.name.trim()}
-          className="w-full py-3.5 rounded-2xl bg-dusty-rose text-white font-semibold text-sm disabled:opacity-50 active:scale-[0.98] transition-transform"
+          className="w-full py-3.5 rounded-2xl bg-butter text-plum font-semibold text-sm disabled:opacity-50 active:scale-[0.98] transition-transform"
         >
           {submitting ? t('communityAddScreen.sharingEllipsis') : t('communityAddScreen.shareCta')}
         </button>
 
-        <p className="text-xs text-stone-400 text-center pb-4">
+        <p className="text-xs text-plum-soft text-center pb-4">
           {t('communityAddScreen.reviewNote')}
         </p>
       </div>
