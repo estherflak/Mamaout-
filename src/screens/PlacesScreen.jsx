@@ -160,7 +160,7 @@ function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
             <div className="mt-3 pt-3 border-t border-stone-100" onClick={e => e.stopPropagation()}>
               {placeActivities.length > 0 ? (
                 <>
-                  <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-stone-500 mb-2">
                     {t('placesScreen.activitiesHere')}
                   </p>
                   <div className="space-y-2">
@@ -232,7 +232,7 @@ export default function PlacesScreen({ activeArea, openNow, activities = [], onS
             <section className="mb-6 pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">🛝</span>
-                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                <h3 className="text-xs font-semibold text-stone-500">
                   {t('placesScreen.indoorPlaygrounds')} ({playgrounds.length})
                 </h3>
               </div>
@@ -248,7 +248,7 @@ export default function PlacesScreen({ activeArea, openNow, activities = [], onS
             <section className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">📚</span>
-                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                <h3 className="text-xs font-semibold text-stone-500">
                   {t('placesScreen.libraries')} ({libraries.length})
                 </h3>
               </div>

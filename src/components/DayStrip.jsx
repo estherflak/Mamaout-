@@ -53,7 +53,7 @@ export default function DayStrip({
             <div key={dateStr} className="flex-shrink-0 flex gap-2">
               {newMonth && (
                 <div className="flex flex-col items-center justify-center px-0.5">
-                  <span className="text-[10px] font-semibold text-stone-400 uppercase [writing-mode:vertical-rl] rotate-180">
+                  <span className="text-[10px] font-semibold text-stone-400 [writing-mode:vertical-rl] rotate-180">
                     {d.toLocaleDateString(locale, { month: 'short' })}
                   </span>
                 </div>

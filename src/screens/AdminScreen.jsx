@@ -136,7 +136,7 @@ export default function AdminScreen() {
         </div>
         <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-3">
           {loginErr && (
-            <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">{loginErr}</div>
+            <div className="px-3 py-2 bg-blush/10 border border-blush/30 rounded-lg text-xs text-blush">{loginErr}</div>
           )}
           <input className={inputCls} type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
           <input className={inputCls} type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
@@ -191,7 +191,7 @@ export default function AdminScreen() {
         </div>
 
         {actionErr && (
-          <div className="mb-4 px-3 py-2 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">{actionErr}</div>
+          <div className="mb-4 px-3 py-2 bg-blush/10 border border-blush/30 rounded-xl text-xs text-blush">{actionErr}</div>
         )}
 
         {dataLoading ? (

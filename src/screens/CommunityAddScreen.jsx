@@ -89,7 +89,7 @@ export default function CommunityAddScreen({ onClose }) {
   if (done) {
     return (
       <div className="fixed inset-0 z-50 bg-cream-50 flex flex-col items-center justify-center px-6 text-center max-w-xl mx-auto">
-        <div className="text-5xl mb-4">🌸</div>
+        <div className="text-5xl mb-4">☀️</div>
         <h2 className="text-xl font-semibold text-stone-800 mb-2">{t('communityAddScreen.thanksTitle')}</h2>
         <p className="text-sm text-stone-500 mb-6 max-w-xs">
           {t('communityAddScreen.thanksBody')}
@@ -148,7 +148,7 @@ export default function CommunityAddScreen({ onClose }) {
 
         {/* Location */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('communityAddScreen.where')}</p>
+          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.where')}</p>
           {/* Any Gush Dan metro city — not just the two the app launched with */}
           <select
             value={form.city}
@@ -169,7 +169,7 @@ export default function CommunityAddScreen({ onClose }) {
 
         {/* When */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('communityAddScreen.when')}</p>
+          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.when')}</p>
 
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
@@ -217,7 +217,7 @@ export default function CommunityAddScreen({ onClose }) {
 
         {/* Price */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('communityAddScreen.price')}</p>
+          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.price')}</p>
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -244,7 +244,7 @@ export default function CommunityAddScreen({ onClose }) {
 
         {/* Link + Notes */}
         <div className="bg-white rounded-2xl border border-stone-100 p-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('communityAddScreen.moreInfo')}</p>
+          <p className="text-xs font-semibold text-stone-500">{t('communityAddScreen.moreInfo')}</p>
           <div>
             <label className="text-xs font-medium text-stone-600 block mb-1.5">{t('communityAddScreen.linkPlaceholder')}</label>
             <input
@@ -269,7 +269,7 @@ export default function CommunityAddScreen({ onClose }) {
           </div>
         </div>
 
-        {error && <p className="text-xs text-red-500 px-1">{error}</p>}
+        {error && <p className="text-xs text-blush px-1">{error}</p>}
 
         <button
           onClick={submit}

@@ -40,7 +40,7 @@ export default function BottomNav({ activeTab, onChange, requestCount = 0 }) {
             {tab.icon(activeTab === tab.id)}
             <span className="text-[10px] font-medium">{t(tab.key)}</span>
             {tab.id === 'friends' && requestCount > 0 && (
-              <span className="absolute top-1.5 end-[calc(50%-12px)] w-4 h-4 bg-red-400 rounded-full text-white text-[9px] font-bold flex items-center justify-center">
+              <span className="absolute top-1.5 end-[calc(50%-12px)] w-4 h-4 bg-blush rounded-full text-white text-[9px] font-bold flex items-center justify-center">
                 {requestCount}
               </span>
             )}

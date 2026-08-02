@@ -58,12 +58,12 @@ export const SHARE_TEMPLATES = [
       const link  = activity.sourceUrl || (typeof window !== 'undefined' ? window.location.origin : '');
       let msg;
       if (lang === 'he') {
-        msg = `היי! מצאתי את זה ב-MamaOut 🌸 ${name}`;
+        msg = `היי! מצאתי את זה ב-MamaOut ☀️ ${name}`;
         if (when)  msg += ` – ${when}`;
         if (where) msg += ` ב${where}`;
         msg += `. חשבתי שתרצי לדעת 👶`;
       } else {
-        msg = `Hey! Found this on MamaOut 🌸 ${name}`;
+        msg = `Hey! Found this on MamaOut ☀️ ${name}`;
         if (when)  msg += ` – ${when}`;
         if (where) msg += ` in ${where}`;
         msg += `. Thought you'd want to know 👶`;

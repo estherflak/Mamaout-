@@ -128,7 +128,7 @@ export default function FriendsScreen({ onSelect }) {
             <p className="text-xs text-sage-500 font-medium">{t('friendsScreen.requestSent')}</p>
           )}
           {status === 'error' && (
-            <p className="text-xs text-red-500">{errorMsg}</p>
+            <p className="text-xs text-blush">{errorMsg}</p>
           )}
 
           <button
@@ -189,7 +189,7 @@ export default function FriendsScreen({ onSelect }) {
             {/* What your friends saved (Phase 6.2) */}
             {(feed.length > 0 || hint) && (
               <section>
-                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-semibold text-stone-500 mb-3">
                   {t('friendsScreen.whatFriendsSaved')}
                 </h3>
                 {feed.length > 0 ? (
@@ -216,7 +216,7 @@ export default function FriendsScreen({ onSelect }) {
               )
             ) : (
               <section>
-                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">{t('friendsScreen.yourFriends')}</h3>
+                <h3 className="text-xs font-semibold text-stone-500 mb-3">{t('friendsScreen.yourFriends')}</h3>
                 <div className="space-y-2">
                   {friends.map(f => (
                     <div key={f.id} className="bg-white rounded-2xl border border-stone-100 p-3 flex items-center gap-3">

@@ -385,7 +385,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
             <section className="mb-5 pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">👯</span>
-                <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('discover.friendsGoing')}</h3>
+                <h3 className="text-xs font-semibold text-stone-500">{t('discover.friendsGoing')}</h3>
               </div>
               <div className="space-y-3">
                 {friendActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}
@@ -395,7 +395,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-base">✨</span>
-                  <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('discover.moreToExplore')}</h3>
+                  <h3 className="text-xs font-semibold text-stone-500">{t('discover.moreToExplore')}</h3>
                 </div>
                 <div className="space-y-3">
                   {otherActivities.map(a => <ActivityCard key={a.id} activity={a} onSelect={onSelect} rsvpCounts={rsvpCounts} friendsGoing={a.friendsGoing} />)}

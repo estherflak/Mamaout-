@@ -81,7 +81,7 @@ export default function OnboardingScreen() {
         {/* Step 0 — Welcome */}
         {step === 0 && (
           <div className="text-center">
-            <div className="text-5xl mb-4">🌸</div>
+            <div className="text-5xl mb-4">☀️</div>
             <h1 className="text-2xl font-bold text-stone-800 mb-2">{t('onboardingScreen.welcome')}</h1>
             <p className="text-stone-500 text-sm mb-2">
               {t('onboardingScreen.findActivities')}
@@ -202,7 +202,7 @@ export default function OnboardingScreen() {
                   ))}
                 </div>
                 {error && (
-                  <div className="mt-4 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+                  <div className="mt-4 px-3 py-2 bg-blush/10 border border-blush/30 rounded-lg text-xs text-blush">
                     {error}
                   </div>
                 )}

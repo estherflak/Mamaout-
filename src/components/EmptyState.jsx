@@ -115,7 +115,7 @@ export default function EmptyState({ query, dateFilter, onClearDate, onClearSear
   // Generic (filters/area narrowed everything out)
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <span className="text-5xl mb-4">🌸</span>
+      <span className="text-5xl mb-4">☀️</span>
       <h3 className="text-stone-700 font-medium text-lg mb-2">
         {t('emptyState.nothingMatchesFilters')}
       </h3>

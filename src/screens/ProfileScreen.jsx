@@ -196,7 +196,7 @@ export default function ProfileScreen({ onOpenSubmit, onRunSearch }) {
               </div>
             </div>
 
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-xs text-blush">{error}</p>}
 
             <div className="flex gap-2">
               <button

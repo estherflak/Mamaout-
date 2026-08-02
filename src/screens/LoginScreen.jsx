@@ -89,7 +89,7 @@ export default function LoginScreen({ sheet = false, initialView = 'login', prom
       )}
 
       <div className="mb-6 text-center">
-        <div className="text-4xl mb-2">🌸</div>
+        <div className="text-4xl mb-2">☀️</div>
         <h1 className="text-2xl font-bold text-stone-800">MamaOut</h1>
         <p className="text-sm text-stone-400 mt-1">{t('loginScreen.tagline')}</p>
       </div>
@@ -137,7 +137,7 @@ export default function LoginScreen({ sheet = false, initialView = 'login', prom
             <p className="text-xs text-stone-400 text-center">{t('loginScreen.signUpSubtitle')}</p>
           )}
 
-          {error && <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">{error}</div>}
+          {error && <div className="px-3 py-2 bg-blush/10 border border-blush/30 rounded-lg text-xs text-blush">{error}</div>}
 
           <input className={inputCls} type="email" autoComplete="email" placeholder={t('loginScreen.email')} value={email} onChange={e => setEmail(e.target.value)} />
 
@@ -188,7 +188,7 @@ export default function LoginScreen({ sheet = false, initialView = 'login', prom
         <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-3">
           <p className="text-sm text-stone-600 font-medium">{t('loginScreen.resetTitle')}</p>
           <p className="text-xs text-stone-400">{t('loginScreen.resetSubtitle')}</p>
-          {error && <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">{error}</div>}
+          {error && <div className="px-3 py-2 bg-blush/10 border border-blush/30 rounded-lg text-xs text-blush">{error}</div>}
           <input className={inputCls} type="email" autoComplete="email" placeholder={t('loginScreen.email')} value={email} onChange={e => setEmail(e.target.value)} />
           <button className={btnCls} onClick={handleForgot} disabled={loading || !email}>
             {loading ? t('loginScreen.signingInEllipsis') : t('loginScreen.sendResetLink')}
