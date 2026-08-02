@@ -197,8 +197,8 @@ export default function FriendsScreen({ onSelect }) {
                     {feed.map(item => <FriendFeedItem key={item.id} item={item} onSelect={onSelect} lang={lang} t={t} />)}
                   </div>
                 ) : (
-                  <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4 text-center">
-                    <p dir="auto" className="text-sm text-sage-600">🌸 {hint}</p>
+                  <div className="bg-lilac-pale border border-warmline rounded-2xl p-4 text-center">
+                    <p dir="auto" className="text-sm text-plum">☀️ {hint}</p>
                     <p className="text-xs text-plum-soft mt-1">{t('friendsScreen.addFriendsPrompt')}</p>
                   </div>
                 )}

@@ -6,11 +6,6 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { placeBookingUrl, activitiesAtPlace } from '../data/placeDetails';
 import ActivityCard from '../components/ActivityCard';
 
-const TYPE_BORDER = {
-  playground: '#f9a8d4',
-  library: '#7dd3fc',
-};
-
 function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
   const { lang, t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
@@ -37,7 +32,6 @@ function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
       className="bg-card rounded-2xl shadow-soft border border-warmline overflow-hidden cursor-pointer"
     >
       <div className="flex">
-        <div className="w-1 flex-shrink-0" style={{ backgroundColor: TYPE_BORDER[place.place_type] }} />
         <div className="flex-1 p-4 min-w-0">
           {/* Name + open badge + expand chevron */}
           <div className="flex items-start justify-between gap-2 mb-0.5">
@@ -47,7 +41,7 @@ function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
                 isClosed
                   ? 'bg-lilac-pale text-plum-soft'
                   : openNow
-                  ? 'bg-green-50 text-green-600'
+                  ? 'bg-sage-50 text-sage-500'
                   : 'bg-lilac-pale text-plum-soft'
               }`}>
                 {isClosed ? t('placesScreen.closedToday') : openNow ? t('placesScreen.openNow') : t('placesScreen.closedNow')}
@@ -75,7 +69,7 @@ function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
           {/* Badges row */}
           <div className="flex items-center gap-2 flex-wrap">
             {place.price === 0 ? (
-              <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-green-50 text-green-600">{t('common.free')}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-sage-50 text-sage-500">{t('common.free')}</span>
             ) : place.price != null ? (
               <span className="text-xs font-semibold text-plum">₪{place.price}</span>
             ) : null}
@@ -87,14 +81,14 @@ function PlaceCard({ place, activities, onSelectActivity, rsvpCounts }) {
             )}
 
             {place.story_hour_schedule && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 flex items-center gap-1">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-lilac-pale text-plum flex items-center gap-1">
                 <span>📖</span>
                 <span dir="auto">{place.story_hour_schedule}</span>
               </span>
             )}
 
             {placeActivities.length > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-500 font-medium">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-lilac-pale text-plum font-medium">
                 {placeActivities.length === 1
                   ? t('placesScreen.oneActivity')
                   : t('placesScreen.activityCount', { count: placeActivities.length })}

@@ -5,17 +5,6 @@ import { localizedName, localizedScheduleLabel, locationLine } from '../lib/loca
 import { shareActivityOnWhatsApp } from '../lib/share';
 import { ageRangeLabelFromWeeks } from '../lib/formatAge';
 
-// Left-border accent color per DB category key
-const CATEGORY_BORDER = {
-  movement:         '#d4a5a5',  // terracotta
-  wellness:         '#7da37d',  // sage green
-  'baby-focused':   '#f9a8d4',  // soft pink
-  social:           '#fbbf24',  // warm amber
-  creative:         '#c084fc',  // lavender
-  activities_kids:  '#7dd3fc',  // light blue
-  workshops:        '#c4b5fd',  // lavender
-};
-
 function shareOnWhatsApp(e, activity, lang) {
   e.stopPropagation();
   shareActivityOnWhatsApp(activity, undefined, lang);
@@ -27,7 +16,6 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
   const { favoriteIds, toggle } = useFavorites();
   const isFav = favoriteIds.has(activity.id);
   const firstFriend = friendsGoing[0];
-  const borderColor = CATEGORY_BORDER[activity.categoryKey] || CATEGORY_BORDER.social;
   const rsvp = rsvpCounts?.[activity.id];
   const interestedCount = rsvp?.interested || 0;
   const goingCount = rsvp?.going || 0;
@@ -39,12 +27,9 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
   return (
     <div
       onClick={() => onSelect?.(activity)}
-      className="bg-card rounded-2xl shadow-soft border border-warmline overflow-hidden cursor-pointer active:scale-[0.99] transition-transform flex"
+      className="bg-card rounded-2xl shadow-soft border border-warmline overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
     >
-      {/* Left category border */}
-      <div className="w-1 flex-shrink-0" style={{ backgroundColor: borderColor }} />
-
-      <div className="flex-1 p-4 min-w-0">
+      <div className="p-4 min-w-0">
         {/* Title row + actions */}
         <div className="flex items-start justify-between gap-3 mb-1">
           <div className="min-w-0 flex-1">
@@ -70,12 +55,10 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
                 if (user) toggle(activity.id);
                 else promptSignIn('signup', 'loginScreen.saveFavesPrompt');
               }}
-              className="p-1"
+              className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isFav ? 'bg-lilac' : 'bg-lilac-pale'}`}
               aria-label={t('activityCard.favoriteAria')}
             >
-              <svg className={`w-4 h-4 ${isFav ? 'fill-lilac stroke-lilac' : 'fill-none stroke-plum-disabled'}`} strokeWidth="1.8" viewBox="0 0 24 24">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
+              <span className="text-sm leading-none">{isFav ? '💜' : '🤍'}</span>
             </button>
             <button
               onClick={e => shareOnWhatsApp(e, activity, lang)}
@@ -126,7 +109,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
         <div className="flex items-center gap-2 flex-wrap">
           {/* Price */}
           {activity.isFree ? (
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-green-50 text-green-600">
+            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-sage-50 text-sage-500">
               {t('common.free')}
             </span>
           ) : activity.priceNis != null ? (
@@ -137,7 +120,7 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
 
           {/* Stroller accessible */}
           {activity.strollerAccessible && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 inline-flex items-center gap-1" title={t('activityCard.strollerAccessibleTitle')}>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-lilac-pale text-plum inline-flex items-center gap-1" title={t('activityCard.strollerAccessibleTitle')}>
               <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <path d="M3 4h2l1.5 9h11" />
                 <path d="M5.5 13a8 8 0 0 0 8-8h-8" />
@@ -150,14 +133,14 @@ export default function ActivityCard({ activity, onSelect, friendsGoing = [], rs
 
           {/* English-friendly */}
           {activity.language === 'en' && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 font-medium" title={t('activityCard.heldInEnglishTitle')}>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-lilac-pale text-plum font-medium" title={t('activityCard.heldInEnglishTitle')}>
               {t('activityCard.heldInEnglishShort')}
             </span>
           )}
 
           {/* Community-submitted */}
           {activity.sourceName === 'Community' && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium" title={t('activityCard.sharedByMomTitle')}>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-lilac-pale text-plum font-medium" title={t('activityCard.sharedByMomTitle')}>
               {t('activityCard.momTip')}
             </span>
           )}

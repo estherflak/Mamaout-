@@ -184,7 +184,7 @@ export default function OnboardingScreen() {
                   ))}
                 </div>
                 {interests.length === 0 && (
-                  <p className="text-xs text-amber-500 mt-3">{t('onboardingScreen.pickAtLeastOneToContinue')}</p>
+                  <p className="text-xs text-blush mt-3">{t('onboardingScreen.pickAtLeastOneToContinue')}</p>
                 )}
               </div>
             )}

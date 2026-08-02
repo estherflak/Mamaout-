@@ -120,12 +120,10 @@ export default function ActivityDetail({ activity, onClose }) {
             </div>
             <button
               onClick={() => user ? toggleFav(activity.id) : promptSignIn('signup', 'loginScreen.saveFavesPrompt')}
-              className="flex-shrink-0 p-1.5"
+              className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isFav ? 'bg-lilac' : 'bg-lilac-pale'}`}
               aria-label={t('activityCard.favoriteAria')}
             >
-              <svg className={`w-6 h-6 ${isFav ? 'fill-lilac stroke-lilac' : 'fill-none stroke-plum-disabled'}`} strokeWidth="1.8" viewBox="0 0 24 24">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
+              <span className="text-base leading-none">{isFav ? '💜' : '🤍'}</span>
             </button>
           </div>
 
@@ -143,7 +141,7 @@ export default function ActivityDetail({ activity, onClose }) {
           {(activity.isFree || activity.priceNis != null) && (
             <div>
               {activity.isFree ? (
-                <p className="text-2xl font-bold text-green-600">{t('activityDetail.free')}</p>
+                <p className="text-2xl font-bold text-sage-500">{t('activityDetail.free')}</p>
               ) : (
                 <p className="text-2xl font-bold text-plum">₪{activity.priceNis}</p>
               )}
@@ -156,13 +154,13 @@ export default function ActivityDetail({ activity, onClose }) {
           {/* Info row: stroller · language · address */}
           <div className="space-y-2">
             {activity.strollerAccessible === true ? (
-              <p className="text-sm text-green-600 font-medium">{t('activityDetail.strollerAccessible')}</p>
+              <p className="text-sm text-sage-500 font-medium">{t('activityDetail.strollerAccessible')}</p>
             ) : (
               <p className="text-sm text-plum-soft">{t('activityDetail.askOrganizer')}</p>
             )}
 
             {activity.language === 'en' && (
-              <span className="inline-block px-2.5 py-1 rounded-full bg-sky-50 text-sky-600 text-xs font-medium">
+              <span className="inline-block px-2.5 py-1 rounded-full bg-lilac-pale text-plum text-xs font-medium">
                 {t('activityDetail.heldInEnglish')}
               </span>
             )}
@@ -204,7 +202,7 @@ export default function ActivityDetail({ activity, onClose }) {
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2">
             <span className="px-2.5 py-1 rounded-full bg-lilac-pale text-plum text-xs font-medium">{categoryLabel(activity, lang)}</span>
-            <span className="px-2.5 py-1 rounded-full bg-sage-50 text-sage-500 text-xs">{ageLabel}</span>
+            <span className="px-2.5 py-1 rounded-full bg-lilac-pale text-plum text-xs">{ageLabel}</span>
           </div>
 
           {/* Description */}

@@ -100,7 +100,7 @@ export default function ProfileScreen({ onOpenSubmit, onRunSearch }) {
             {(profile?.language || profile?.notification_pref) && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {profile.language && (
-                  <span className="px-2 py-0.5 rounded-full bg-sage-50 border border-sage-200 text-xs text-plum-soft">
+                  <span className="px-2 py-0.5 rounded-full bg-lilac-pale border border-warmline text-xs text-plum-soft">
                     {LANGUAGES.find(l => l.id === profile.language)?.key ? t(LANGUAGES.find(l => l.id === profile.language).key) : profile.language}
                   </span>
                 )}
@@ -226,7 +226,7 @@ export default function ProfileScreen({ onOpenSubmit, onRunSearch }) {
                   <button
                     onClick={() => onRunSearch?.({ query: s.query || '', area: s.area || 'all' })}
                     dir="auto"
-                    className="flex-1 text-start px-3 py-2 rounded-xl bg-sage-50 border border-sage-200 text-sm text-plum truncate"
+                    className="flex-1 text-start px-3 py-2 rounded-xl bg-lilac-pale border border-warmline text-sm text-plum truncate"
                   >
                     {s.label || s.query || t('profileScreen.allActivities')}
                   </button>

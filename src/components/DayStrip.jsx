@@ -44,6 +44,7 @@ export default function DayStrip({
         {days.map((d, i) => {
           const dateStr = toLocalDateStr(d);
           const isSelected = selectedDay === dateStr;
+          const isToday = i === 0;
           const hasDot = datesWithActivity.has(dateStr);
           const weekday = d.toLocaleDateString(locale, { weekday: 'short' });
           const dayNum = d.getDate();
@@ -64,6 +65,8 @@ export default function DayStrip({
                 className={`flex flex-col items-center px-3 pt-2 pb-1.5 rounded-2xl border transition-colors ${
                   isSelected
                     ? 'bg-plum border-plum text-cream'
+                    : isToday
+                    ? 'bg-butter border-butter text-plum'
                     : 'bg-card border-warmline text-plum'
                 }`}
               >
@@ -71,7 +74,7 @@ export default function DayStrip({
                 <span className="text-sm font-bold leading-none">{dayNum}</span>
                 <span className={`w-1 h-1 rounded-full mt-1 ${
                   hasDot
-                    ? isSelected ? 'bg-cream/70' : 'bg-lilac'
+                    ? isSelected ? 'bg-cream/70' : isToday ? 'bg-plum/50' : 'bg-lilac'
                     : 'bg-transparent'
                 }`} />
               </button>
@@ -104,7 +107,7 @@ export default function DayStrip({
           onClick={onNapTimeToggle}
           className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
             napTime
-              ? 'bg-amber-50 border-amber-300 text-amber-700'
+              ? 'bg-plum border-plum text-cream'
               : 'bg-card border-warmline text-plum-soft'
           }`}
         >
@@ -118,7 +121,7 @@ export default function DayStrip({
             value={napTimeValue || '12:00'}
             onChange={e => onNapTimeChange?.(e.target.value)}
             onClick={e => e.stopPropagation()}
-            className="flex-shrink-0 px-2 py-1 rounded-full text-xs border border-amber-300 bg-amber-50 text-amber-700 outline-none"
+            className="flex-shrink-0 px-2 py-1 rounded-full text-xs border border-lilac bg-lilac-pale text-plum outline-none"
           />
         )}
       </div>

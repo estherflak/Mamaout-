@@ -337,11 +337,11 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
               onClick={() => setOpenNow(o => !o)}
               className={`ms-auto px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
                 openNow
-                  ? 'bg-green-500 text-white'
+                  ? 'bg-sage-400 text-white'
                   : 'bg-card border-warmline text-plum-soft'
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${openNow ? 'bg-card' : 'bg-green-400'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${openNow ? 'bg-card' : 'bg-sage-400'}`} />
               {t('discover.openNow')}
             </button>
           </div>
@@ -362,7 +362,7 @@ export default function DiscoverScreen({ onSelect, onOpenSubmit, seed, onSeedCon
       {/* Activities content area */}
       {section === 'activities' && <div className="px-4 pb-6">
         {error && (
-          <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+          <div className="mb-3 px-4 py-3 bg-blush/10 border border-blush/30 rounded-xl text-xs text-blush">
             {t('discover.loadError')}
           </div>
         )}
